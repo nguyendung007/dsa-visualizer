@@ -1,0 +1,61 @@
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 20px;
+  background: #0d1117;
+  border-top: 1px solid #1e2d3d;
+  flex-wrap: wrap;
+}
+
+.ctrl-buttons { display: flex; gap: 6px; }
+
+.ctrl-btn {
+  width: 36px; height: 36px;
+  border: 1px solid #1e2d3d;
+  background: #161b27;
+  color: #8b9eb5;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.ctrl-btn:hover { background: #1e2d3d; color: #e2e8f0; }
+.ctrl-btn.primary { background: #1d4ed8; color: white; border-color: #1d4ed8; width: 44px; }
+.ctrl-btn.primary:hover { background: #2563eb; }
+
+.ctrl-progress {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 120px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 4px;
+  background: #1e2d3d;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #58a6ff;
+  transition: width 0.1s;
+  border-radius: 2px;
+}
+
+.ctrl-count { font-size: 11px; color: #4a6b8a; min-width: 50px; text-align: right; }
+
+.ctrl-speed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ctrl-speed input[type="range"] { width: 80px; accent-color: #58a6ff; }
+.ctrl-label { font-size: 11px; color: #4a6b8a; }
