@@ -1,0 +1,38 @@
+.cx-page { overflow: hidden; }
+.cx-content { flex: 1; overflow-y: auto; padding: 16px 24px 32px; display: flex; flex-direction: column; gap: 28px; }
+
+.cx-section { display: flex; flex-direction: column; gap: 12px; }
+.cx-section-title {
+  font-size: 16px; font-weight: 700; color: #e2e8f0;
+  border-bottom: 1px solid #1e2d3d; padding-bottom: 8px;
+}
+
+.cx-theory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.cx-theory-card {
+  background: #0d1117; border: 1px solid #1e2d3d; border-radius: 8px;
+  padding: 10px 14px; display: flex; flex-direction: column; gap: 3px;
+  transition: border-color 0.15s;
+}
+.cx-theory-card:hover { border-color: #2e4a6a; }
+.cx-theory-cls { font-size: 16px; font-weight: 700; font-family: monospace; }
+.cx-theory-name { font-size: 11px; color: #8b9eb5; font-weight: 600; }
+.cx-theory-ex { font-size: 10px; color: #4a6b8a; line-height: 1.4; margin-top: 2px; }
+
+.cx-note {
+  font-size: 11px; color: #4a6b8a; line-height: 1.8;
+  background: #0a0e1a; border: 1px solid #1e2d3d; border-radius: 6px; padding: 10px 14px;
+}
+
+.cx-table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid #1e2d3d; }
+.cx-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.cx-table th {
+  background: #0d1117; color: #4a6b8a; font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.5px; padding: 8px 12px; text-align: left; white-space: nowrap;
+  border-bottom: 1px solid #1e2d3d;
+}
+.cx-table td {
+  padding: 8px 12px; border-bottom: 1px solid #0d1117;
+  background: #0a0e1a; vertical-align: middle;
+}
+.cx-table tr:last-child td { border-bottom: none; }
+.cx-table tr:hover td { background: #0f1923; }
