@@ -1,0 +1,173 @@
+.graph-workspace {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.graph-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0 24px 12px;
+  border-right: 1px solid #1e2d3d;
+  overflow: hidden;
+}
+
+.graph-svg {
+  flex: 1;
+  background: #0d1117;
+  border-radius: 8px;
+  border: 1px solid #1e2d3d;
+}
+
+.dist-table {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 6px 0;
+  min-height: 28px;
+}
+
+.dist-cell {
+  font-size: 11px;
+  font-family: monospace;
+  background: #132135;
+  border: 1px solid #1e3a5f;
+  border-radius: 4px;
+  padding: 2px 8px;
+  color: #58a6ff;
+}
+
+.graph-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  padding: 12px 14px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mode-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 7px 8px;
+  border: 1px solid #1e2d3d;
+  background: #0d1117;
+  color: #8b9eb5;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.mode-btn:hover { border-color: #58a6ff; color: #58a6ff; }
+.mode-btn.active { background: #132135; border-color: #58a6ff; color: #58a6ff; }
+.mode-btn.danger { color: #ef4444; }
+.mode-btn.danger:hover { border-color: #ef4444; }
+
+select.arr-input {
+  appearance: none;
+  cursor: pointer;
+}
+
+/* Data structure panel */
+.graph-ds-panel {
+  padding: 6px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ds-box {
+  background: #0a0e1a;
+  border: 1px solid #1e2d3d;
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+.ds-title {
+  font-size: 10px;
+  color: #4a6b8a;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.ds-queue-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.ds-ptr {
+  font-size: 9px;
+  color: #4a6b8a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ds-empty {
+  font-size: 11px;
+  color: #1e3a5f;
+  font-style: italic;
+}
+
+.ds-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 8px;
+  background: #132135;
+  border: 1px solid #1e3a5f;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: monospace;
+  font-weight: 700;
+  color: #8b9eb5;
+  min-width: 28px;
+  text-align: center;
+  transition: all 0.15s;
+}
+
+.ds-cell.ds-front {
+  border-color: #58a6ff;
+  color: #58a6ff;
+  background: #0d1b2e;
+}
+
+.ds-cell-sub {
+  font-size: 9px;
+  color: #4a6b8a;
+  font-weight: 400;
+}
+
+.ds-dist-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.ds-dist-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #132135;
+  border: 1px solid #1e3a5f;
+  border-radius: 4px;
+  padding: 4px 8px;
+  min-width: 36px;
+}
+
+.ds-dist-node { font-size: 11px; color: #58a6ff; font-family: monospace; font-weight: 700; }
+.ds-dist-val { font-size: 10px; color: #8b9eb5; font-family: monospace; }
