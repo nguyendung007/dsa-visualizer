@@ -1,0 +1,38 @@
+name: Deploy DSA Visualizer
+
+# Khi nào trigger?
+on:
+  push:
+    branches: [main]   # chỉ chạy khi push lên branch main
+
+jobs:
+  # ── JOB 1: Build ──────────────────────────────
+  build-and-deploy:
+    runs-on: ubuntu-latest   # máy ảo GitHub cấp miễn phí
+
+    steps:
+      # 1. Lấy code về máy ảo
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Cài Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'        # cache node_modules để lần sau nhanh hơn
+
+      # 3. Cài dependencies
+      - name: Install dependencies
+        run: npm ci            # giống npm install nhưng strict hơn, dùng cho CI
+
+      # 4. Build
+      - name: Build
+        run: npm run build     # Vite tạo ra thư mục /dist
+
+      # 5. Deploy /dist lên GitHub Pages
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}  # GitHub tự cấp, không cần tạo
+          publish_dir: ./dist
