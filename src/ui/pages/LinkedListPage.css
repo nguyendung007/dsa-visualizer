@@ -1,0 +1,24 @@
+.ll-workspace { display: flex; flex: 1; overflow: hidden; }
+.ll-main { flex: 1; display: flex; flex-direction: column; padding: 0 20px 12px; border-right: 1px solid #1e2d3d; overflow-y: auto; gap: 10px; }
+.ll-sidebar { width: 220px; flex-shrink: 0; padding: 12px 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+
+.ll-svg-wrap { overflow-x: auto; }
+
+.ll-info-bar {
+  display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
+  padding: 6px 12px; background: #0d1117; border: 1px solid #1e2d3d;
+  border-radius: 6px; font-size: 12px; color: #8b9eb5;
+}
+.ll-op-badge {
+  margin-left: auto; font-size: 10px; font-weight: 700; text-transform: uppercase;
+  background: rgba(88,166,255,0.15); color: #58a6ff;
+  border-radius: 4px; padding: 2px 8px; letter-spacing: 0.5px;
+}
+
+.ll-complexity { background: #0d1117; border: 1px solid #1e2d3d; border-radius: 8px; padding: 10px 12px; }
+.lc-title { font-size: 10px; color: #4a6b8a; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.lc-rows { display: flex; flex-direction: column; gap: 3px; }
+.lc-row { display: flex; gap: 8px; font-size: 11px; font-family: monospace; align-items: center; }
+.lc-op { flex: 1; color: #8b9eb5; }
+.lc-time { width: 60px; color: #10b981; font-weight: 700; }
+.lc-space { width: 40px; color: #58a6ff; }
