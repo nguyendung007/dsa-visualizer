@@ -2,6 +2,7 @@
 
 Cấu trúc thư mục dự án 
 ============================================================
+'''text
 src/
 ├── core/
 │   ├── dataStructures/
@@ -58,4 +59,5 @@ src/
 │           └── {pages,components,layouts}}/
 ├── App.jsx
 └── main.jsx
+'''
 
