@@ -1,8 +1,8 @@
-## Xây dựng phần mềm học môn DSA cho UET bằng React,thiết kế theo kiểu FP như kiến thức đã học trong Bài tập lớn PPLLT 
+## Xây dựng phần mềm học môn DSA cho UET bằng React, thiết kế theo kiểu FP như kiến thức đã học trong Bài tập lớn PPLLT
 
-Cấu trúc thư mục dự án 
-============================================================
-'''text
+### Cấu trúc thư mục dự án
+
+```text
 src/
 ├── core/
 │   ├── dataStructures/
@@ -53,11 +53,6 @@ src/
 │       ├── TreePage.jsx
 │       ├── UnionFindPage.css
 │       └── UnionFindPage.jsx
-├── {core/
-│   └── {sorting,graph,trees,dataStructures,disjointSet,hashing,string},shell/
-│       └── {animation},ui/
-│           └── {pages,components,layouts}}/
 ├── App.jsx
 └── main.jsx
-'''
-
+```
