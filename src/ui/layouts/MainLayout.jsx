@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
+import { useState } from 'react';
 import './MainLayout.css';
 
 const nav = [
@@ -15,14 +16,14 @@ const nav = [
 ];
 
 export default function MainLayout() {
+  const [collapsed, setCollapsed] = useState(false);
   return (
-    <div className="layout">
-      <aside className="sidebar">
+    <div className={`layout ${collapsed ? 'collapsed' : ''}`}>
+      <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
         <div className="brand">
           <span className="brand-icon">∆</span>
           <div>
-            <div className="brand-title">DSA Visual</div>
-            <div className="brand-sub">Algorithm Visualizer</div>
+            <div className="brand-title">DSA Visualizer</div>
           </div>
         </div>
         <nav className="nav">
@@ -38,10 +39,14 @@ export default function MainLayout() {
           ))}
         </nav>
         <div className="sidebar-footer">
-          <div className="badge">MSSV 25022808</div>
-          <div className="badge-sub">Nguyễn Hữu Dũng</div>
+          <div className="badge">UET-IAI</div>
         </div>
       </aside>
+
+      <button className="toggle-btn" onClick={() => setCollapsed(c => !c)}>
+        {collapsed ? '›' : '‹'}
+      </button>
+
       <main className="content">
         <Outlet />
       </main>
