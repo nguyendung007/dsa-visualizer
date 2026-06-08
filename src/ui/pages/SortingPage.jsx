@@ -1,7 +1,10 @@
+//Cập nhật tính năng nhận thuật toán người dùng
+
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { selectionSort, insertionSort, mergeSort, quickSort, bubbleSort, heapSort, countingSort, radixSort, shellSort, bucketSort } from '../../core/sorting/index.js';
 import { AnimationEngine } from '../../shell/animation/AnimationEngine.js';
 import Controls from '../components/Controls.jsx';
+import CustomAlgoModal from '../components/CustomAlgoModal.jsx';
 import './SortingPage.css';
 
 const ALGOS = {
@@ -31,6 +34,9 @@ export default function SortingPage() {
   const engineRef = useRef(null);
   const [baseArray, setBaseArray] = useState(randomArr);
 
+  const [customAlgos, setCustomAlgos] = useState({});
+  const [showModal, setShowModal] = useState(false);
+
   const getColor = useCallback((step, idx) => {
     if (!step) return '#1e3a5f';
     if (step.done || step.sorted?.includes(idx)) return '#10b981';
@@ -48,7 +54,7 @@ export default function SortingPage() {
 
   function run(arr) {
     engineRef.current?.pause();
-    const s = ALGOS[algo].fn(arr);
+    const s = allAlgos[algo].fn(arr);
     setSteps(s); setStep(s[0]); setStepIdx(0); setPlaying(false);
     const eng = new AnimationEngine({
       steps: s, speed,
@@ -72,6 +78,8 @@ export default function SortingPage() {
   const count = step?.count || [];
   const min = step?.min ?? 0;
 
+  const allAlgos = { ...ALGOS, ...customAlgos };
+
   return (
     <div className="page">
       <div className="page-header">
@@ -80,14 +88,28 @@ export default function SortingPage() {
       </div>
 
       <div className="algo-tabs">
-        {Object.entries(ALGOS).map(([k, v]) => (
+        {Object.entries(allAlgos).map(([k, v]) => (
           <button key={k} className={`algo-tab ${algo === k ? 'active' : ''}`}
             style={{ '--tab-color': v.color }}
             onClick={() => setAlgo(k)}>
             {v.name}
           </button>
+          
         ))}
+        <button className="algo-tab" style={{ borderStyle: 'dashed', color: '#58a6ff' }}
+          onClick={() => setShowModal(true)}>
+          ＋ Thêm
+        </button>
       </div>
+      {showModal && (
+        <CustomAlgoModal
+          onAdd={(newAlgo) => {
+            const key = 'custom_' + Date.now();
+            setCustomAlgos(prev => ({ ...prev, [key]: newAlgo }));
+          }}
+          onClose={() => setShowModal(false)}
+        />
+      )}
 
       <div className="input-row">
         <input className="arr-input" placeholder="Nhập mảng (vd: 5 3 8 1 9) hoặc để trống để random..."
