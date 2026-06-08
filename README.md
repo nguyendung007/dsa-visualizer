@@ -14,7 +14,8 @@ src/
 │   ├── problems/
 │   │   └── index.js
 │   ├── sorting/
-│   │   └── index.js
+│   │   ├── index.js
+│   │   └── proxyWrapper.js
 │   ├── string/
 │   │   └── index.js
 │   ├── trees/
@@ -29,6 +30,11 @@ src/
 │   ├── components/
 │   │   ├── Controls.css
 │   │   └── Controls.jsx
+│   ├── custom/
+│   │   ├── CustomGraph.css
+│   │   ├── CustomGraph.jsx
+│   │   ├── CustomSorting.css
+│   │   └── CustomSorting.jsx
 │   ├── layouts/
 │   │   ├── MainLayout.css
 │   │   └── MainLayout.jsx
@@ -37,6 +43,8 @@ src/
 │       ├── ComplexityPage.jsx
 │       ├── GraphPage.css
 │       ├── GraphPage.jsx
+│       ├── Landingpage.css
+│       ├── Landingpage.jsx
 │       ├── LinkedListPage.css
 │       ├── LinkedListPage.jsx
 │       ├── ProblemsPage.css
@@ -53,6 +61,10 @@ src/
 │       ├── TreePage.jsx
 │       ├── UnionFindPage.css
 │       └── UnionFindPage.jsx
+├── {core/
+│   └── {sorting,graph,trees,dataStructures,disjointSet,hashing,string},shell/
+│       └── {animation},ui/
+│           └── {pages,components,layouts}}/
 ├── App.jsx
 └── main.jsx
 ```
