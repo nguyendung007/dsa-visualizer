@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { selectionSort, insertionSort, mergeSort, quickSort, bubbleSort, heapSort, countingSort, radixSort, shellSort, bucketSort } from '../../core/sorting/index.js';
 import { AnimationEngine } from '../../shell/animation/AnimationEngine.js';
 import Controls from '../components/Controls.jsx';
-import CustomAlgoModal from '../components/CustomAlgoModal.jsx';
+import CustomAlgoModal from '../custom/CustomAlgoModal.jsx';
 import './SortingPage.css';
 
 const ALGOS = {
