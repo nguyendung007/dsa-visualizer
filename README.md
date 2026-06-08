@@ -56,3 +56,13 @@ src/
 ├── App.jsx
 └── main.jsx
 ```
+### Mô tả
+
+```text
+1. core lưu giữ các file index là các thuật toán gốc bao gồm với việc ghi lại trạng thái,cụ thể trong từng file index.js
+
+2. Tất cả các page chạy thuật toán đều tham chiếu đến AnimationEngine và mỗi page tạo ra 1 instance mới mỗi khi chạy thuật toán 
+
+3. Project đang phát triển tính năng tự tạo thuật toán để hiểu hơn về độ phức tạp
+
+```
