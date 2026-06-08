@@ -1,5 +1,7 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MainLayout from './ui/layouts/MainLayout.jsx';
+import LandingPage from './ui/pages/LandingPage.jsx';
+
 import SortingPage from './ui/pages/SortingPage.jsx';
 import TreePage from './ui/pages/TreePage.jsx';
 import TraversalPage from './ui/pages/TraversalPage.jsx';
@@ -15,8 +17,11 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Trang giới thiệu — nằm ngoài MainLayout, không có sidebar */}
+        <Route path="/" element={<LandingPage />} />
+
+        {/* Các trang chính — nằm trong MainLayout, có sidebar */}
         <Route element={<MainLayout />}>
-          <Route path="/" element={<Navigate to="/sorting" replace />} />
           <Route path="/sorting"    element={<SortingPage />} />
           <Route path="/trees"      element={<TreePage />} />
           <Route path="/traversal"  element={<TraversalPage />} />
