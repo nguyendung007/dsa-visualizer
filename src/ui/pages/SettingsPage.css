@@ -150,3 +150,45 @@
   min-width: 130px;
 }
 .settings-btn-save:hover { background: #79b8ff; }
+
+.settings-bg-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.settings-bg-thumb {
+  height: 80px;
+  border-radius: 8px;
+  border: 2px solid #1e2d3d;
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-end;
+  padding: 6px;
+  transition: border-color 0.15s;
+}
+.settings-bg-thumb span {
+  font-size: 10px;
+  color: white;
+  background: rgba(0,0,0,0.5);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.settings-bg-thumb.active { border-color: #58a6ff; }
+.settings-bg-thumb:hover  { border-color: #4a6b8a; }
+
+.settings-bg-upload {
+  height: 80px;
+  border-radius: 8px;
+  border: 2px dashed #1e2d3d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #58a6ff;
+  font-size: 13px;
+  transition: border-color 0.15s;
+}
+.settings-bg-upload:hover { border-color: #58a6ff; }
