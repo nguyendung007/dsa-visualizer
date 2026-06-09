@@ -25,7 +25,7 @@ export default function MainLayout() {
   
   const [collapsed, setCollapsed] = useState(false);
 
-  const [bgImg, setBgImg] = useState(() => localStorage.getItem('bgImage') || bgImage);
+  const [bgImg, setBgImg] = useState(() => localStorage.getItem('bgImage') || '');
 
   useEffect(() => {
   const font = localStorage.getItem('font') || "'JetBrains Mono', monospace";
@@ -35,9 +35,10 @@ export default function MainLayout() {
 
   // Lắng nghe khi SettingsPage thay đổi ảnh nền
   const onStorage = () => {
-    const saved = localStorage.getItem('bgImage');
-    if (saved) setBgImg(saved);
-  };
+  const saved = localStorage.getItem('bgImage');
+  setBgImg(saved || ''); 
+};
+
   window.addEventListener('bgImageChanged', onStorage);
   return () => window.removeEventListener('bgImageChanged', onStorage);
 }, []);
@@ -46,7 +47,7 @@ export default function MainLayout() {
     <div
          className={`layout ${collapsed ? 'collapsed' : ''}`}
          style={{
-         backgroundImage: `url(${bgImg})`,
+         backgroundImage: bgImg ? `url(${bgImg})` : 'none',
          backgroundSize: 'cover',
          backgroundPosition: 'center',
          backgroundAttachment: 'fixed',
