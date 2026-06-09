@@ -1,0 +1,152 @@
+.settings-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* Section */
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.settings-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #4a6b8a;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #1e2d3d;
+}
+
+/* Options list */
+.settings-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.settings-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 8px;
+  color: #8b9eb5;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.settings-option:hover {
+  border-color: #4a6b8a;
+  color: #c9d8e8;
+}
+
+.settings-option.active {
+  border-color: #58a6ff;
+  background: #132135;
+  color: #58a6ff;
+}
+
+.settings-preview {
+  margin-left: auto;
+  font-size: 11px;
+  opacity: 0.5;
+}
+
+/* Color dot */
+.settings-color-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid #1e2d3d;
+  flex-shrink: 0;
+}
+
+/* Custom color input */
+.settings-color-input {
+  margin-left: auto;
+  width: 36px;
+  height: 24px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: none;
+  padding: 0;
+}
+
+/* Preview box */
+.settings-preview-box {
+  border: 1px solid #1e2d3d;
+  border-radius: 10px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: background 0.2s;
+}
+
+.settings-preview-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #58a6ff;
+}
+
+.settings-preview-text {
+  font-size: 13px;
+  color: #8b9eb5;
+}
+
+.settings-preview-code {
+  font-size: 12px;
+  color: #4a6b8a;
+  margin-top: 4px;
+}
+
+/* Actions */
+.settings-actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.settings-btn-reset {
+  background: none;
+  border: 1px solid #1e2d3d;
+  border-radius: 8px;
+  padding: 10px 20px;
+  color: #8b9eb5;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.settings-btn-reset:hover {
+  border-color: #4a6b8a;
+  color: #e2e8f0;
+}
+
+.settings-btn-save {
+  background: #58a6ff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 28px;
+  color: #000;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+  min-width: 130px;
+}
+.settings-btn-save:hover { background: #79b8ff; }
