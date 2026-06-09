@@ -1,5 +1,7 @@
+// Thêm setting
+
 import { NavLink, Outlet } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './MainLayout.css';
 
 const nav = [
@@ -13,10 +15,21 @@ const nav = [
   { path: '/strings',    icon: 'Σ', label: 'String Algorithms', desc: 'TST·LSD/MSD·3-Way·Suffix Array·KMP·BM·RK' },
   { path: '/problems',   icon: '⚡', label: 'Problems',          desc: 'Two Sum: Brute Force·Two Pointer·Hash Map' },
   { path: '/complexity', icon: '𝑂', label: 'Complexity',        desc: 'Big-O lý thuyết + bảng tra cứu tất cả thuật toán' },
+  { path: '/settings', icon: '⚙', label: 'Settings', desc: 'Font · Màu nền' },
 ];
 
+
 export default function MainLayout() {
+  
   const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    const font = localStorage.getItem('font') || "'JetBrains Mono', monospace";
+    const bg   = localStorage.getItem('bg')   || '#050408';
+    document.documentElement.style.setProperty('--font', font);
+    document.documentElement.style.setProperty('--bg', bg);
+  }, []);
+  
   return (
     <div className={`layout ${collapsed ? 'collapsed' : ''}`}>
       <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
@@ -38,6 +51,7 @@ export default function MainLayout() {
             </NavLink>
           ))}
         </nav>
+        
         <div className="sidebar-footer">
           <div className="badge">UET-IAI</div>
         </div>
