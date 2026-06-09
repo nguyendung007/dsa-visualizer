@@ -2,6 +2,7 @@
 
 import { NavLink, Outlet } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import bgImage from '../../assets/bg1.png';
 import '../styles/global.css';
 import './MainLayout.css';
 
@@ -24,15 +25,33 @@ export default function MainLayout() {
   
   const [collapsed, setCollapsed] = useState(false);
 
+  const [bgImg, setBgImg] = useState(() => localStorage.getItem('bgImage') || bgImage);
+
   useEffect(() => {
-    const font = localStorage.getItem('font') || "'JetBrains Mono', monospace";
-    const bg   = localStorage.getItem('bg')   || '#050408';
-    document.documentElement.style.setProperty('--font', font);
-    document.documentElement.style.setProperty('--bg', bg);
-  }, []);
+  const font = localStorage.getItem('font') || "'JetBrains Mono', monospace";
+  const bg   = localStorage.getItem('bg')   || '#050408';
+  document.documentElement.style.setProperty('--font', font);
+  document.documentElement.style.setProperty('--bg', bg);
+
+  // Lắng nghe khi SettingsPage thay đổi ảnh nền
+  const onStorage = () => {
+    const saved = localStorage.getItem('bgImage');
+    if (saved) setBgImg(saved);
+  };
+  window.addEventListener('bgImageChanged', onStorage);
+  return () => window.removeEventListener('bgImageChanged', onStorage);
+}, []);
   
   return (
-    <div className={`layout ${collapsed ? 'collapsed' : ''}`}>
+    <div
+         className={`layout ${collapsed ? 'collapsed' : ''}`}
+         style={{
+         backgroundImage: `url(${bgImg})`,
+         backgroundSize: 'cover',
+         backgroundPosition: 'center',
+         backgroundAttachment: 'fixed',
+  }}
+>
       <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
         <div className="brand">
           <span className="brand-icon">∆</span>
