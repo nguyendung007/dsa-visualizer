@@ -176,10 +176,7 @@ src/
 │   │   └── UnionFindPage.jsx
 │   └── styles/
 │       └── global.css
-├── {core/
-│   └── {sorting,graph,trees,dataStructures,disjointSet,hashing,string},shell/
-│       └── {animation},ui/
-│           └── {pages,components,layouts}}/
+|
 ├── App.jsx
 └── main.jsx
 ```
