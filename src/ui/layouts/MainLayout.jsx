@@ -2,6 +2,7 @@
 
 import { NavLink, Outlet } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import '../styles/global.css';
 import './MainLayout.css';
 
 const nav = [
@@ -54,6 +55,7 @@ export default function MainLayout() {
         
         <div className="sidebar-footer">
           <div className="badge">UET-IAI</div>
+          <div className="app-desc">Made with ❤️ for learning</div>
         </div>
       </aside>
 
