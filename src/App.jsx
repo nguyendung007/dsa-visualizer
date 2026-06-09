@@ -13,6 +13,8 @@ import StringPage from './ui/pages/StringPage.jsx';
 import ProblemsPage from './ui/pages/ProblemsPage.jsx';
 import ComplexityPage from './ui/pages/ComplexityPage.jsx';
 
+import SettingsPage from './ui/pages/SettingsPage.jsx';
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -32,6 +34,7 @@ export default function App() {
           <Route path="/strings"    element={<StringPage />} />
           <Route path="/problems"   element={<ProblemsPage />} />
           <Route path="/complexity" element={<ComplexityPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
