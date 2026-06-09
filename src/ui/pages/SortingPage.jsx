@@ -1,4 +1,4 @@
-//Cập nhật tính năng nhận thuật toán người dùng
+//Cập nhật tính năng nhận số âm và scale với khoảng quá lớn 
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { selectionSort, insertionSort, mergeSort, quickSort, bubbleSort, heapSort, countingSort, radixSort, shellSort, bucketSort } from '../../core/sorting/index.js';
@@ -20,7 +20,7 @@ const ALGOS = {
   bucket:   { fn: bucketSort,  name: 'Bucket Sort',  color: '#84cc16' },
 };
 
-function parseInput(str) { return str.split(/[,\s]+/).map(Number).filter(n => !isNaN(n) && n > 0); }
+function parseInput(str) { return str.split(/[,\s]+/).map(Number).filter(n => !isNaN(n) ); }
 function randomArr(n = 16) { return Array.from({ length: n }, () => Math.floor(Math.random() * 80) + 5); }
 
 export default function SortingPage() {
@@ -70,10 +70,21 @@ export default function SortingPage() {
     setBaseArray(arr); run(arr);
   }
 
+
   useEffect(() => { run(baseArray); }, [algo]);
 
   const arr = step?.array || baseArray;
+
+  const minVal = Math.min(...arr, 0);
   const maxVal = Math.max(...arr, 1);
+  const getLogHeight = (v, minVal, maxVal) => {
+  if (v <= minVal) return 0;
+  if (v >= maxVal) return 100; // Đảm bảo không vượt quá 100%
+  const logCurrent = Math.log10(v - minVal + 1);
+  const logRange = Math.log10(maxVal - minVal + 1);
+  return (logCurrent / logRange) * 100;
+};
+  
   const isCounting = algo === 'counting';
   const count = step?.count || [];
   const min = step?.min ?? 0;
@@ -127,7 +138,7 @@ export default function SortingPage() {
       <div className="bars-container">
         {arr.map((v, i) => (
           <div key={i} className="bar-wrap">
-            <div className="bar" style={{ height: `${(v / maxVal) * 100}%`, background: getColor(step, i), transition: 'height 0.1s, background 0.15s' }} />
+            <div className="bar" style={{ height: `${getLogHeight(v, minVal, maxVal)}%`, background: getColor(step, i), transition: 'height 0.1s, background 0.15s' }} />
             <span className="bar-label">{v}</span>
           </div>
         ))}
