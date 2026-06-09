@@ -46,6 +46,12 @@ body{
   height:100vh;
 }
 
+.layout_bg{
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
 /* ================= SIDEBAR ================= */
 
 .sidebar{
@@ -227,12 +233,10 @@ body{
 
 .content{
   flex:1;
-
   overflow:auto;
 
-  background:transparent;
-
-  padding:24px;
+  background: rgba(5, 8, 22, 0.5);
+  backdrop-filter: blur(4px);
 }
 
 /* ================= TOGGLE ================= */
