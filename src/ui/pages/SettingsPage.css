@@ -192,3 +192,21 @@
   transition: border-color 0.15s;
 }
 .settings-bg-upload:hover { border-color: #58a6ff; }
+
+.settings-bg-remove {
+  height: 80px;
+  border-radius: 8px;
+  border: 2px solid #dc2626;
+  background: rgba(220, 38, 38, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 600;
+}
+.settings-bg-remove:hover {
+  background: #dc2626;
+  color: white;
+}
