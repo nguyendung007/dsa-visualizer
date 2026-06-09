@@ -28,6 +28,7 @@ const BG_IMAGES = [
   { label: 'Tokka Tokyo Ghoul',   src: bg3 },
 ];
 
+
 function applySettings(font, bg) {
   document.documentElement.style.setProperty('--font', font);
   document.documentElement.style.setProperty('--bg', bg);
@@ -38,7 +39,6 @@ export default function SettingsPage() {
   const [bg, setBg] = useState(() => localStorage.getItem('bg') || '#000000');
   const [customBg, setCustomBg] = useState(bg);
   const [saved, setSaved] = useState(false);
-
   const isCustom = !BG_PRESETS.slice(0, -1).some(p => p.value === bg);
 
   function handleFont(val) {
@@ -81,9 +81,14 @@ export default function SettingsPage() {
 
   function handleBgImage(src) {
   setBgImage(src);
-  localStorage.setItem('bgImage', src);  // thêm
-  window.dispatchEvent(new Event('bgImageChanged'));  // thêm
-  document.documentElement.style.setProperty('--bg-image', `url(${src})`);
+  localStorage.setItem('bgImage', src);
+  window.dispatchEvent(new Event('bgImageChanged'));
+}
+
+  function handleRemoveImage() {
+  setBgImage('');
+  localStorage.removeItem('bgImage');
+  window.dispatchEvent(new Event('bgImageChanged'));
 }
 
   return (
@@ -147,6 +152,11 @@ export default function SettingsPage() {
         <section className="settings-section">
           <div className="settings-section-title">Ảnh nền</div>
           <div className="settings-bg-grid">
+            {bgImage && (
+             <div className="settings-bg-remove" onClick={handleRemoveImage}>
+               ✕ Xóa ảnh
+             </div>
+            )}
             {BG_IMAGES.map(img => (
               <div
                 key={img.src}
