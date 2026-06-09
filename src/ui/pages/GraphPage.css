@@ -13,6 +13,7 @@
   overflow: hidden;
 }
 
+
 .graph-svg {
   flex: 1;
   background: #0d1117;
@@ -54,30 +55,7 @@
   gap: 6px;
 }
 
-.mode-btn {
-  flex: 1;
-  padding: 7px 8px;
-  border: 1px solid #1e2d3d;
-  background: #0d1117;
-  color: #8b9eb5;
-  border-radius: 6px;
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 11px;
-  font-weight: 600;
-  transition: all 0.15s;
-  white-space: nowrap;
-}
-
-.mode-btn:hover { border-color: #58a6ff; color: #58a6ff; }
-.mode-btn.active { background: #132135; border-color: #58a6ff; color: #58a6ff; }
-.mode-btn.danger { color: #ef4444; }
-.mode-btn.danger:hover { border-color: #ef4444; }
-
-select.arr-input {
-  appearance: none;
-  cursor: pointer;
-}
+/* Moved common controls to global CSS */
 
 /* Data structure panel */
 .graph-ds-panel {
@@ -123,28 +101,7 @@ select.arr-input {
   font-style: italic;
 }
 
-.ds-cell {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 4px 8px;
-  background: #132135;
-  border: 1px solid #1e3a5f;
-  border-radius: 4px;
-  font-size: 12px;
-  font-family: monospace;
-  font-weight: 700;
-  color: #8b9eb5;
-  min-width: 28px;
-  text-align: center;
-  transition: all 0.15s;
-}
-
-.ds-cell.ds-front {
-  border-color: #58a6ff;
-  color: #58a6ff;
-  background: #0d1b2e;
-}
+/* Data structure cell styles moved to global CSS */
 
 .ds-cell-sub {
   font-size: 9px;
