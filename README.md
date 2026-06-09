@@ -49,6 +49,8 @@ src/
 │       ├── LinkedListPage.jsx
 │       ├── ProblemsPage.css
 │       ├── ProblemsPage.jsx
+│       ├── SettingsPage.css
+│       ├── SettingsPage.jsx
 │       ├── SortingPage.css
 │       ├── SortingPage.jsx
 │       ├── StringPage.css
