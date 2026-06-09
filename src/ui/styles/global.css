@@ -1,0 +1,337 @@
+/* =====================================================
+   global.css — Shared styles cho toàn bộ DSA Visualizer
+   Import 1 lần trong MainLayout.jsx
+   ===================================================== */
+
+/* ── Layout page ── */
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.page-header {
+  padding: 20px 24px 12px;
+  border-bottom: 1px solid #1e2d3d;
+  flex-shrink: 0;
+}
+
+.page-header h1 {
+  font-size: 22px;
+  color: #e2e8f0;
+  font-weight: 700;
+}
+
+.page-header p {
+  font-size: 12px;
+  color: #4a6b8a;
+  margin-top: 4px;
+}
+
+/* ── Algo tabs ── */
+.algo-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 12px 24px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid #1e2d3d;
+  flex-shrink: 0;
+}
+
+.algo-tab {
+  padding: 6px 14px;
+  border: 1px solid #1e2d3d;
+  background: #0d1117;
+  color: #8b9eb5;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.algo-tab:hover { border-color: var(--tab-color, #58a6ff); color: var(--tab-color, #58a6ff); }
+.algo-tab.active {
+  background: color-mix(in srgb, var(--tab-color, #58a6ff) 15%, transparent);
+  border-color: var(--tab-color, #58a6ff);
+  color: var(--tab-color, #58a6ff);
+  font-weight: 700;
+}
+
+/* ── Input row ── */
+.input-row {
+  display: flex;
+  gap: 8px;
+  padding: 12px 24px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.arr-input {
+  flex: 1;
+  padding: 8px 12px;
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 8px;
+  color: #e2e8f0;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.arr-input:focus { outline: none; border-color: #58a6ff; }
+.arr-input::placeholder { color: #4a6b8a; }
+
+select.arr-input { appearance: none; cursor: pointer; }
+
+/* ── Buttons ── */
+.btn-generate {
+  padding: 8px 16px;
+  background: #1d4ed8;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.btn-generate:hover { background: #2563eb; }
+
+.btn-random {
+  padding: 8px 14px;
+  background: #161b27;
+  border: 1px solid #1e2d3d;
+  border-radius: 8px;
+  color: #8b9eb5;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn-random:hover { border-color: #58a6ff; color: #58a6ff; }
+
+.btn-danger {
+  padding: 8px 12px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #ef4444;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn-danger:hover { background: rgba(239, 68, 68, 0.25); }
+
+/* ── Viz area ── */
+.viz-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0 24px 12px;
+  overflow: hidden;
+}
+
+/* ── Step description ── */
+.step-desc {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  min-height: 36px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.step-badge {
+  font-size: 10px;
+  padding: 3px 8px;
+  background: #132135;
+  border: 1px solid #1e2d3d;
+  border-radius: 4px;
+  color: #58a6ff;
+  white-space: nowrap;
+}
+
+.step-text {
+  font-size: 13px;
+  color: #c9d8e8;
+  font-weight: 500;
+}
+
+.pointer-info {
+  font-size: 11px;
+  color: #f59e0b;
+  font-family: 'Courier New', monospace;
+  background: rgba(245, 158, 11, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+/* ── Bars ── */
+.bars-container {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+  padding: 12px 0;
+  overflow: hidden;
+}
+
+.bar-wrap {
+  min-width: 16px;
+  max-width: 52px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.bar {
+  width: 100%;
+  border-radius: 3px 3px 0 0;
+  transition: height 0.12s ease, background 0.12s ease;
+  min-height: 4px;
+}
+
+.bar-val, .bar-label {
+  font-size: 9px;
+  color: #4a6b8a;
+  font-family: monospace;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ── Legend ── */
+.legend {
+  display: flex;
+  gap: 16px;
+  padding: 6px 0;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.legend-item {
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #8b9eb5;
+}
+
+/* ── Sidebar chung (graph, tree, linkedlist) ── */
+.sidebar-panel {
+  flex-shrink: 0;
+  padding: 12px 14px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-left: 1px solid #1e2d3d;
+}
+
+.ctrl-section h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #4a6b8a;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.input-pair {
+  display: flex;
+  gap: 6px;
+}
+.input-pair .arr-input { flex: 1; }
+
+/* ── Info/log box ── */
+.info-box {
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.info-box-title {
+  font-size: 10px;
+  color: #4a6b8a;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.log-empty { font-size: 12px; color: #4a6b8a; text-align: center; padding: 8px; }
+
+.log-entry {
+  font-size: 11px;
+  color: #8b9eb5;
+  padding: 4px 0;
+  border-bottom: 1px solid #1e2d3d;
+}
+.log-entry:last-child { border-bottom: none; }
+
+/* ── Mode buttons (graph) ── */
+.mode-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mode-btn {
+  flex: 1;
+  padding: 7px 8px;
+  border: 1px solid #1e2d3d;
+  background: #0d1117;
+  color: #8b9eb5;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.mode-btn:hover { border-color: #58a6ff; color: #58a6ff; }
+.mode-btn.active { background: #132135; border-color: #58a6ff; color: #58a6ff; }
+.mode-btn.danger { color: #ef4444; }
+.mode-btn.danger:hover { border-color: #ef4444; }
+
+/* ── DS cell (dùng trong graph/structures) ── */
+.ds-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 8px;
+  background: #132135;
+  border: 1px solid #1e3a5f;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: monospace;
+  font-weight: 700;
+  color: #8b9eb5;
+  min-width: 28px;
+  text-align: center;
+  transition: all 0.15s;
+}
+.ds-cell.ds-front { border-color: #58a6ff; color: #58a6ff; background: #0d1b2e; }
+.ds-cell-sub { font-size: 9px; color: #4a6b8a; font-weight: 400; }
+
+/* ── SVG canvas chung ── */
+.viz-svg {
+  flex: 1;
+  background: #0d1117;
+  border-radius: 8px;
+  border: 1px solid #1e2d3d;
+}
