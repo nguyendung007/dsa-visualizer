@@ -47,7 +47,7 @@ export default function Toast({ message, type = 'success', duration = 3000 }) {
       alignItems: 'center',
       gap: '12px',
       zIndex: 9999,
-      animation: 'slideIn 0.3s ease-out, slideOut 0.3s ease-out 2.7s forwards',
+      animation: 'slideIn 1s ease-out, slideOut 1s ease-out 2s forwards',
     }}>
       <span style={{ fontSize: '18px' }}>{icon}</span>
       <span>{message}</span>
