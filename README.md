@@ -5,6 +5,18 @@
 
 ---
 
+# 🚀 Cách chạy dự án (Quick Start)
+
+Mở Terminal tại thư mục bạn muốn lưu dự án và chạy các lệnh sau:
+
+```bash
+1. Clone dự án về máy 
+git clone https://github.com/nguyendung007/dsa-visualizer.git
+
+2. Cài đặt thư viện và khởi chạy giao diện mô phỏng
+npm install && npm run dev
+```
+
 ## 1. Hỗ trợ các thuật toán
 
 ### 🔢 Sorting
@@ -111,10 +123,17 @@ Cài đặt được **lưu vào localStorage** — giữ nguyên sau khi reload
 
 ```text
 src/
+├── api/  
+│   ├── auth.js
+│   ├── client.js
+│   └── progress.js
 ├── assets/
 │   ├── bg1.png
 │   ├── bg2.png
 │   └── bg3.png
+├── context/
+│   ├── AuthContext.jsx
+│   └── ProgressContext.jsx
 ├── core/
 │   ├── dataStructures/
 │   │   └── index.js
@@ -140,43 +159,48 @@ src/
 ├── ui/
 │   ├── components/
 │   │   ├── Controls.css
-│   │   └── Controls.jsx
+│   │   ├── Controls.jsx
+│   │   ├── GlobalUIEffects.jsx
+│   │   ├── LoadingSpinner.jsx
+│   │   ├── SplitScreenTransition.jsx
+│   │   └── Toast.jsx
 │   ├── custom/
-│   │   ├── CustomGraph.css
-│   │   ├── CustomGraph.jsx
 │   │   ├── CustomSorting.css
 │   │   └── CustomSorting.jsx
 │   ├── layouts/
 │   │   ├── MainLayout.css
 │   │   └── MainLayout.jsx
 │   ├── pages/
-│   │   ├── ComplexityPage.css
-│   │   ├── ComplexityPage.jsx
-│   │   ├── GraphPage.css
-│   │   ├── GraphPage.jsx
-│   │   ├── Landingpage.css
-│   │   ├── Landingpage.jsx
-│   │   ├── LinkedListPage.css
-│   │   ├── LinkedListPage.jsx
-│   │   ├── ProblemsPage.css
-│   │   ├── ProblemsPage.jsx
-│   │   ├── SettingsPage.css
-│   │   ├── SettingsPage.jsx
-│   │   ├── SortingPage.css
-│   │   ├── SortingPage.jsx
-│   │   ├── StringPage.css
-│   │   ├── StringPage.jsx
-│   │   ├── StructuresPage.css
-│   │   ├── StructuresPage.jsx
-│   │   ├── TraversalPage.css
-│   │   ├── TraversalPage.jsx
-│   │   ├── TreePage.css
-│   │   ├── TreePage.jsx
-│   │   ├── UnionFindPage.css
-│   │   └── UnionFindPage.jsx
+│   │   ├── algo/
+│   │   │   ├── GraphPage.css
+│   │   │   ├── GraphPage.jsx
+│   │   │   ├── LinkedListPage.css
+│   │   │   ├── LinkedListPage.jsx
+│   │   │   ├── ProblemsPage.css
+│   │   │   ├── ProblemsPage.jsx
+│   │   │   ├── SortingPage.css
+│   │   │   ├── SortingPage.jsx
+│   │   │   ├── StringPage.css
+│   │   │   ├── StringPage.jsx
+│   │   │   ├── StructuresPage.css
+│   │   │   ├── StructuresPage.jsx
+│   │   │   ├── TraversalPage.css
+│   │   │   ├── TraversalPage.jsx
+│   │   │   ├── TreePage.css
+│   │   │   ├── TreePage.jsx
+│   │   │   ├── UnionFindPage.css
+│   │   │   └── UnionFindPage.jsx
+│   │   └── system/
+│   │       ├── ComplexityPage.css
+│   │       ├── ComplexityPage.jsx
+│   │       ├── LoginPage.css
+│   │       ├── LoginPage.jsx
+│   │       ├── ProgressPage.css
+│   │       ├── ProgressPage.jsx
+│   │       ├── SettingsPage.css
+│   │       └── SettingsPage.jsx
 │   └── styles/
 │       └── global.css
-|
 ├── App.jsx
 └── main.jsx
 ```
