@@ -1,17 +1,19 @@
 // Thêm setting
 
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext.jsx';
 import bgImage from '../../assets/bg1.png';
 import '../styles/global.css';
 import './MainLayout.css';
-
+import { useLocation, useOutlet } from 'react-router-dom';
+import SplitScreenTransition from '../components/SplitScreenTransition.jsx';
 const nav = [
-  { path: '/sorting',    icon: '≋', label: 'Sorting',           desc: 'Selection·Insertion·Merge·Quick·Heap·Counting·Radix·Shell·Bucket' },
-  { path: '/trees',      icon: '⌥', label: 'BST & AVL Tree',    desc: 'Chèn·Xóa·AVL rotation·Floor·Ceil' },
-  { path: '/traversal',  icon: '↺', label: 'Tree Traversal',    desc: 'Inorder·Preorder·Postorder·Level-order·Biểu thức' },
-  { path: '/graph',      icon: '◎', label: 'Graph',             desc: 'BFS·DFS·Dijkstra·Bellman-Ford·Kruskal·Prim·Kosaraju·Topo' },
-  { path: '/structures', icon: '⊞', label: 'Data Structures',   desc: 'Stack·Queue·Priority Queue·Hash Table' },
+  { path: '/sorting',    icon: '≋', label: 'Sorting',           desc: 'Vài thuật toán sắp xếp' },
+  { path: '/trees',      icon: '⌥', label: 'BST & AVL Tree',    desc: 'Chèn-Xóa cây BST/AVL ' },
+  { path: '/traversal',  icon: '↺', label: 'Tree Traversal',    desc: 'Các loại duyệt cây - Biểu thức' },
+  { path: '/graph',      icon: '◎', label: 'Graph',             desc: 'Các thuật toán đồ thị' },
+  { path: '/structures', icon: '⊞', label: 'Data Structures',   desc: 'Các cấu trúc dữ liệu cơ bản' },
   { path: '/linkedlist', icon: '⟶', label: 'Linked List',       desc: 'Singly·Doubly·Circular — Chèn·Xóa·Đảo ngược' },
   { path: '/unionfind',  icon: '⊕', label: 'Union-Find',        desc: 'Quick Find·Quick Union·Weighted·Path Compression' },
   { path: '/strings',    icon: 'Σ', label: 'String Algorithms', desc: 'TST·LSD/MSD·3-Way·Suffix Array·KMP·BM·RK' },
@@ -22,10 +24,18 @@ const nav = [
 
 
 export default function MainLayout() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   
   const [collapsed, setCollapsed] = useState(false);
-
+  const location = useLocation();
+  const currentOutlet = useOutlet();
   const [bgImg, setBgImg] = useState(() => localStorage.getItem('bgImage') || '');
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   useEffect(() => {
   const font = localStorage.getItem('font') || "'JetBrains Mono', monospace";
@@ -74,6 +84,28 @@ export default function MainLayout() {
         </nav>
         
         <div className="sidebar-footer">
+          {user && (
+            <div style={{ marginBottom: '12px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '12px' }}>
+              <div style={{ fontSize: '12px', color: '#999', marginBottom: '6px' }}>Đăng nhập: {user.email}</div>
+              <button
+                onClick={handleLogout}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  backgroundColor: 'rgba(255, 67, 54, 0.2)',
+                  color: '#ff4336',
+                  border: '1px solid #ff4336',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  transition: 'all 0.2s'
+                }}
+              >
+                Đăng xuất
+              </button>
+            </div>
+          )}
           <div className="badge">UET-IAI</div>
           <div className="app-desc">Made with ❤️ for learning</div>
         </div>
@@ -84,7 +116,7 @@ export default function MainLayout() {
       </button>
 
       <main className="content">
-        <Outlet />
+        <SplitScreenTransition location={location} outlet={currentOutlet} />
       </main>
     </div>
   );
