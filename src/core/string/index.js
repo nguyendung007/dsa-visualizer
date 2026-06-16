@@ -184,50 +184,78 @@ export function boyerMoore(text, pattern) {
 }
 
 // ─── Rabin-Karp ───────────────────────────────────────────────────────────────
+
+// Modular exponentiation dùng BigInt để tránh overflow với mod lớn (1e9+9)
+function modPow(base, exp, mod) {
+  let result = 1n;
+  base = base % mod;
+  while (exp > 0n) {
+    if (exp % 2n === 1n) result = result * base % mod;
+    exp = exp / 2n;
+    base = base * base % mod;
+  }
+  return result;
+}
+
+// Modular inverse dùng Fermat's little theorem: a^(mod-2) mod mod
+// Chỉ đúng khi mod là số nguyên tố (1e9+9 là số nguyên tố)
+function modInverse(a, mod) {
+  return modPow(BigInt(a), BigInt(mod) - 2n, BigInt(mod));
+}
+
 export function rabinKarp(text, pattern, base = 31, mod = 1e9 + 9) {
   const steps = [];
   const m = pattern.length, n = text.length;
   const matches = [];
 
-  // Compute pattern hash
-  let patHash = 0, pow = 1;
-  for (let i = 0; i < m; i++) {
-    patHash = (patHash + pattern.charCodeAt(i) * pow) % mod;
-    if (i < m - 1) pow = (pow * base) % mod;
-  }
-  steps.push({ type: 'pattern_hash', hash: patHash, pattern, base, mod });
+  // Dùng BigInt để tránh overflow trong tất cả phép tính hash
+  const B = BigInt(base);
+  const M = BigInt(Math.round(mod)); // 1e9+9 = 1000000009
+  const invB = modInverse(base, Math.round(mod)); // nghịch đảo của base mod M
 
-  // Rolling hash
-  let winHash = 0, p = 1;
-  for (let i = 0; i < m && i < n; i++) {
-    winHash = (winHash + text.charCodeAt(i) * p) % mod;
-    if (i < m - 1) p = (p * base) % mod;
+  // Tính hash của pattern: H = c[0]*B^0 + c[1]*B^1 + ... + c[m-1]*B^(m-1)
+  let patHash = 0n, pow = 1n;
+  for (let i = 0; i < m; i++) {
+    patHash = (patHash + BigInt(pattern.charCodeAt(i)) * pow) % M;
+    if (i < m - 1) pow = pow * B % M;
   }
+  // pow hiện tại = B^(m-1), dùng để thêm ký tự mới vào bậc cao nhất
+  steps.push({ type: 'pattern_hash', hash: Number(patHash), pattern, base, mod: Number(M) });
+
+  // Tính hash cửa sổ đầu tiên [0..m-1]
+  let winHash = 0n, p = 1n;
+  for (let i = 0; i < m && i < n; i++) {
+    winHash = (winHash + BigInt(text.charCodeAt(i)) * p) % M;
+    if (i < m - 1) p = p * B % M;
+  }
+  // p = B^(m-1) = pow (dùng chung)
 
   for (let i = 0; i <= n - m; i++) {
-    steps.push({ type: 'window', pos: i, hash: winHash, match: winHash === patHash });
+    steps.push({ type: 'window', pos: i, hash: Number(winHash), match: winHash === patHash });
+
     if (winHash === patHash) {
-      // Verify
+      // Xác minh bằng so sánh ký tự (tránh hash collision)
       let ok = true;
       for (let k = 0; k < m; k++) {
-        steps.push({ type: 'verify', ti: i + k, pi: k, char_t: text[i+k], char_p: pattern[k] });
+        steps.push({ type: 'verify', ti: i + k, pi: k, char_t: text[i + k], char_p: pattern[k] });
         if (text[i + k] !== pattern[k]) { ok = false; break; }
       }
       if (ok) { matches.push(i); steps.push({ type: 'match', pos: i }); }
       else steps.push({ type: 'hash_collision', pos: i });
     }
+
     if (i < n - m) {
-      winHash = (winHash - text.charCodeAt(i) + mod) % mod;
-      winHash = (winHash * (mod - Math.round((mod + 1) / base))) % mod; // divide by base
-      winHash = (winHash + text.charCodeAt(i + m) * p) % mod;
-      // simpler rolling: just recompute for clarity in visualization
-      winHash = 0; let pp = 1;
-      for (let k = 0; k < m; k++) {
-        winHash = (winHash + text.charCodeAt(i + 1 + k) * pp) % mod;
-        if (k < m - 1) pp = (pp * base) % mod;
-      }
+      // FIX: rolling hash thật sự – O(1) mỗi bước, không recompute O(m)
+      // Bước 1: bỏ ký tự text[i] (bậc 0) → trừ đi rồi chia base (dịch toàn bộ xuống 1 bậc)
+      winHash = (winHash - BigInt(text.charCodeAt(i)) % M + M) % M;
+      winHash = winHash * invB % M;
+      // Bước 2: thêm ký tự text[i+m] vào bậc cao nhất (bậc m-1)
+      winHash = (winHash + BigInt(text.charCodeAt(i + m)) * pow) % M;
+
+      steps.push({ type: 'roll', removed: text[i], added: text[i + m], newHash: Number(winHash) });
     }
   }
+
   steps.push({ type: 'done', matches });
   return steps;
 }

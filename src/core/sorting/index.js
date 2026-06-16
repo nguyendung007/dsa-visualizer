@@ -1,3 +1,5 @@
+// Cập nhật : Thay pattern push + return steps => Thành function* + yield
+
 export function selectionSort(arr) {
   const steps = [];
   const a = [...arr];
@@ -125,17 +127,27 @@ export function heapSort(arr) {
   const a = [...arr];
   const n = a.length;
 
+
   function heapify(a, n, i) {
-    let largest = i, l = 2*i+1, r = 2*i+2;
-    steps.push({ array: [...a], comparing: [i, l < n ? l : i], heapify: i });
-    if (l < n && a[l] > a[largest]) largest = l;
-    if (r < n && a[r] > a[largest]) largest = r;
-    if (largest !== i) {
-      [a[i], a[largest]] = [a[largest], a[i]];
-      steps.push({ array: [...a], swapped: [i, largest] });
-      heapify(a, n, largest);
-    }
+  let largest = i, l = 2*i+1, r = 2*i+2;
+  
+  // Step 1: compare với l
+  if (l < n) {
+    steps.push({ array: [...a], comparing: [i, l], heapify: i });
+    if (a[l] > a[largest]) largest = l;
   }
+  // Step 2: compare với r (chỉ push nếu r tồn tại)
+  if (r < n) {
+    steps.push({ array: [...a], comparing: [largest, r], heapify: i });
+    if (a[r] > a[largest]) largest = r;
+  }
+  
+  if (largest !== i) {
+    [a[i], a[largest]] = [a[largest], a[i]];
+    steps.push({ array: [...a], swapped: [i, largest] });
+    heapify(a, n, largest);
+  }
+}
 
   for (let i = Math.floor(n/2) - 1; i >= 0; i--) heapify(a, n, i);
   for (let i = n - 1; i > 0; i--) {
@@ -192,8 +204,8 @@ export function countingSort(arr) {
 export function radixSort(arr) {
   const steps = [];
   const a = [...arr];
-  const max = Math.max(...a);
-  const digits = Math.floor(Math.log10(max)) + 1;
+  const max = Math.max(...a.map(Math.abs));
+  const digits = max === 0 ? 1 : Math.floor(Math.log10(max)) + 1;
 
   steps.push({
     array: [...a], phase: 'init', digit: 0, digits,

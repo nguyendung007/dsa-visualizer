@@ -173,19 +173,43 @@ export function hashTableOps(operations, tableSize = 11, hashFormula = 'default'
         table[baseIdx].push({ key: op.key, val: op.val });
         steps.push({ table: table.map(b => [...b]), op: 'insert', key: op.key, val: op.val, idx: baseIdx, probeMode });
       } else {
-        // Linear probing
+        // Linear probing: tìm slot trống hoặc tombstone để insert
         let idx = baseIdx;
         let probeCount = 0;
-        while (table[idx] !== null && table[idx] !== undefined && probeCount < tableSize) {
-          steps.push({ table: [...table], op: 'probe_linear', key: op.key, idx, baseIdx, probeCount, probeMode });
+        let firstTombstone = -1; // FIX: track tombstone slot đầu tiên gặp
+
+        while (probeCount < tableSize) {
+          if (table[idx] === null) break; // slot thật sự trống → dừng
+
+          if (table[idx] === undefined) {
+            // tombstone slot: ghi nhận nếu là lần đầu, rồi tiếp tục probe
+            // (cần đảm bảo key chưa tồn tại ở slot sau)
+            if (firstTombstone === -1) firstTombstone = idx;
+          } else if (table[idx].key === op.key) {
+            // key đã tồn tại → update val tại chỗ
+            steps.push({ table: [...table], op: 'probe_linear', key: op.key, idx, baseIdx, probeCount, probeMode });
+            table[idx] = { key: op.key, val: op.val };
+            steps.push({ table: [...table], op: 'insert', key: op.key, val: op.val, idx, baseIdx, probeMode, updated: true });
+            firstTombstone = -2; // sentinel: đã xử lý xong
+            break;
+          } else {
+            steps.push({ table: [...table], op: 'probe_linear', key: op.key, idx, baseIdx, probeCount, probeMode });
+          }
+
           idx = (idx + 1) % tableSize;
           probeCount++;
         }
-        if (probeCount < tableSize) {
-          table[idx] = { key: op.key, val: op.val };
-          steps.push({ table: [...table], op: 'insert', key: op.key, val: op.val, idx, baseIdx, probeMode });
-        } else {
-          steps.push({ table: [...table], op: 'table_full', key: op.key, probeMode });
+
+        if (firstTombstone !== -2) {
+          // Chưa xử lý → dùng tombstone slot nếu có, không thì dùng slot null hiện tại
+          const insertIdx = firstTombstone !== -1 ? firstTombstone : idx;
+          if (probeCount < tableSize || firstTombstone !== -1) {
+            table[insertIdx] = { key: op.key, val: op.val };
+            steps.push({ table: [...table], op: 'insert', key: op.key, val: op.val, idx: insertIdx, baseIdx, probeMode,
+              reusedTombstone: firstTombstone !== -1 });
+          } else {
+            steps.push({ table: [...table], op: 'table_full', key: op.key, probeMode });
+          }
         }
       }
     } else if (op.type === 'search') {
@@ -201,11 +225,20 @@ export function hashTableOps(operations, tableSize = 11, hashFormula = 'default'
         }
         steps.push({ table: table.map(b => [...b]), op: found !== null ? 'found' : 'notfound', key: op.key, val: found, idx: baseIdx, probeMode });
       } else {
+        // FIX: search phải skip qua tombstone (undefined), chỉ dừng khi gặp null thật sự
         let idx = baseIdx;
         let found = null, probeCount = 0;
-        while (table[idx] !== null && probeCount < tableSize) {
+        while (probeCount < tableSize) {
+          if (table[idx] === null) break; // slot thật sự trống → key chắc chắn không có
+
           steps.push({ table: [...table], op: 'probe_linear', idx, key: op.key, probeCount, probeMode });
-          if (table[idx]?.key === op.key) { found = table[idx].val; break; }
+
+          if (table[idx] !== undefined && table[idx]?.key === op.key) {
+            // FIX: bỏ qua tombstone (undefined), chỉ check slot có data
+            found = table[idx].val;
+            break;
+          }
+
           idx = (idx + 1) % tableSize;
           probeCount++;
         }
@@ -224,16 +257,26 @@ export function hashTableOps(operations, tableSize = 11, hashFormula = 'default'
           steps.push({ table: table.map(b => [...b]), op: 'notfound', key: op.key, idx: baseIdx, probeMode });
         }
       } else {
+        // FIX: delete cũng phải skip tombstone khi tìm key
         let idx = baseIdx, probeCount = 0;
-        while (table[idx] !== null && probeCount < tableSize) {
-          if (table[idx]?.key === op.key) {
+        while (probeCount < tableSize) {
+          if (table[idx] === null) break; // slot trống thật → không tìm thấy
+
+          if (table[idx] !== undefined && table[idx]?.key === op.key) {
             steps.push({ table: [...table], op: 'delete', key: op.key, idx, probeMode });
             table[idx] = undefined; // tombstone
             steps.push({ table: [...table], op: 'delete_done', key: op.key, idx, probeMode });
             break;
           }
+
           idx = (idx + 1) % tableSize;
           probeCount++;
+        }
+        if (table[idx] !== undefined || probeCount >= tableSize) {
+          // không tìm thấy
+          if (probeCount >= tableSize || table[idx] === null) {
+            steps.push({ table: [...table], op: 'notfound', key: op.key, idx: baseIdx, probeMode });
+          }
         }
       }
     }

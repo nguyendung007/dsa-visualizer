@@ -33,8 +33,6 @@ export function llInsertHead(nodes, val, type) {
   if (type === 'circular' && a.length > 0) {
     a[a.length - 1] = { ...a[a.length - 1], next: a.length };
   }
-  const result = [newNode, ...a].map((n, i) => ({ ...n, id: i, next: n.next !== null ? (n.next + 1 <= a.length ? n.next + 1 : null) : null }));
-  // Simplify: rebuild properly
   const finalNodes = [{ id: 0, val, next: a.length > 0 ? 1 : null, prev: null }, ...a.map((n, i) => ({
     ...n, id: i + 1,
     next: n.next !== null ? n.next + 1 : (type === 'circular' && i === a.length - 1 ? 0 : null),
@@ -82,43 +80,86 @@ export function llInsertAt(nodes, val, pos, type) {
   return { nodes: finalNodes, steps };
 }
 
-export function llDelete(nodes, val, type) {
+export function llDelete(nodes, val, type, pos = null) {
   const steps = [];
   const a = nodes.map(n => ({ ...n }));
-  steps.push({ ...snapshot(a, type), op: 'search', desc: `Tìm node có val=${val}` });
 
-  let prev = null, cur = 0;
-  while (cur !== null) {
-    steps.push({ ...snapshot(a, type), op: 'check', highlight: cur, desc: `Kiểm tra node[${cur}]=${a[cur].val}` });
-    if (a[cur].val === val) {
-      steps.push({ ...snapshot(a, type), op: 'found', highlight: cur, desc: `✓ Tìm thấy ${val} tại [${cur}]` });
-      const nextId = a[cur].next;
-      if (prev !== null) {
-        a[prev] = { ...a[prev], next: nextId };
-        if (type === 'doubly' && nextId !== null) a[nextId] = { ...a[nextId], prev: prev };
-      } else {
-        // deleting head
-      }
-      const finalNodes = a.filter((_, i) => i !== cur).map((n, i) => ({
-        ...n, id: i,
-        next: n.next === cur ? null : n.next !== null && n.next > cur ? n.next - 1 : n.next,
-        prev: n.prev === cur ? null : n.prev !== null && n.prev > cur ? n.prev - 1 : n.prev,
-      }));
-      steps.push({ ...snapshot(finalNodes, type), op: 'done', desc: `✓ Đã xóa node val=${val}` });
-      return { nodes: finalNodes, steps };
+  let cur = pos !== null ? pos : 0;
+  let prev = null;
+
+  // Nếu xóa tại vị trí cụ thể
+  if (pos !== null) {
+    if (pos < 0 || pos >= a.length) {
+      steps.push({ ...snapshot(a, type), op: 'error', desc: `✗ Vị trí ${pos} ngoài phạm vi` });
+      return { nodes: a, steps };
     }
-    const nextCur = a[cur].next;
-    if (type === 'circular' && nextCur === 0 && cur !== 0) break;
-    prev = cur; cur = nextCur;
+    steps.push({ ...snapshot(a, type), op: 'init', desc: `Xóa node tại vị trí [${pos}]` });
+    steps.push({ ...snapshot(a, type), op: 'found', highlight: cur, desc: `✓ Tìm thấy node [${pos}]=${a[pos].val}` });
+
+    // Tìm prev node
+    if (pos > 0) {
+      prev = pos - 1;
+    }
+  } else {
+    // Xóa theo giá trị
+    steps.push({ ...snapshot(a, type), op: 'search', desc: `Tìm node có val=${val}` });
+    while (cur !== null) {
+      steps.push({ ...snapshot(a, type), op: 'check', highlight: cur, desc: `Kiểm tra node[${cur}]=${a[cur].val}` });
+      if (a[cur].val === val) {
+        steps.push({ ...snapshot(a, type), op: 'found', highlight: cur, desc: `✓ Tìm thấy ${val} tại [${cur}]` });
+        break;
+      }
+      const nextCur = a[cur].next;
+      // Circular: dừng khi đã đi vòng về head (tránh lặp vô tận)
+      if (type === 'circular' && nextCur === 0 && cur !== 0) break;
+      prev = cur;
+      cur = nextCur;
+    }
+    if (cur === null || a[cur].val !== val) {
+      steps.push({ ...snapshot(a, type), op: 'not_found', desc: `✗ Không tìm thấy val=${val}` });
+      return { nodes: a, steps };
+    }
   }
-  steps.push({ ...snapshot(a, type), op: 'not_found', desc: `✗ Không tìm thấy val=${val}` });
-  return { nodes: a, steps };
+
+  const nextId = a[cur].next;
+
+  if (prev !== null) {
+    // Có node trước: nối prev → next bình thường
+    a[prev] = { ...a[prev], next: nextId };
+    if (type === 'doubly' && nextId !== null) a[nextId] = { ...a[nextId], prev: prev };
+  } else if (type === 'circular' && a.length > 1) {
+    // FIX: xóa head của circular list → tail phải trỏ sang head mới (nextId)
+    const tailIdx = a.findIndex(n => n.next === cur);
+    if (tailIdx !== -1) {
+      a[tailIdx] = { ...a[tailIdx], next: nextId };
+    }
+  }
+  // Nếu prev === null và không phải circular (hoặc chỉ còn 1 node) → xóa head, không cần làm gì thêm
+
+  // Re-index: xóa node tại index cur, cập nhật lại id/next/prev
+  const finalNodes = a.filter((_, i) => i !== cur).map((n, i) => ({
+    ...n,
+    id: i,
+    next: n.next === cur
+      ? (type === 'circular' ? 0 : null)          // con trỏ vào node bị xóa → null (hoặc 0 nếu circular head mới)
+      : n.next !== null && n.next > cur
+        ? n.next - 1
+        : n.next,
+    prev: n.prev === cur
+      ? null
+      : n.prev !== null && n.prev > cur
+        ? n.prev - 1
+        : n.prev,
+  }));
+
+  steps.push({ ...snapshot(finalNodes, type), op: 'done', desc: `✓ Đã xóa node tại [${cur}]` });
+  return { nodes: finalNodes, steps };
 }
 
-export function llSearch(nodes, val, type) {
+export function llSearch(nodes, val, type, startPos = 0) {
   const steps = [];
-  steps.push({ nodes: nodes.map(n => ({ ...n })), type, op: 'init', desc: `Tìm kiếm val=${val}` });
-  let cur = 0, visited = 0;
+  steps.push({ nodes: nodes.map(n => ({ ...n })), type, op: 'init', desc: `Tìm kiếm val=${val} từ vị trí [${startPos}]` });
+  let cur = startPos, visited = 0;
   while (cur !== null && visited < nodes.length + 1) {
     steps.push({ nodes: nodes.map(n => ({ ...n })), type, op: 'check', highlight: cur, desc: `Kiểm tra node[${cur}]=${nodes[cur]?.val}` });
     if (nodes[cur]?.val === val) {
@@ -140,14 +181,24 @@ export function llReverse(nodes, type) {
 
   if (type === 'singly') {
     let prev = null, cur = 0;
+    const arr = [];
     while (cur !== null) {
+      arr.push(cur);
       const next = a[cur].next;
       steps.push({ ...snapshot(a, type), op: 'reverse_ptr', highlight: cur, desc: `Node ${a[cur].val}: next=${next} → prev=${prev}` });
       a[cur] = { ...a[cur], next: prev };
       prev = cur; cur = next;
       steps.push({ ...snapshot(a, type), op: 'move', highlight: prev, desc: `Chuyển: prev=${prev !== null ? a[prev]?.val : 'null'}` });
     }
-    steps.push({ ...snapshot(a, type), op: 'done', head: a.length - 1, desc: '✓ Đảo ngược hoàn thành' });
+    const reversed = arr.reverse();
+    const finalNodes = reversed.map((oldIdx, newIdx) => ({
+      ...a[oldIdx],
+      id: newIdx,
+      next: newIdx < reversed.length - 1 ? newIdx + 1 : (type === 'circular' ? 0 : null),
+      prev: type === 'doubly' && newIdx > 0 ? newIdx - 1 : null,
+    }));
+    steps.push({ ...snapshot(finalNodes, type), op: 'done', head: 0, desc: '✓ Đảo ngược hoàn thành' });
+    return { nodes: finalNodes, steps };
   }
   return { nodes: a, steps };
 }
