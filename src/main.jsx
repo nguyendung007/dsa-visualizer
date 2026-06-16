@@ -1,9 +1,17 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.jsx';
+import { AuthProvider } from './context/AuthContext.jsx';
+import { ProgressProvider } from './context/ProgressContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <AuthProvider>
+      <ProgressProvider> 
+        <App />
+      </ProgressProvider> 
+    </AuthProvider>
   </StrictMode>
 );
+
+
