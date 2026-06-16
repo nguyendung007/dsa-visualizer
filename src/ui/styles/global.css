@@ -70,7 +70,7 @@
 
 .arr-input {
   flex: 1;
-  padding: 8px 12px;
+  padding: 4px 4px;
   background: #0d1117;
   border: 1px solid #1e2d3d;
   border-radius: 8px;
@@ -86,7 +86,7 @@ select.arr-input { appearance: none; cursor: pointer; }
 
 /* ── Buttons ── */
 .btn-generate {
-  padding: 8px 16px;
+  padding: 8px 8px;
   background: #1d4ed8;
   border: none;
   border-radius: 8px;
@@ -94,7 +94,7 @@ select.arr-input { appearance: none; cursor: pointer; }
   cursor: pointer;
   font-family: inherit;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 300;
   transition: background 0.15s;
   white-space: nowrap;
 }
