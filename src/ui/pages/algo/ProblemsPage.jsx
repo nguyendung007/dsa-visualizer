@@ -1,7 +1,10 @@
+// Fix: thêm useProgress, saveProgress trong onDone
+// Fix: khi đổi tab method, reset stepIdx về 0 (trước chỉ setSteps([]) và setCurStep(null), thiếu setStepIdx)
 import { useState, useRef } from 'react';
-import { twoSumBruteForce, twoSumTwoPointer, twoSumHashMap } from '../../core/problems/index.js';
-import { AnimationEngine } from '../../shell/animation/AnimationEngine.js';
-import Controls from '../components/Controls.jsx';
+import { twoSumBruteForce, twoSumTwoPointer, twoSumHashMap } from '../../../core/problems/index.js';
+import { AnimationEngine } from '../../../shell/animation/AnimationEngine.js';
+import Controls from '../../components/Controls.jsx';
+import { useProgress } from '../../../context/ProgressContext.jsx';
 import './ProblemsPage.css';
 
 const METHODS = {
@@ -23,6 +26,8 @@ export default function ProblemsPage() {
   const [speed, setSpeed] = useState(600);
   const engineRef = useRef(null);
 
+  const { saveProgress } = useProgress();
+
   function run() {
     const arr = parseArr(arrInput);
     const target = parseInt(targetInput);
@@ -36,7 +41,10 @@ export default function ProblemsPage() {
     const eng = new AnimationEngine({
       steps: s, speed,
       onStep: (step, idx) => { setCurStep(step); setStepIdx(idx + 1); },
-      onDone: () => setPlaying(false),
+      onDone: () => {
+        setPlaying(false);
+        saveProgress('problems', `Two Sum - ${METHODS[method].name}`);
+      },
     });
     engineRef.current = eng;
     eng.play(); setPlaying(true);
@@ -65,14 +73,21 @@ export default function ProblemsPage() {
     <div className="page">
       <div className="page-header">
         <h1>Algorithm Problems</h1>
-        <p>Two Sum — Brute Force / Two Pointer / Hash Map</p>
+        <p>Đang phát triển,còn ít thuật toán</p>
       </div>
 
       <div className="algo-tabs">
         {Object.entries(METHODS).map(([k, v]) => (
           <button key={k} className={`algo-tab ${method === k ? 'active' : ''}`}
             style={{ '--tab-color': v.color }}
-            onClick={() => { setMethod(k); setSteps([]); setCurStep(null); }}>
+            onClick={() => {
+              setMethod(k);
+              setSteps([]);
+              setCurStep(null);
+              setStepIdx(0); // FIX: reset bước về 0 khi đổi method
+              engineRef.current?.pause();
+              setPlaying(false);
+            }}>
             {v.name}
             <span style={{ display: 'block', fontSize: 9, color: '#4a6b8a' }}>{v.complexity}</span>
           </button>

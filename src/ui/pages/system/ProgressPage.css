@@ -1,0 +1,92 @@
+.progress-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px 20px;
+}
+
+.progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.progress-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.clear-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 100, 100, 0.4);
+  background: transparent;
+  color: #ff6b6b;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.stat-total {
+  font-size: 14px;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 24px;
+}
+
+.stat-section {
+  margin-bottom: 28px;
+}
+
+.stat-section h3 {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.5);
+  margin: 0 0 12px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.stat-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.stat-name { color: rgba(255,255,255,0.85); }
+.stat-count { color: #4f7eff; font-weight: 500; }
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.history-table th {
+  text-align: left;
+  padding: 8px 12px;
+  color: rgba(255,255,255,0.4);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  font-weight: 400;
+}
+
+.history-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.8);
+}
+
+.empty-msg {
+  color: rgba(255,255,255,0.4);
+  font-size: 14px;
+}

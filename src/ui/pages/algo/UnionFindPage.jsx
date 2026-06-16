@@ -1,73 +1,124 @@
+// Fix: thêm useProgress, saveProgress trong onDone
+// Fix: thêm nút Find(p) riêng để demo pcFind() / path compression
+// Fix: QU/WQU runFind push step-by-step từng node trong path thay vì 1 step duy nhất
 import { useState, useRef } from 'react';
-import { createUF, qfFind, qfUnion, quUnion, wquUnion, pcUnion, pcFind } from '../../core/unionfind/index.js';
-import { AnimationEngine } from '../../shell/animation/AnimationEngine.js';
-import Controls from '../components/Controls.jsx';
+import { createUF, qfFind, qfUnion, quUnion, wquUnion, pcUnion, pcFind } from '../../../core/unionfind/index.js';
+import { AnimationEngine } from '../../../shell/animation/AnimationEngine.js';
+import Controls from '../../components/Controls.jsx';
+import { useProgress } from '../../../context/ProgressContext.jsx';
 import './UnionFindPage.css';
 
 const ALGOS = {
-  qf:  { name: 'Quick Find',         color: '#f59e0b', complexity: 'Find O(1) / Union O(n)' },
-  qu:  { name: 'Quick Union',        color: '#10b981', complexity: 'Find O(n) / Union O(n)' },
-  wqu: { name: 'Weighted QU',        color: '#58a6ff', complexity: 'Find O(log n) / Union O(log n)' },
-  pc:  { name: 'Path Compression',   color: '#a78bfa', complexity: 'Find O(α(n)) / Union O(α(n))' },
+  qf:  { name: 'Quick Find',       color: '#f59e0b', complexity: 'Find O(1) / Union O(n)' },
+  qu:  { name: 'Quick Union',      color: '#10b981', complexity: 'Find O(n) / Union O(n)' },
+  wqu: { name: 'Weighted QU',      color: '#58a6ff', complexity: 'Find O(log n) / Union O(log n)' },
+  pc:  { name: 'Path Compression', color: '#a78bfa', complexity: 'Find O(α(n)) / Union O(α(n))' },
 };
 
 export default function UnionFindPage() {
-  const [algo, setAlgo] = useState('qf');
-  const [n, setN] = useState(8);
-  const [uf, setUf] = useState(() => createUF(8));
-  const [p, setP] = useState('');
-  const [q, setQ] = useState('');
-  const [steps, setSteps] = useState([]);
+  const [algo, setAlgo]       = useState('qf');
+  const [n, setN]             = useState(8);
+  const [uf, setUf]           = useState(() => createUF(8));
+  const [p, setP]             = useState('');
+  const [q, setQ]             = useState('');
+  const [findP, setFindP]     = useState('');
+  const [steps, setSteps]     = useState([]);
   const [stepIdx, setStepIdx] = useState(0);
   const [curStep, setCurStep] = useState(null);
   const [playing, setPlaying] = useState(false);
-  const [speed, setSpeed] = useState(600);
+  const [speed, setSpeed]     = useState(600);
   const [history, setHistory] = useState([]);
-  const engineRef = useRef(null);
+  const engineRef             = useRef(null);
+  const { saveProgress }      = useProgress();
 
   function resetUF(newN) {
     const size = newN ?? n;
-    const newUf = createUF(size);
-    setUf(newUf);
+    setUf(createUF(size));
     setHistory([]);
     setSteps([]);
     setCurStep(null);
     setStepIdx(0);
+    setPlaying(false);
     engineRef.current?.pause();
+  }
+
+  function runAnimate(s, ufCopy, label, applyUfOnDone = true) {
+    setSteps(s); setStepIdx(0); setCurStep(s[0] || null);
+    const eng = new AnimationEngine({
+      steps: s, speed,
+      onStep: (step, idx) => { setCurStep(step); setStepIdx(idx + 1); },
+      onDone: () => {
+        setPlaying(false);
+        if (applyUfOnDone) setUf(ufCopy);
+        saveProgress('unionfind', label);
+      },
+    });
+    engineRef.current = eng;
+    eng.play(); setPlaying(true);
   }
 
   function runUnion() {
     const pi = parseInt(p), qi = parseInt(q);
     if (isNaN(pi) || isNaN(qi) || pi < 0 || qi < 0 || pi >= n || qi >= n) return;
-    const ufCopy = {
-      id: [...uf.id], parent: [...uf.parent], rank: [...uf.rank],
-      size: [...uf.size], count: uf.count,
-    };
+    const ufCopy = { id: [...uf.id], parent: [...uf.parent], rank: [...uf.rank], size: [...uf.size], count: uf.count };
     const s = [];
-    if (algo === 'qf') qfUnion(ufCopy, pi, qi, s);
-    else if (algo === 'qu') quUnion(ufCopy, pi, qi, s);
+    if (algo === 'qf')       qfUnion(ufCopy, pi, qi, s);
+    else if (algo === 'qu')  quUnion(ufCopy, pi, qi, s);
     else if (algo === 'wqu') wquUnion(ufCopy, pi, qi, s);
-    else pcUnion(ufCopy, pi, qi, s);
-
+    else                     pcUnion(ufCopy, pi, qi, s);
     setHistory(h => [`Union(${pi},${qi})`, ...h.slice(0, 11)]);
-    setSteps(s); setStepIdx(0); setCurStep(s[0] || null);
-
-    const eng = new AnimationEngine({
-      steps: s, speed,
-      onStep: (step, idx) => { setCurStep(step); setStepIdx(idx + 1); },
-      onDone: () => { setPlaying(false); setUf(ufCopy); },
-    });
-    engineRef.current = eng;
-    eng.play(); setPlaying(true);
     setP(''); setQ('');
+    runAnimate(s, ufCopy, `${ALGOS[algo].name} - Union(${pi},${qi})`);
   }
 
-  // Use live step data or current UF
-  const parent = curStep?.parent || uf.parent;
-  const id = curStep?.id || uf.id;
-  const size = curStep?.size || uf.size;
+  function runFind() {
+    const pi = parseInt(findP);
+    if (isNaN(pi) || pi < 0 || pi >= n) return;
+    const ufCopy = { id: [...uf.id], parent: [...uf.parent], rank: [...uf.rank], size: [...uf.size], count: uf.count };
+    const s = [];
+    let root;
 
-  // Build groups from current state for display
+    if (algo === 'qf') {
+      root = qfFind(ufCopy, pi, s);
+    } else if (algo === 'pc') {
+      root = pcFind(ufCopy, pi, s);
+    } else {
+      // FIX: QU/WQU — push step-by-step từng node đi lên parent thay vì 1 step
+      root = pi;
+      const path = [pi];
+      while (ufCopy.parent[root] !== root) {
+        const next = ufCopy.parent[root];
+        s.push({
+          type: 'find_step',
+          cur: root,
+          next,
+          parent: [...ufCopy.parent],
+          desc: `Find(${pi}): node ${root} → parent ${next}`,
+          path: [...path],
+        });
+        root = next;
+        path.push(root);
+      }
+      // Step cuối: đã đến root
+      s.push({
+        type: 'find_path',
+        path,
+        root,
+        parent: [...ufCopy.parent],
+        desc: `Find(${pi}) = ${root}. Đường đi: ${path.join(' → ')}`,
+      });
+    }
+
+    setHistory(h => [`Find(${pi}) = ${root}`, ...h.slice(0, 11)]);
+    setFindP('');
+    // pc thay đổi parent → apply; qu/wqu không thay đổi → không apply
+    runAnimate(s, ufCopy, `${ALGOS[algo].name} - Find(${pi})`, algo === 'pc');
+  }
+
+  const parent = curStep?.parent || uf.parent;
+  const id     = curStep?.id     || uf.id;
+  const size   = curStep?.size   || uf.size;
+
   function getGroups(parent, n) {
     const groups = {};
     for (let i = 0; i < n; i++) {
@@ -97,12 +148,13 @@ export default function UnionFindPage() {
     groups[root].forEach(node => groupMap[node] = groupColors[i % groupColors.length]);
   });
 
+  // FIX: highlight cả find_step (node hiện tại + next) lẫn find_path (toàn path)
   const highlightNodes = new Set([
     curStep?.p, curStep?.q, curStep?.rp, curStep?.rq, curStep?.node, curStep?.child, curStep?.root,
-    ...(curStep?.path || [])
+    curStep?.cur, curStep?.next,
+    ...(curStep?.path || []),
   ].filter(x => x !== undefined && x !== null));
 
-  // Forest / tree layout for Quick Union variants
   function buildForest(parent, n) {
     const children = Array.from({ length: n }, () => []);
     const roots = [];
@@ -117,11 +169,10 @@ export default function UnionFindPage() {
     const { roots, children } = buildForest(parent, n);
     const W = Math.max(600, n * 70), H = 240;
     const nodes = [], edges = [];
-
     function placeNode(node, x, y, xMin, xMax) {
       nodes.push({ id: node, x, y });
       const ch = children[node];
-      if (ch.length === 0) return;
+      if (!ch.length) return;
       const step = (xMax - xMin) / ch.length;
       ch.forEach((c, i) => {
         const cx = xMin + step * i + step / 2;
@@ -129,13 +180,12 @@ export default function UnionFindPage() {
         placeNode(c, cx, y + 65, xMin + step * i, xMin + step * (i + 1));
       });
     }
-
     const rootStep = W / roots.length;
     roots.forEach((r, i) => placeNode(r, rootStep * i + rootStep / 2, 36, rootStep * i, rootStep * (i + 1)));
     return { nodes, edges, W, H };
   }
 
-  const forest = (algo !== 'qf') ? renderForest(parent, n) : null;
+  const forest = algo !== 'qf' ? renderForest(parent, n) : null;
 
   return (
     <div className="page">
@@ -159,10 +209,9 @@ export default function UnionFindPage() {
         <div className="uf-main">
           <div className="step-desc">
             <span className="step-badge">Bước {stepIdx}/{steps.length}</span>
-            <span className="step-text">{curStep?.desc || 'Chọn 2 nút để Union'}</span>
+            <span className="step-text">{curStep?.desc || 'Chọn 2 nút để Union, hoặc 1 nút để Find'}</span>
           </div>
 
-          {/* Node grid */}
           <div className="uf-nodes">
             {Array.from({ length: n }, (_, i) => (
               <div key={i} className={`uf-node ${highlightNodes.has(i) ? 'highlighted' : ''}`}
@@ -176,7 +225,6 @@ export default function UnionFindPage() {
             ))}
           </div>
 
-          {/* Groups display */}
           <div className="uf-groups">
             <div className="uf-groups-title">Nhóm hiện tại ({Object.keys(groups).length} nhóm):</div>
             {Object.entries(groups).map(([root, members]) => (
@@ -188,7 +236,6 @@ export default function UnionFindPage() {
             ))}
           </div>
 
-          {/* Tree visualization for QU variants */}
           {algo !== 'qf' && forest && (
             <div className="uf-forest">
               <div className="uf-forest-title">Cây rừng (Forest):</div>
@@ -197,13 +244,13 @@ export default function UnionFindPage() {
                   <line key={i} x1={e.x1} y1={e.y1} x2={e.x2} y2={e.y2} stroke="#1e3a5f" strokeWidth="1.5" />
                 ))}
                 {forest.nodes.map((node, i) => {
-                  const isHL = highlightNodes.has(node.id);
+                  const isHL   = highlightNodes.has(node.id);
                   const isPath = curStep?.path?.includes(node.id);
-                  const col = isPath ? '#f59e0b' : groupMap[node.id] || '#1e3a5f';
+                  const isCur  = curStep?.cur === node.id;
+                  const col    = isCur ? '#ef4444' : isPath ? '#f59e0b' : groupMap[node.id] || '#1e3a5f';
                   return (
                     <g key={i}>
-                      <circle cx={node.x} cy={node.y} r={20}
-                        fill={col} fillOpacity={0.85}
+                      <circle cx={node.x} cy={node.y} r={20} fill={col} fillOpacity={0.85}
                         stroke={isHL ? '#f59e0b' : '#0a0e1a'} strokeWidth={isHL ? 3 : 2} />
                       <text x={node.x} y={node.y} textAnchor="middle" dominantBaseline="central"
                         fill="white" fontSize="13" fontWeight="700" fontFamily="monospace">{node.id}</text>
@@ -219,13 +266,13 @@ export default function UnionFindPage() {
             </div>
           )}
 
-          {/* QF: id array display */}
           {algo === 'qf' && (
             <div className="uf-id-array">
               <div className="uf-forest-title">id[] array:</div>
               <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginTop: 6 }}>
                 {id.map((v, i) => (
-                  <div key={i} className="uf-id-cell" style={{ borderColor: curStep?.type === 'update_id' && curStep.i === i ? '#f59e0b' : '#1e2d3d' }}>
+                  <div key={i} className="uf-id-cell"
+                    style={{ borderColor: curStep?.type === 'update_id' && curStep.i === i ? '#f59e0b' : '#1e2d3d' }}>
                     <span className="uf-id-idx">[{i}]</span>
                     <span className="uf-id-val" style={{ color: groupColors[v % groupColors.length] }}>{v}</span>
                   </div>
@@ -259,7 +306,7 @@ export default function UnionFindPage() {
             <div style={{ marginTop: 8 }}>
               <div style={{ fontSize: 10, color: '#4a6b8a', marginBottom: 4 }}>Nhanh:</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                {[[0,1],[1,2],[3,4],[4,5],[0,5],[6,7]].filter(([a,b]) => a < n && b < n).map(([a, b]) => (
+                {[[0,1],[1,2],[3,4],[4,5],[0,5],[6,7]].filter(([a,b]) => a < n && b < n).map(([a,b]) => (
                   <button key={`${a}-${b}`} className="btn-random" style={{ fontSize: 10, padding: '3px 8px' }}
                     onClick={() => { setP(String(a)); setQ(String(b)); }}>
                     {a}-{b}
@@ -270,7 +317,23 @@ export default function UnionFindPage() {
           </div>
 
           <div className="ctrl-section">
-            <h3>Lịch sử Union</h3>
+            <h3>Find(p)</h3>
+            <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+              <input className="arr-input" placeholder="p" type="number" min={0} max={n - 1}
+                value={findP} onChange={e => setFindP(e.target.value)} style={{ flex: 1 }} />
+              <button className="btn-generate" style={{ flex: 1 }} onClick={runFind}>Find</button>
+            </div>
+            <div style={{ fontSize: 10, color: '#4a6b8a', lineHeight: 1.6 }}>
+              {algo === 'pc'
+                ? 'Path Compression: sau Find, mọi nút trên đường đi sẽ được nối trực tiếp về root.'
+                : algo === 'qf'
+                  ? 'Quick Find: trả về id[p] ngay, O(1).'
+                  : 'Đi theo parent[] cho tới khi gặp root (parent[x] === x). Mỗi bước được highlight.'}
+            </div>
+          </div>
+
+          <div className="ctrl-section">
+            <h3>Lịch sử thao tác</h3>
             <div className="log-panel">
               {history.length === 0 && <div className="log-empty">Chưa có thao tác</div>}
               {history.map((h, i) => (
@@ -282,10 +345,10 @@ export default function UnionFindPage() {
           <div className="ctrl-section">
             <h3>Mô tả thuật toán</h3>
             <div style={{ fontSize: 11, color: '#4a6b8a', lineHeight: 1.7 }}>
-              {algo === 'qf' && <><b style={{ color: '#f59e0b' }}>Quick Find</b>: Lưu component id. Find O(1), Union phải cập nhật tất cả phần tử cùng nhóm → O(n).</>}
-              {algo === 'qu' && <><b style={{ color: '#10b981' }}>Quick Union</b>: Lưu parent. Union chỉ nối root. Cây có thể mất cân bằng → O(n) worst case.</>}
+              {algo === 'qf'  && <><b style={{ color: '#f59e0b' }}>Quick Find</b>: Lưu component id. Find O(1), Union cập nhật tất cả → O(n).</>}
+              {algo === 'qu'  && <><b style={{ color: '#10b981' }}>Quick Union</b>: Lưu parent. Union nối root. Cây có thể mất cân bằng → O(n) worst.</>}
               {algo === 'wqu' && <><b style={{ color: '#58a6ff' }}>Weighted QU</b>: Nối cây nhỏ vào cây lớn. Chiều cao max O(log n).</>}
-              {algo === 'pc' && <><b style={{ color: '#a78bfa' }}>Path Compression</b>: Sau Find, nén đường về root. Kết hợp WQU → gần O(1) amortized.</>}
+              {algo === 'pc'  && <><b style={{ color: '#a78bfa' }}>Path Compression</b>: Sau Find, nén đường về root. Kết hợp WQU → gần O(1) amortized.</>}
             </div>
           </div>
         </div>

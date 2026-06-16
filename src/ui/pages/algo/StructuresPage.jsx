@@ -1,10 +1,20 @@
+// Fix: thêm useProgress, saveProgress trong onDone của runOps()
+// Fix: hash table dùng eng.play() trực tiếp từ engine vừa tạo (return engine) thay vì setTimeout(0)
 import { useState, useRef } from 'react';
-import { stackOps, queueOps, priorityQueueOps, hashTableOps } from '../../core/dataStructures/index.js';
-import { AnimationEngine } from '../../shell/animation/AnimationEngine.js';
-import Controls from '../components/Controls.jsx';
+import { stackOps, queueOps, priorityQueueOps, hashTableOps } from '../../../core/dataStructures/index.js';
+import { AnimationEngine } from '../../../shell/animation/AnimationEngine.js';
+import Controls from '../../components/Controls.jsx';
+import { useProgress } from '../../../context/ProgressContext.jsx';
 import './StructuresPage.css';
 
 const TABLE_SIZE = 11;
+
+const TAB_NAMES = {
+  stack: 'Stack',
+  queue: 'Queue',
+  pq: 'Priority Queue',
+  hash: 'Hash Table',
+};
 
 export default function StructuresPage() {
   const [tab, setTab] = useState('stack');
@@ -23,7 +33,11 @@ export default function StructuresPage() {
   const [tableSize, setTableSize] = useState(TABLE_SIZE);
   const engineRef = useRef(null);
 
-  function runOps(opList) {
+  const { saveProgress } = useProgress();
+
+  // FIX: runOps trả về engine vừa tạo, để gọi .play() trực tiếp ở nơi cần (tránh setTimeout race)
+  // FIX: thêm saveProgress trong onDone
+  function runOps(opList, opLabel) {
     engineRef.current?.pause();
     let s;
     if (tab === 'stack') s = stackOps(opList);
@@ -36,9 +50,13 @@ export default function StructuresPage() {
     const eng = new AnimationEngine({
       steps: s, speed,
       onStep: (step, idx) => { setCurStep(step); setStepIdx(idx + 1); },
-      onDone: () => setPlaying(false),
+      onDone: () => {
+        setPlaying(false);
+        saveProgress('structures', `${TAB_NAMES[tab]}${opLabel ? ' - ' + opLabel : ''}`);
+      },
     });
     engineRef.current = eng;
+    return eng;
   }
 
   function addOp(type) {
@@ -47,17 +65,28 @@ export default function StructuresPage() {
       if (!keyVal && !inputVal) return;
       newOps = [...ops, { type: 'insert', key: keyVal || inputVal, val: inputVal || keyVal }];
     } else if (tab === 'pq') {
-      const val = inputVal;
-      const priority = parseInt(priorityVal) || parseInt(inputVal) || 0;
-      if (!val) return;
-      newOps = [...ops, { type, val, priority }];
+      // extractMin và peek không cần input
+      if (type === 'insert') {
+        const val = inputVal;
+        if (!val) return;
+        const priority = parseInt(priorityVal) || parseInt(inputVal) || 0;
+        newOps = [...ops, { type, val, priority }];
+      } else {
+        // extractMin, peek
+        newOps = [...ops, { type }];
+      }
     } else {
       const val = parseInt(inputVal);
       if (isNaN(val) && (type === 'push' || type === 'enqueue')) return;
       newOps = [...ops, { type, val }];
     }
     setOps(newOps);
-    runOps(newOps);
+    // FIX: lấy engine trả về từ runOps, chỉ play nếu cần — bỏ setTimeout(0)
+    const eng = runOps(newOps, type.toUpperCase());
+    if (['push', 'pop', 'enqueue', 'dequeue', 'insert', 'extractMin', 'peek'].includes(type)) {
+      setPlaying(true);
+      eng.play();
+    }
     setInputVal('');
     setKeyVal('');
     setPriorityVal('');
@@ -65,15 +94,21 @@ export default function StructuresPage() {
 
   function searchHash() {
     if (!keyVal && !inputVal) return;
-    const searchOps = [...ops, { type: 'search', key: keyVal || inputVal }];
-    runOps(searchOps);
+    const key = keyVal || inputVal;
+    const searchOps = [...ops, { type: 'search', key }];
+    const eng = runOps(searchOps, `Search "${key}"`);
+    eng.play();
+    setPlaying(true);
   }
 
   function deleteHash() {
     if (!keyVal && !inputVal) return;
-    const delOps = [...ops.filter(o => !(o.type === 'insert' && o.key === (keyVal || inputVal))), { type: 'delete', key: keyVal || inputVal }];
+    const key = keyVal || inputVal;
+    const delOps = [...ops.filter(o => !(o.type === 'insert' && o.key === key)), { type: 'delete', key }];
     setOps(delOps);
-    runOps(delOps);
+    const eng = runOps(delOps, `Delete "${key}"`);
+    eng.play();
+    setPlaying(true);
   }
 
   function reset() {
@@ -369,7 +404,10 @@ export default function StructuresPage() {
                 {type:'insert',key:'uni',val:'UET'},
                 {type:'search',key:'age'},
               ];
-              setOps(demo); runOps(demo);
+              setOps(demo);
+              const eng = runOps(demo, 'Ví dụ mẫu');
+              eng.play();
+              setPlaying(true);
             }}>⚄ Chạy ví dụ mẫu</button>
           </div>
 

@@ -2,9 +2,9 @@
 import { useState } from 'react';
 import './SettingsPage.css';
 
-import bg1 from '../../assets/bg1.png';
-import bg2 from '../../assets/bg2.png';
-import bg3 from '../../assets/bg3.png';
+import bg1 from '../../../assets/bg1.png';
+import bg2 from '../../../assets/bg2.png';
+import bg3 from '../../../assets/bg3.png';
 
 const FONTS = [
   { label: 'Times New Roman', value: "'Times New Roman', serif" },
@@ -170,7 +170,7 @@ export default function SettingsPage() {
 
             {/* Upload ảnh tùy chỉnh */}
             <label className="settings-bg-upload">
-              ＋ Tải ảnh lên
+              ＋ Tải ảnh lên đây 
               <input
                 type="file"
                 accept="image/*"
@@ -183,16 +183,6 @@ export default function SettingsPage() {
                 }}
               />
             </label>
-          </div>
-        </section>
-
-        {/* Preview */}
-        <section className="settings-section">
-          <div className="settings-section-title">Xem trước</div>
-          <div className="settings-preview-box" style={{ background: bg, fontFamily: font }}>
-            <div className="settings-preview-title">DSA Visualizer</div>
-            <div className="settings-preview-text">Sorting · Graph · Trees · Linked List</div>
-            <div className="settings-preview-code">function* bubbleSort(arr) {'{ yield step; }'}</div>
           </div>
         </section>
 

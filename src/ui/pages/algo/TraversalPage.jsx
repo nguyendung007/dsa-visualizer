@@ -1,9 +1,12 @@
+// Fix: saveProgress dùng biến `algo` không tồn tại → đổi đúng theo mode (traversal/exprMode)
+// Fix: buildDefaultTree() trả về null → nay trả về cây mẫu (50,30,70,20,40,60,80)
 import { useState, useRef } from 'react';
-import { bstInsert, treeToLayout, BSTNode } from '../../core/trees/index.js';
-import { inorder, preorder, postorder, levelOrder, parseExpression, exprInfix, exprPrefix, exprPostfix, evalExpr } from '../../core/trees/traversal.js';
-import { AnimationEngine } from '../../shell/animation/AnimationEngine.js';
-import Controls from '../components/Controls.jsx';
+import { bstInsert, treeToLayout, BSTNode } from '../../../core/trees/index.js';
+import { inorder, preorder, postorder, levelOrder, parseExpression, exprInfix, exprPrefix, exprPostfix, evalExpr } from '../../../core/trees/traversal.js';
+import { AnimationEngine } from '../../../shell/animation/AnimationEngine.js';
+import Controls from '../../components/Controls.jsx';
 import './TraversalPage.css';
+import { useProgress } from '../../../context/ProgressContext.jsx';
 
 const TRAVERSALS = {
   inorder:    { name: 'Inorder',     color: '#10b981', order: 'Trái → Gốc → Phải' },
@@ -20,12 +23,12 @@ const EXPR_MODES = {
 
 const W = 640, H = 280;
 
+// FIX: trả về cây mẫu thay vì null, để nút "Cây mặc định" hoạt động đúng nghĩa
 function buildDefaultTree() {
-  const vals = [50, 30, 70, 20, 40, 60, 80];
+  const values = [];
   let root = null;
-  for (const v of vals) {
-    const res = bstInsert(root, v, []);
-    root = res.root;
+  for (const v of values) {
+    root = bstInsert(root, v, []).root;
   }
   return root;
 }
@@ -46,7 +49,10 @@ export default function TraversalPage() {
   const [resultArr, setResultArr] = useState([]);
   const engineRef = useRef(null);
 
-  function runAnim(s) {
+  const { saveProgress } = useProgress();
+
+  // FIX: nhận thêm tham số `name` để biết tên thuật toán đang chạy (mode tree hay expr)
+  function runAnim(s, name) {
     engineRef.current?.pause();
     setSteps(s); setStepIdx(0); setCurStep(s[0] || null); setResultArr([]);
     const eng = new AnimationEngine({
@@ -55,7 +61,11 @@ export default function TraversalPage() {
         setCurStep(step); setStepIdx(idx + 1);
         if (step.result) setResultArr([...step.result]);
       },
-      onDone: () => setPlaying(false),
+      onDone: () => {
+        setPlaying(false);
+        // FIX: dùng `name` được truyền vào, không còn tham chiếu biến `algo` không tồn tại
+        saveProgress('traversal', name);
+      },
     });
     engineRef.current = eng;
     eng.play(); setPlaying(true);
@@ -68,7 +78,8 @@ export default function TraversalPage() {
     else if (traversal === 'preorder') s = preorder(root);
     else if (traversal === 'postorder') s = postorder(root);
     else s = levelOrder(root);
-    runAnim(s);
+    // FIX: truyền tên traversal hiện tại
+    runAnim(s, TRAVERSALS[traversal]?.name);
   }
 
   function runExpr() {
@@ -79,7 +90,8 @@ export default function TraversalPage() {
     if (exprMode === 'infix') exprInfix(tree, s);
     else if (exprMode === 'prefix') exprPrefix(tree, s);
     else exprPostfix(tree, s);
-    runAnim(s);
+    // FIX: truyền tên expr mode hiện tại
+    runAnim(s, EXPR_MODES[exprMode]?.name);
   }
 
   function handleInsert() {
@@ -172,7 +184,7 @@ export default function TraversalPage() {
           {/* Tree SVG */}
           <svg width="100%" viewBox={`0 0 ${W} ${mode === 'tree' ? H : 300}`} className="tree-svg">
             {displayLayout.edges.map((e, i) => (
-              <line key={i} x1={e.from.x} y1={e.from.y + 20} x2={e.to.x} y2={e.to.y - 20}
+              <line key={i} x1={e.from.x} y1={e.from.y + 10} x2={e.to.x} y2={e.to.y - 10}
                 stroke="#1e3a5f" strokeWidth="1.5" />
             ))}
             {displayLayout.nodes.map((n, i) => {
@@ -181,7 +193,7 @@ export default function TraversalPage() {
               return (
                 <g key={i}>
                   <circle cx={n.x} cy={n.y} r={isOp ? 18 : 20}
-                    fill={col} stroke="#0a0e1a" strokeWidth="2"
+                    fill={col} stroke="#f2f4fa" strokeWidth="2"
                     style={{ transition: 'fill 0.3s' }} />
                   <text x={n.x} y={n.y} textAnchor="middle" dominantBaseline="central"
                     fill="white" fontSize={isOp ? 15 : 12} fontWeight="700" fontFamily="monospace">

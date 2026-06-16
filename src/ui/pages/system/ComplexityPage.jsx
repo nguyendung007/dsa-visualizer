@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import './ComplexityPage.css';
 
 const SORTING = [
@@ -111,6 +112,41 @@ function ComplexityBadge({ val }) {
 }
 
 export default function ComplexityPage() {
+  const [custom, setCustom] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('cx_custom') || '[]');
+    } catch (e) { return []; }
+  });
+  const [newAlgo, setNewAlgo] = useState({ category: 'sorting', name: '', best: '', avg: '', worst: '', space: '', note: '' });
+
+  function saveCustom(list) {
+    setCustom(list);
+    try { localStorage.setItem('cx_custom', JSON.stringify(list)); } catch (e) { /* ignore */ }
+  }
+
+  function addCustom() {
+    if (!newAlgo.name.trim()) return;
+    const list = [...custom, { ...newAlgo }];
+    saveCustom(list);
+    setNewAlgo({ category: 'sorting', name: '', best: '', avg: '', worst: '', space: '', note: '' });
+  }
+
+  function removeCustom(i) {
+    const list = custom.slice(); list.splice(i, 1); saveCustom(list);
+  }
+
+  // Merge base lists with custom entries per category
+  const sortingItems = [...SORTING, ...custom.filter(c => c.category === 'sorting')];
+  const graphItems = [...GRAPH, ...custom.filter(c => c.category === 'graph')];
+  const treeItems = [...TREES, ...custom.filter(c => c.category === 'trees')];
+  const structItems = [...STRUCTURES, ...custom.filter(c => c.category === 'structures')];
+  const stringItems = [...STRING, ...custom.filter(c => c.category === 'string')];
+  const unionItems = [...UNION_FIND, ...custom.filter(c => c.category === 'union')];
+
+  function wikiLink(name) {
+    const q = encodeURIComponent(name);
+    return `https://en.wikipedia.org/wiki/Special:Search?search=${q}`;
+  }
   return (
     <div className="page cx-page">
       <div className="page-header">
@@ -119,6 +155,43 @@ export default function ComplexityPage() {
       </div>
 
       <div className="cx-content">
+        <section className="cx-section">
+          <SectionTitle>✚ Thêm thuật toán tùy ý</SectionTitle>
+          <div style={{display:'flex',gap:8,flexWrap:'wrap',alignItems:'center'}}>
+            <select className="arr-input" value={newAlgo.category} onChange={e=>setNewAlgo({...newAlgo,category:e.target.value})}>
+              <option value="sorting">Sorting</option>
+              <option value="graph">Graph</option>
+              <option value="trees">Trees</option>
+              <option value="structures">Data Structures</option>
+              <option value="string">String</option>
+              <option value="union">Union-Find</option>
+            </select>
+            <input className="arr-input" placeholder="Tên thuật toán" value={newAlgo.name} onChange={e=>setNewAlgo({...newAlgo,name:e.target.value})} />
+            <input className="arr-input" placeholder="Best" value={newAlgo.best} onChange={e=>setNewAlgo({...newAlgo,best:e.target.value})} />
+            <input className="arr-input" placeholder="Average" value={newAlgo.avg} onChange={e=>setNewAlgo({...newAlgo,avg:e.target.value})} />
+            <input className="arr-input" placeholder="Worst" value={newAlgo.worst} onChange={e=>setNewAlgo({...newAlgo,worst:e.target.value})} />
+            <input className="arr-input" placeholder="Space" value={newAlgo.space} onChange={e=>setNewAlgo({...newAlgo,space:e.target.value})} />
+            <input className="arr-input" placeholder="Ghi chú" value={newAlgo.note} onChange={e=>setNewAlgo({...newAlgo,note:e.target.value})} style={{flex:1}} />
+            <button className="btn-generate" onClick={addCustom}>Lưu</button>
+          </div>
+          {custom.length > 0 && (
+            <div style={{marginTop:8}}>
+              <strong>Đã lưu:</strong>
+              <Table
+                headers={["Tên","Best","Average","Worst","Space","Ghi chú","Hành động"]}
+                rows={custom.map((c,i) => ([
+                  <b style={{ color: '#e2e8f0' }}>{c.name} <small style={{color:'#7c93b4'}}>({c.category})</small></b>,
+                  <ComplexityBadge val={c.best} />,
+                  <ComplexityBadge val={c.avg} />,
+                  <ComplexityBadge val={c.worst} />,
+                  <ComplexityBadge val={c.space} />,
+                  <span style={{ color: '#4a6b8a', fontSize: 11 }}>{c.note}</span>,
+                  <button className="btn-random" onClick={() => removeCustom(i)}>Xóa</button>
+                ]))}
+              />
+            </div>
+          )}
+        </section>
         {/* Big-O Theory */}
         <section className="cx-section">
           <SectionTitle>📐 Big-O Notation — Lý thuyết</SectionTitle>
@@ -144,8 +217,8 @@ export default function ComplexityPage() {
         <section className="cx-section">
           <SectionTitle>≋ Sorting Algorithms</SectionTitle>
           <Table
-            headers={['Thuật toán', 'Best', 'Average', 'Worst', 'Space', 'Stable', 'Ghi chú']}
-            rows={SORTING.map(a => [
+            headers={['Thuật toán', 'Best', 'Average', 'Worst', 'Space', 'Stable', 'Ghi chú', 'Xem thêm']}
+            rows={sortingItems.map(a => [
               <b style={{ color: '#e2e8f0' }}>{a.name}</b>,
               <ComplexityBadge val={a.best} />,
               <ComplexityBadge val={a.avg} />,
@@ -153,6 +226,7 @@ export default function ComplexityPage() {
               <ComplexityBadge val={a.space} />,
               <span style={{ color: a.stable ? '#10b981' : '#ef4444' }}>{a.stable ? '✓' : '✗'}</span>,
               <span style={{ color: '#4a6b8a', fontSize: 11 }}>{a.note}</span>,
+              <a href={wikiLink(a.name)} target="_blank" rel="noopener noreferrer">Xem thêm</a>,
             ])}
           />
         </section>
@@ -161,12 +235,13 @@ export default function ComplexityPage() {
         <section className="cx-section">
           <SectionTitle>◎ Graph Algorithms</SectionTitle>
           <Table
-            headers={['Thuật toán', 'Time', 'Space', 'Ghi chú']}
-            rows={GRAPH.map(a => [
+            headers={['Thuật toán', 'Time', 'Space', 'Ghi chú', 'Xem thêm']}
+            rows={graphItems.map(a => [
               <b style={{ color: '#e2e8f0' }}>{a.name}</b>,
               <ComplexityBadge val={a.time} />,
               <ComplexityBadge val={a.space} />,
               <span style={{ color: '#4a6b8a', fontSize: 11 }}>{a.note}</span>,
+              <a href={wikiLink(a.name)} target="_blank" rel="noopener noreferrer">Xem thêm</a>,
             ])}
           />
         </section>
@@ -175,14 +250,15 @@ export default function ComplexityPage() {
         <section className="cx-section">
           <SectionTitle>⌥ Tree Operations</SectionTitle>
           <Table
-            headers={['Thao tác', 'Best', 'Average', 'Worst', 'Space', 'Ghi chú']}
-            rows={TREES.map(a => [
+            headers={['Thao tác', 'Best', 'Average', 'Worst', 'Space', 'Ghi chú', 'Xem thêm']}
+            rows={treeItems.map(a => [
               <b style={{ color: '#e2e8f0' }}>{a.name}</b>,
               <ComplexityBadge val={a.best} />,
               <ComplexityBadge val={a.avg} />,
               <ComplexityBadge val={a.worst} />,
               <ComplexityBadge val={a.space} />,
               <span style={{ color: '#4a6b8a', fontSize: 11 }}>{a.note}</span>,
+              <a href={wikiLink(a.name)} target="_blank" rel="noopener noreferrer">Xem thêm</a>,
             ])}
           />
         </section>
@@ -191,12 +267,13 @@ export default function ComplexityPage() {
         <section className="cx-section">
           <SectionTitle>⊞ Data Structures</SectionTitle>
           <Table
-            headers={['Thao tác', 'Time', 'Space', 'Ghi chú']}
-            rows={STRUCTURES.map(a => [
+            headers={['Thao tác', 'Time', 'Space', 'Ghi chú', 'Xem thêm']}
+            rows={structItems.map(a => [
               <b style={{ color: '#e2e8f0' }}>{a.name}</b>,
               <ComplexityBadge val={a.time} />,
               <ComplexityBadge val={a.space} />,
               <span style={{ color: '#4a6b8a', fontSize: 11 }}>{a.note}</span>,
+              <a href={wikiLink(a.name)} target="_blank" rel="noopener noreferrer">Xem thêm</a>,
             ])}
           />
         </section>
@@ -205,12 +282,13 @@ export default function ComplexityPage() {
         <section className="cx-section">
           <SectionTitle>⊕ Union-Find</SectionTitle>
           <Table
-            headers={['Thao tác', 'Time', 'Space', 'Ghi chú']}
-            rows={UNION_FIND.map(a => [
+            headers={['Thao tác', 'Time', 'Space', 'Ghi chú', 'Xem thêm']}
+            rows={unionItems.map(a => [
               <b style={{ color: '#e2e8f0' }}>{a.name}</b>,
               <ComplexityBadge val={a.time} />,
               <ComplexityBadge val={a.space} />,
               <span style={{ color: '#4a6b8a', fontSize: 11 }}>{a.note}</span>,
+              <a href={wikiLink(a.name)} target="_blank" rel="noopener noreferrer">Xem thêm</a>,
             ])}
           />
         </section>
@@ -219,12 +297,13 @@ export default function ComplexityPage() {
         <section className="cx-section">
           <SectionTitle>Σ String Algorithms</SectionTitle>
           <Table
-            headers={['Thuật toán', 'Time', 'Space', 'Ghi chú']}
-            rows={STRING.map(a => [
+            headers={['Thuật toán', 'Time', 'Space', 'Ghi chú', 'Xem thêm']}
+            rows={stringItems.map(a => [
               <b style={{ color: '#e2e8f0' }}>{a.name}</b>,
               <ComplexityBadge val={a.time} />,
               <ComplexityBadge val={a.space} />,
               <span style={{ color: '#4a6b8a', fontSize: 11 }}>{a.note}</span>,
+              <a href={wikiLink(a.name)} target="_blank" rel="noopener noreferrer">Xem thêm</a>,
             ])}
           />
         </section>
