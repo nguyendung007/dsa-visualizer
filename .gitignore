@@ -4,7 +4,5 @@ bug/
 data/
 deploy/
 work/
-web/
 tests/
 package-lock.json
-react_states_algo.json
