@@ -1,4 +1,4 @@
-# Xây dựng phần mềm học môn DSA cho UET bằng React, thiết kế theo kiểu FP như kiến thức đã học trong Bài tập lớn PPLLT - DSA Visualizer
+# Xây dựng phần mềm học môn DSA cho UET- DSA Visualizer
 
 Ứng dụng trực quan hóa thuật toán & cấu trúc dữ liệu, xây dựng bằng React.  
 Được xây dựng và phát triển bởi một người bị ám ảnh bởi môn này.
