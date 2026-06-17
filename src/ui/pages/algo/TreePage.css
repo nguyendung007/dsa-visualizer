@@ -82,3 +82,13 @@
   color: #8b9eb5;
   margin-top: 4px;
 }
+
+.tree-workspace      { display: flex; flex: 1; overflow: hidden; }
+.tree-panel          { flex: 1; display: flex; flex-direction: column; padding: 0 24px 12px; border-right: 1px solid #1e2d3d; }
+.tree-sidebar        { width: 220px; flex-shrink: 0; padding: 12px 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+.tree-legend         { display: flex; gap: 12px; flex-wrap: wrap; padding: 6px 0; font-size: 11px; }
+.avl-info-box        { display: flex; gap: 12px; align-items: center; padding: 6px 10px; background: rgba(249,115,22,0.08); border-radius: 6px; border: 1px solid rgba(249,115,22,0.2); font-size: 12px; }
+.tree-type-info      { font-size: 11px; color: #4a6b8a; line-height: 1.7; }
+.floor-ceil-result   { font-size: 12px; padding: 4px 8px; border-radius: 4px; }
+.floor-result        { color: #10b981; background: rgba(16,185,129,0.1); }
+.ceil-result         { color: #58a6ff; background: rgba(88,166,255,0.1); }

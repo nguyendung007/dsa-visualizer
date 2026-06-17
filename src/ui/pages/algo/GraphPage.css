@@ -128,3 +128,9 @@
 
 .ds-dist-node { font-size: 11px; color: #58a6ff; font-family: monospace; font-weight: 700; }
 .ds-dist-val { font-size: 10px; color: #8b9eb5; font-family: monospace; }
+
+.graph-algo-desc     { font-size: 11px; color: #4a6b8a; line-height: 1.7; }
+.graph-info-row      { font-size: 12px; color: #8b9eb5; line-height: 1.8; display: flex; flex-direction: column; gap: 2px; }
+.graph-start-select  { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.graph-edge-weight   { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+.graph-edge-hint     { font-size: 11px; color: #f59e0b; margin-top: 6px; }

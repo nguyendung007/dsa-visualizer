@@ -1,9 +1,3 @@
-/* =====================================================
-   global.css — Shared styles cho toàn bộ DSA Visualizer
-   Import 1 lần trong MainLayout.jsx
-   ===================================================== */
-
-/* ── Layout page ── */
 .page {
   display: flex;
   flex-direction: column;
@@ -334,4 +328,48 @@ select.arr-input { appearance: none; cursor: pointer; }
   background: #0d1117;
   border-radius: 8px;
   border: 1px solid #1e2d3d;
+}
+
+/* Flex column gap-6 — dùng trong sidebar section */
+.flex-col-6 { display: flex; flex-direction: column; gap: 6px; }
+.flex-col-4 { display: flex; flex-direction: column; gap: 4px; }
+.flex-col-8 { display: flex; flex-direction: column; gap: 8px; }
+
+/* Flex row */
+.flex-row-6 { display: flex; gap: 6px; }
+.flex-row-8 { display: flex; gap: 8px; }
+
+/* ctrl-section — dùng trong mọi sidebar */
+.ctrl-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ctrl-section h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #4a6b8a;
+  letter-spacing: 1px;
+  margin-bottom: 0;
+}
+
+/* Full width button */
+.btn-full { width: 100%; }
+
+/* Font size helpers */
+.text-xs  { font-size: 10px; }
+.text-sm  { font-size: 11px; }
+.text-hint { font-size: 10px; color: #4a6b8a; line-height: 1.5; }
+
+/* Log panel */
+.log-panel {
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 6px;
+  padding: 6px 8px;
+  max-height: 140px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }

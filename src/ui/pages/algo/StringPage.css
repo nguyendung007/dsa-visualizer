@@ -171,3 +171,11 @@
 .suffix-idx { width: 36px; color: #58a6ff; font-weight: 700; }
 .suffix-str { flex: 1; color: #e2e8f0; }
 .suffix-lcp { width: 50px; color: '#10b981'; font-weight: 700; text-align: right; color: #10b981; }
+
+
+.string-textarea     { width: 100%; height: 70px; resize: vertical; margin-top: 4px; }
+.string-algo-desc    { font-size: 11px; color: #4a6b8a; line-height: 1.7; }
+.string-example-btns { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+.tst-word-list       { font-size: 11px; color: #4a6b8a; margin-bottom: 6px; }
+.tst-actions         { display: flex; gap: 6px; margin-top: 8px; }
+.hash-display        { font-size: 11px; padding: 6px 10px; background: rgba(88,166,255,0.05); border-radius: 6px; margin-top: 4px; }

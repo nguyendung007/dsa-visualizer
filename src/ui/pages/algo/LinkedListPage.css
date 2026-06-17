@@ -22,3 +22,13 @@
 .lc-op { flex: 1; color: #8b9eb5; }
 .lc-time { width: 60px; color: #10b981; font-weight: 700; }
 .lc-space { width: 40px; color: #58a6ff; }
+
+/* Sidebar sections */
+.ll-insert-actions { display: flex; flex-direction: column; gap: 6px; }
+.ll-insert-pos-row { display: flex; gap: 6px; }
+.ll-delete-actions { display: flex; flex-direction: column; gap: 6px; }
+.ll-delete-row     { display: flex; gap: 6px; }
+.ll-search-actions { display: flex; flex-direction: column; gap: 6px; }
+.ll-search-row     { display: flex; gap: 6px; }
+.ll-sample-list    { display: flex; flex-direction: column; gap: 4px; }
+.ll-hint           { font-size: 10px; color: #4a6b8a; line-height: 1.5; }

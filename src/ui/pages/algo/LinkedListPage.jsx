@@ -265,7 +265,7 @@ export default function LinkedListPage() {
           {/* Thêm node — input riêng trong section này */}
           <div className="ctrl-section">
             <h3>Thêm node</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div className="ll-insert-actions">
               <input className="arr-input" placeholder="Giá trị..." value={insertVal}
                 onChange={e => setInsertVal(e.target.value)} type="number"
                 onKeyDown={e => e.key === 'Enter' && handleInsertHead()} />
@@ -282,7 +282,7 @@ export default function LinkedListPage() {
           {/* Xóa node — input riêng trong section này */}
           <div className="ctrl-section">
             <h3>Xóa node</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div className="ll-insert-actions">
               <div style={{ display: 'flex', gap: 6 }}>
                 <input className="arr-input" placeholder="Giá trị cần xóa..." value={deleteVal}
                   onChange={e => setDeleteVal(e.target.value)} type="number" style={{ flex: 1 }}
@@ -304,7 +304,7 @@ export default function LinkedListPage() {
           {/* Tìm kiếm — input riêng trong section này */}
           <div className="ctrl-section">
             <h3>Tìm kiếm</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div className="ll-insert-actions">
               <div style={{ display: 'flex', gap: 6 }}>
                 <input className="arr-input" placeholder="Giá trị cần tìm..." value={searchVal}
                   onChange={e => setSearchVal(e.target.value)} type="number" style={{ flex: 1 }}

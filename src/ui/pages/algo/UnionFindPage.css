@@ -30,3 +30,10 @@
 }
 .uf-id-idx { font-size: 8px; color: #4a6b8a; font-family: monospace; }
 .uf-id-val { font-size: 14px; font-weight: 700; font-family: monospace; }
+
+.uf-algo-desc        { font-size: 11px; color: #4a6b8a; line-height: 1.7; }
+.uf-quick-btns       { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.uf-quick-label      { font-size: 10px; color: #4a6b8a; margin-bottom: 4px; }
+.uf-find-hint        { font-size: 10px; color: #4a6b8a; line-height: 1.6; }
+.uf-size-row         { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.uf-size-label       { font-size: 11px; color: #4a6b8a; }

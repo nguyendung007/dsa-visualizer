@@ -1,7 +1,3 @@
-// Fix: run() nay gọi eng.play() + setPlaying(true)
-// Fix: nút Random không tạo 2 array khác nhau
-// UX: saveProgress gọi trong onDone
-import { Tooltip } from 'react-tooltip';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { selectionSort, insertionSort, mergeSort, quickSort, bubbleSort, heapSort, countingSort, radixSort, shellSort, bucketSort } from '../../../core/sorting/index.js';
 import { AnimationEngine } from '../../../shell/animation/AnimationEngine.js';
@@ -142,12 +138,9 @@ function handleRandom() {
           </button>
         ))}
         <button className="algo-tab" style={{ borderStyle: 'dashed', color: '#58a6ff' }}
-          onClick={() => setShowModal(true)}
-          data-tooltip-id="my-tooltip"
-          data-tooltip-content="Đang test thử tính năng ToolKit">
-          ＋ Thêm
-        </button>
-        <Tooltip id="my-tooltip" />
+  onClick={() => setShowModal(true)}>
+  ＋ Thêm
+</button>
 
         <div className="scale-selector">
           <span className="scale-label">📏 Scale: </span>
