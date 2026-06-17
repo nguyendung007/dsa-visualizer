@@ -22,6 +22,17 @@ export function AuthProvider({ children }) {
   }, [])
 
   const login = async (email, password) => {
+    // 1. Kiểm tra nếu là tài khoản test
+    if (email === 'test_account@gmail.com' && password === '123456') {
+      const fakeUserData = { id: 'test-id-123', email: 'test_account@gmail.com', role: 'admin' }
+      
+      localStorage.setItem('token', 'fake-jwt-token-for-test') // Tạo token giả để khi F5 không bị mất login
+      setUser(fakeUserData)
+      
+      return { user: fakeUserData, token: 'fake-jwt-token-for-test' } // Trả về cấu trúc giống API thật
+    }
+
+    // 2. Nếu không phải tài khoản test, gọi API bình thường
     const res = await authApi.login(email, password)
     localStorage.setItem('token', res.data.token)
     setUser(res.data.user)
@@ -49,3 +60,4 @@ export function AuthProvider({ children }) {
 
 // Hook dùng trong bất kỳ component nào
 export const useAuth = () => useContext(AuthContext)
+
