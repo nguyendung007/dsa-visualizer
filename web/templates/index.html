@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Analyzer - Tools</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .tool-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .tool-card.selected {
+            border-color: #667eea;
+            background: #f0f0ff;
+        }
+        
+        .tool-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        
+        .tool-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .tool-desc {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .input-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        input[type="text"], input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin-top: 5px;
+        }
+        
+        .radio-group label {
+            display: inline-flex;
+            align-items: center;
+            font-weight: normal;
+            margin-bottom: 0;
+        }
+        
+        .radio-group input {
+            width: auto;
+            margin-right: 5px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .search-box {
+            display: none;
+        }
+        
+        .search-box.active {
+            display: block;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .loading.active {
+            display: block;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: white;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛠️ Code Analyzer Tools</h1>
+            <p>Chọn công cụ và đường dẫn để phân tích code React/JSX của bạn</p>
+        </div>
+        
+        <form id="analyzeForm" action="/analyze" method="post" enctype="multipart/form-data">
+            <div class="tools-grid" id="toolsGrid">
+                <!-- Tools sẽ được load từ API -->
+            </div>
+            
+            <div class="input-section">
+                <div class="input-group">
+                    <label>📂 Chọn input type:</label>
+                    <div class="radio-group">
+                        <label>
+                            <input type="radio" name="input_type" value="path" checked> Đường dẫn tuyệt đối
+                        </label>
+                        <label>
+                            <input type="radio" name="input_type" value="upload"> Upload file/folder (zip)
+                        </label>
+                    </div>
+                </div>
+                
+                <div id="pathInput" class="input-group">
+                    <label>📁 Đường dẫn thư mục:</label>
+                    <input type="text" name="folder_path" placeholder="Ví dụ: C:/my-react-app/src hoặc ./src">
+                </div>
+                
+                <div id="fileInput" class="input-group" style="display: none;">
+                    <label>📤 Chọn file (zip, jsx, js):</label>
+                    <input type="file" name="file" accept=".zip,.jsx,.js">
+                </div>
+                
+                <div id="searchInput" class="input-group search-box">
+                    <label>🔎 Nhập chuỗi cần tìm:</label>
+                    <input type="text" name="search_string" placeholder="Ví dụ: useState, onClick, import...">
+                </div>
+                
+                <input type="hidden" name="tool" id="selectedTool" value="">
+                
+                <button type="submit">🚀 Bắt đầu phân tích</button>
+            </div>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: white;">Đang phân tích, vui lòng chờ...</p>
+        </div>
+        
+        <div class="footer">
+            <p>Powered by Flask | Các công cụ phân tích code tự động</p>
+        </div>
+    </div>
+    
+    <script>
+        // Load danh sách tools từ API
+        fetch('/api/tools')
+            .then(res => res.json())
+            .then(tools => {
+                const grid = document.getElementById('toolsGrid');
+                tools.forEach(tool => {
+                    const card = document.createElement('div');
+                    card.className = 'tool-card';
+                    card.onclick = () => selectTool(tool.id);
+                    card.innerHTML = `
+                        <div class="tool-icon">${getIcon(tool.id)}</div>
+                        <div class="tool-title">${tool.name}</div>
+                        <div class="tool-desc">${tool.description}</div>
+                    `;
+                    grid.appendChild(card);
+                });
+            });
+        
+        function getIcon(toolId) {
+            const icons = {
+                'check_import': '🔍',
+                'flow_jsx': '🔄',
+                'folder_structure': '📁',
+                'search_string': '🔎',
+                'state_jsx': '📊'
+            };
+            return icons[toolId] || '🛠️';
+        }
+        
+        let currentTool = null;
+        
+        function selectTool(toolId) {
+            // Remove selected class from all cards
+            document.querySelectorAll('.tool-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked card
+            event.target.closest('.tool-card').classList.add('selected');
+            
+            // Set selected tool
+            currentTool = toolId;
+            document.getElementById('selectedTool').value = toolId;
+            
+            // Show/hide search box for search_string tool
+            const searchBox = document.getElementById('searchInput');
+            if (toolId === 'search_string') {
+                searchBox.classList.add('active');
+            } else {
+                searchBox.classList.remove('active');
+            }
+        }
+        
+        // Toggle between path and file input
+        const radioPath = document.querySelector('input[value="path"]');
+        const radioUpload = document.querySelector('input[value="upload"]');
+        const pathInput = document.getElementById('pathInput');
+        const fileInput = document.getElementById('fileInput');
+        
+        radioPath.addEventListener('change', () => {
+            if (radioPath.checked) {
+                pathInput.style.display = 'block';
+                fileInput.style.display = 'none';
+            }
+        });
+        
+        radioUpload.addEventListener('change', () => {
+            if (radioUpload.checked) {
+                pathInput.style.display = 'none';
+                fileInput.style.display = 'block';
+            }
+        });
+        
+        // Show loading on submit
+        const form = document.getElementById('analyzeForm');
+        form.addEventListener('submit', () => {
+            if (!document.getElementById('selectedTool').value) {
+                alert('Vui lòng chọn công cụ phân tích!');
+                event.preventDefault();
+                return;
+            }
+            document.getElementById('loading').classList.add('active');
+        });
+    </script>
+</body>
+</html>
