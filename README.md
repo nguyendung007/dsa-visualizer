@@ -119,6 +119,61 @@ Cài đặt được **lưu vào localStorage** — giữ nguyên sau khi reload
 
 ---
 
+## 4. 🛠️ Công cụ phân tích mã nguồn (Python Tools)
+
+Để hỗ trợ cho những ai muốn viết lại mã nguồn, ở đây có đính kèm 1 tệp web phân tích mã nguồn viết bằng Python, giúp bạn dễ dàng hiểu cấu trúc và mở rộng ứng dụng.
+
+### 📦 Các tool hiện có
+
+| Tool | Chức năng |
+|------|-----------|
+| **folder_structure.py** | Xuất cây thư mục & thống kê số lượng file/folder |
+| **search_string.py** | Tìm kiếm từ khóa trong toàn bộ file |
+| **check_import.py** | Phân tích tất cả các dòng import/require |
+| **state_jsx.py** | Phân tích React Hooks (useState, useContext, useMemo...) |
+| **flow_jsx.py** | Map Button → Function, phát hiện handler không được gọi |
+
+### 🚀 Cách sử dụng
+
+```bash
+# Phân tích cấu trúc thư mục
+python folder_structure.py /path/to/dsa-visualizer
+
+# Tìm kiếm từ khóa (VD: tìm tất cả useState)
+python search_string.py /path/to/dsa-visualizer "useState"
+
+# Phân tích imports
+python check_import.py /path/to/dsa-visualizer
+
+# Phân tích React states
+python state_jsx.py /path/to/dsa-visualizer
+
+# Phân tích UI flow
+python flow_jsx.py /path/to/dsa-visualizer
+```
+
+### 💻 Sử dụng như module
+
+```python
+from state_jsx import analyze as analyze_states
+from flow_jsx import analyze as analyze_flow
+
+result = analyze_states("./src")  # Trả về dict JSON
+print(result['summary']['total_states_found'])
+```
+
+### ✨ Tính năng
+
+- ✅ Mỗi tool có API thống nhất: `analyze(folder_path)`
+- ✅ Xuất kết quả JSON để tích hợp với hệ thống khác
+- ✅ Tự động bỏ qua `node_modules`, `.git`, `dist`, `build`, `__pycache__`
+- ✅ Xử lý lỗi encoding, không crash khi gặp file lỗi
+- ✅ Có thể chạy độc lập từ command line hoặc import vào project khác
+
+---
+
+**💡 Gợi ý:** Bạn có thể dễ dàng thêm tool mới bằng cách tạo file Python với hàm `analyze(folder_path)` trả về dict.
+
 ## Cấu trúc thư mục dự án
 
 ```text
