@@ -1,3 +1,5 @@
+// Cập nhật : nhận generator thay vì mảng
+
 export class AnimationEngine {
   constructor({ steps, onStep, onDone, speed = 500 }) {
     this.steps = steps;
