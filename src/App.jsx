@@ -18,6 +18,15 @@ import ProblemsPage from './ui/pages/algo/ProblemsPage.jsx';
 import ComplexityPage from './ui/pages/system/ComplexityPage.jsx';
 import SettingsPage from './ui/pages/system/SettingsPage.jsx';
 
+
+import KnowledgePage from './ui/pages/algo/KnowledgePage.jsx';
+import LocalSearchPage from './ui/pages/algo/LocalSearchPage.jsx';
+import DecisionPage from './ui/pages/algo/DecisionPage.jsx';
+import AdversarialPage from './ui/pages/algo/AdversarialPage.jsx';
+import MazePage from './ui/pages/algo/MazePage.jsx';
+import NaivePage from './ui/pages/algo/NaivePage.jsx';
+import CspPage from './ui/pages/algo/CspPage.jsx';
+
 import Toast from './ui/components/Toast.jsx';  // ← THÊM IMPORT
 import { useProgress } from './context/ProgressContext.jsx'; 
 
@@ -62,11 +71,18 @@ export default function App() {
               <Route path="/trees"      element={<TreePage />} />
               <Route path="/traversal"  element={<TraversalPage />} />
               <Route path="/graph"      element={<GraphPage />} />
+              <Route path="/maze"      element={<MazePage />} />
+              <Route path="/adversarial" element={<AdversarialPage />} /> 
+              <Route path="/knowledge"  element={<KnowledgePage />} /> 
+              <Route path="/localsearch"  element={<LocalSearchPage />} />
+              <Route path="/decision"   element={<DecisionPage />} />
+              <Route path="/naive"     element={<NaivePage />} />
               <Route path="/structures" element={<StructuresPage />} />
               <Route path="/linkedlist" element={<LinkedListPage />} />
               <Route path="/unionfind"  element={<UnionFindPage />} />
               <Route path="/strings"    element={<StringPage />} />
               <Route path="/problems"   element={<ProblemsPage />} />
+              <Route path="/csp"   element={<CspPage />} />
               <Route path="/complexity" element={<ComplexityPage />} />
               <Route path="/settings"   element={<SettingsPage />} />
             </Route>

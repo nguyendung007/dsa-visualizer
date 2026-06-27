@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { bfs, dfs, dijkstra, kruskal, bellmanFord, prim, kosaraju, topoSortDFS, topoSortKahn } from '../../../core/graph/index.js';
+import { bfs, dfs, dijkstra, kruskal, bellmanFord, prim, kosaraju, topoSortDFS, topoSortKahn, aStar, bestFirstSearch, heuristicManhattan, heuristicEuclidean, beamSearch, tabuSearch } from '../../../core/graph/index.js';
 import { AnimationEngine } from '../../../shell/animation/AnimationEngine.js';
 import Controls from '../../components/Controls.jsx';
 import { useProgress } from '../../../context/ProgressContext.jsx';
@@ -9,12 +9,16 @@ const ALGOS = {
   bfs:         { name: 'BFS',            fn: bfs,      needsStart: true,  color: '#10b981' },
   dfs:         { name: 'DFS',            fn: dfs,      needsStart: true,  color: '#f59e0b' },
   dijkstra:    { name: 'Dijkstra',       fn: dijkstra, needsStart: true,  color: '#58a6ff' },
-  bellmanFord: { name: 'Bellman-Ford',   fn: null,     needsStart: true,  color: '#a78bfa' },
-  kruskal:     { name: 'Kruskal (MST)',  fn: null,     needsStart: false, color: '#f97316' },
-  prim:        { name: 'Prim (MST)',     fn: null,     needsStart: true,  color: '#10b981' },
-  kosaraju:    { name: 'Kosaraju (SCC)', fn: null,     needsStart: false, color: '#f43f5e' },
-  topoDFS:     { name: 'Topo Sort (DFS)',fn: null,     needsStart: false, color: '#8b5cf6' },
-  topoKahn:    { name: 'Topo (Kahn)',    fn: null,     needsStart: false, color: '#06b6d4' },
+  aStar:       { name: 'A*',             fn: aStar,    needsStart: true,  color: '#f472b6' },
+  bestFirst:   { name: 'Best-First',     fn: bestFirstSearch, needsStart: true, color: '#34d399' },
+  bellmanFord: { name: 'Bellman-Ford',   fn: bellmanFord, needsStart: true,  color: '#a78bfa' },
+  kruskal:     { name: 'Kruskal (MST)',  fn: kruskal,  needsStart: false, color: '#f97316' },
+  prim:        { name: 'Prim (MST)',     fn: prim,     needsStart: true,  color: '#10b981' },
+  kosaraju:    { name: 'Kosaraju (SCC)', fn: kosaraju, needsStart: false, color: '#f43f5e' },
+  topoDFS:     { name: 'Topo Sort (DFS)',fn: topoSortDFS, needsStart: false, color: '#8b5cf6' },
+  topoKahn:    { name: 'Topo (Kahn)',    fn: topoSortKahn, needsStart: false, color: '#06b6d4' },
+  beam:        { name: 'Beam Search',   fn: beamSearch, needsStart: true, color: '#fbbf24' },
+  tabu:        { name: 'Tabu Search',   fn: tabuSearch, needsStart: true, color: '#f87171' },
 };
 
 function defaultGraph() { return { nodes: [], edges: [] }; }
@@ -29,10 +33,31 @@ function buildAdjList(nodes, edges) {
   return g;
 }
 
+// Hàm heuristic cho A* (dựa trên tọa độ node)
+function getHeuristicForAStar(goal, nodes, type) {
+  const coordMap = {};
+  nodes.forEach(n => {
+    coordMap[n.id] = { x: n.x, y: n.y };
+  });
+  
+  return function(node, goal) {
+    if (!coordMap[node] || !coordMap[goal]) return 0;
+    const dx = Math.abs(coordMap[node].x - coordMap[goal].x);
+    const dy = Math.abs(coordMap[node].y - coordMap[goal].y);
+    
+    if (type === 'euclidean') {
+      return Math.sqrt(dx*dx + dy*dy);
+    } else { // manhattan
+      return dx + dy;
+    }
+  };
+}
+
 export default function GraphPage() {
   const [algo, setAlgo]               = useState('bfs');
   const [graph, setGraph]             = useState(defaultGraph);
   const [start, setStart]             = useState('A');
+  const [goal, setGoal]               = useState('B');
   const [steps, setSteps]             = useState([]);
   const [stepIdx, setStepIdx]         = useState(0);
   const [curStep, setCurStep]         = useState(null);
@@ -45,6 +70,7 @@ export default function GraphPage() {
   const svgRef                        = useRef(null);
   const engineRef                     = useRef(null);
   const { saveProgress }              = useProgress();
+  const [heuristicType, setHeuristicType] = useState('manhattan');
   const svgW = 600, svgH = 320;
 
   function getSVGPos(e) {
@@ -95,7 +121,6 @@ export default function GraphPage() {
 
   function handleMouseUp() { setDragging(null); }
 
-  // FIX: setAddMode kèm setPending(null) để tránh pending stale khi đổi mode
   function setMode(mode) {
     setAddMode(m => m === mode ? null : mode);
     setPending(null);
@@ -105,13 +130,37 @@ export default function GraphPage() {
     engineRef.current?.pause();
     const adj = buildAdjList(graph.nodes, graph.edges);
     let s;
-    if (algo === 'kruskal')     s = kruskal(graph.nodes.map(n => n.id), graph.edges);
-    else if (algo === 'bellmanFord') s = bellmanFord(adj, graph.nodes.map(n => n.id), start);
-    else if (algo === 'prim')   s = prim(adj, graph.nodes.map(n => n.id), start);
-    else if (algo === 'kosaraju') s = kosaraju(adj, graph.nodes.map(n => n.id));
-    else if (algo === 'topoDFS')  s = topoSortDFS(adj, graph.nodes.map(n => n.id));
-    else if (algo === 'topoKahn') s = topoSortKahn(adj, graph.nodes.map(n => n.id));
-    else s = ALGOS[algo].fn(adj, start);
+    const nodeIds = graph.nodes.map(n => n.id);
+    
+    if (algo === 'kruskal') {
+      s = kruskal(nodeIds, graph.edges);
+    } else if (algo === 'bellmanFord') {
+      s = bellmanFord(adj, nodeIds, start);
+    } else if (algo === 'prim') {
+      s = prim(adj, nodeIds, start);
+    } else if (algo === 'kosaraju') {
+      s = kosaraju(adj, nodeIds);
+    } else if (algo === 'topoDFS') {
+      s = topoSortDFS(adj, nodeIds);
+    } else if (algo === 'topoKahn') {
+      s = topoSortKahn(adj, nodeIds);
+    } else if (algo === 'aStar') {
+      // Tạo heuristic dựa trên tọa độ các node
+      const heuristic = getHeuristicForAStar(goal, graph.nodes, heuristicType);
+      s = aStar(adj, start, goal, heuristic);
+    } else if (algo === 'bestFirst') {  // Thêm case này
+    const heuristic = getHeuristicForAStar(goal, graph.nodes, heuristicType);
+    s = bestFirstSearch(adj, start, goal, heuristic);
+  }   else if (algo === 'beam') {
+    const heuristic = getHeuristicForAStar(goal, graph.nodes, heuristicType);
+    s = beamSearch(adj, start, goal, 3, heuristic); // beamWidth = 3
+  } else if (algo === 'tabu') {
+    const heuristic = getHeuristicForAStar(goal, graph.nodes, heuristicType);
+    s = tabuSearch(adj, start, goal, 50, 10, heuristic); // maxIterations=50, tabuSize=10
+  }
+     else {
+      s = ALGOS[algo].fn(adj, start);
+    }
 
     setSteps(s); setStepIdx(0); setCurStep(null);
     const eng = new AnimationEngine({
@@ -127,7 +176,28 @@ export default function GraphPage() {
   const SCC_COLORS = ['#f43f5e','#f97316','#a78bfa','#10b981','#58a6ff','#eab308','#06b6d4','#ec4899'];
 
   function nodeColor(id) {
-    if (!curStep) return '#1d4ed8';
+  if (!curStep) return '#1d4ed8';
+  
+  // Màu cho Best-First Search (tương tự A*)
+  if (algo === 'bestFirst') {
+    if (curStep.type === 'goal_found' && curStep.path?.includes(id)) return '#10b981';
+    if (curStep.type === 'done' && curStep.path?.includes(id)) return '#10b981';
+    if (curStep.closedSet?.includes?.(id)) return '#f43f5e';
+    if (curStep.openSet?.includes?.(id)) return '#f59e0b';
+    if (curStep.node === id) return '#34d399';
+    return '#1e3a5f';
+  }
+    
+    // Màu cho A*
+    if (algo === 'aStar') {
+      if (curStep.type === 'goal_found' && curStep.path?.includes(id)) return '#10b981';
+      if (curStep.type === 'done' && curStep.path?.includes(id)) return '#10b981';
+      if (curStep.closedSet?.includes?.(id)) return '#f43f5e';
+      if (curStep.openSet?.includes?.(id)) return '#f59e0b';
+      if (curStep.node === id) return '#f472b6';
+      return '#1e3a5f';
+    }
+    
     if (algo === 'kosaraju' && curStep.sccs) {
       for (let i = 0; i < curStep.sccs.length; i++) {
         if (curStep.sccs[i].includes(id)) return SCC_COLORS[i % SCC_COLORS.length];
@@ -153,6 +223,57 @@ export default function GraphPage() {
 
   function edgeColor(edge) {
     if (!curStep) return '#f50b0b';
+
+    if (algo === 'bestFirst') {
+    if (curStep.type === 'goal_found' && curStep.path) {
+      for (let i = 0; i < curStep.path.length - 1; i++) {
+        if ((curStep.path[i] === edge.from && curStep.path[i+1] === edge.to) ||
+            (curStep.path[i] === edge.to && curStep.path[i+1] === edge.from)) {
+          return '#10b981';
+        }
+      }
+    }
+    if (curStep.type === 'done' && curStep.path) {
+      for (let i = 0; i < curStep.path.length - 1; i++) {
+        if ((curStep.path[i] === edge.from && curStep.path[i+1] === edge.to) ||
+            (curStep.path[i] === edge.to && curStep.path[i+1] === edge.from)) {
+          return '#10b981';
+        }
+      }
+    }
+    if (curStep.from === edge.from && curStep.to === edge.to) {
+      return curStep.type === 'discover' ? '#f59e0b' : '#34d399';
+    }
+    return '#1e2d3d';
+  }
+    
+    // Màu cho A*
+    if (algo === 'aStar') {
+      if (curStep.type === 'goal_found' && curStep.path) {
+        for (let i = 0; i < curStep.path.length - 1; i++) {
+          if ((curStep.path[i] === edge.from && curStep.path[i+1] === edge.to) ||
+              (curStep.path[i] === edge.to && curStep.path[i+1] === edge.from)) {
+            return '#10b981';
+          }
+        }
+      }
+      if (curStep.type === 'done' && curStep.path) {
+        for (let i = 0; i < curStep.path.length - 1; i++) {
+          if ((curStep.path[i] === edge.from && curStep.path[i+1] === edge.to) ||
+              (curStep.path[i] === edge.to && curStep.path[i+1] === edge.from)) {
+            return '#10b981';
+          }
+        }
+      }
+      if (curStep.from === edge.from && curStep.to === edge.to) {
+        return curStep.type === 'relax' ? '#f59e0b' : '#f472b6';
+      }
+      if (curStep.from === edge.to && curStep.to === edge.from) {
+        return curStep.type === 'relax' ? '#f59e0b' : '#f472b6';
+      }
+      return '#1e2d3d';
+    }
+    
     if ((algo === 'kruskal' || algo === 'prim') && curStep.mst) {
       const inMst = curStep.mst.some(e =>
         (e.from === edge.from && e.to === edge.to) ||
@@ -181,6 +302,29 @@ export default function GraphPage() {
 
   function stepDesc(s) {
     if (!s) return 'Nhấn ▶ để chạy thuật toán';
+
+    if (algo === 'bestFirst') {
+    if (s.type === 'init') return `Khởi tạo: bắt đầu từ ${s.start} → ${s.goal}`;
+    if (s.type === 'process') return `Xử lý nút ${s.node} (heuristic=${s.fScore?.[s.node]})`;
+    if (s.type === 'discover') return `Khám phá ${s.node} từ ${s.from} (h=${s.fScore})`;
+    if (s.type === 'goal_found') return `✓ Tìm thấy đường đi đến ${s.goal}!`;
+    if (s.type === 'no_path') return `Không tìm thấy đường đi từ ${s.start} đến ${s.goal}`;
+    if (s.type === 'done') return `Hoàn thành!`;
+    return s.desc || '';
+  }
+    
+    // Mô tả cho A*
+    if (algo === 'aStar') {
+      if (s.type === 'init') return `Khởi tạo: bắt đầu từ ${s.start} → ${s.goal}`;
+      if (s.type === 'process') return `Xử lý nút ${s.node} (g=${s.gScore?.[s.node]}, f=${s.fScore?.[s.node]})`;
+      if (s.type === 'relax') return `Xét cạnh ${s.from}→${s.to} (w=${s.weight}): g=${s.tentativeG}`;
+      if (s.type === 'update') return `Cập nhật ${s.node}: g=${s.gScore}, f=${s.fScore} (từ ${s.from})`;
+      if (s.type === 'goal_found') return `✓ Tìm thấy đường đi đến ${s.goal}! Độ dài: ${(s.path?.length || 0) - 1} bước`;
+      if (s.type === 'no_path') return `Không tìm thấy đường đi từ ${s.start} đến ${s.goal}`;
+      if (s.type === 'done') return s.desc || `Hoàn thành!`;
+      return s.desc || '';
+    }
+    
     if (s.type === 'visit')         return `Thăm nút ${s.node}`;
     if (s.type === 'process')       return `Xử lý nút ${s.node}`;
     if (s.type === 'discover')      return `Phát hiện ${s.to} từ ${s.from}`;
@@ -212,12 +356,14 @@ export default function GraphPage() {
   const showTopo  = algo === 'topoDFS'  || algo === 'topoKahn';
   const showSCC   = algo === 'kosaraju';
   const showIter  = algo === 'bellmanFord';
+  const showAStar  = algo === 'aStar';
+  const showBestFirst = algo === 'bestFirst';
 
   return (
     <div className="page">
       <div className="page-header">
         <h1>Graph Algorithms</h1>
-        <p>BFS, DFS, Dijkstra, Bellman-Ford, Kruskal, Prim — vẽ đồ thị và xem từng bước</p>
+        <p>BFS, DFS, Dijkstra, A*, Bellman-Ford, Kruskal, Prim — vẽ đồ thị và xem từng bước</p>
       </div>
 
       <div className="algo-tabs">
@@ -264,11 +410,11 @@ export default function GraphPage() {
             {graph.nodes.map((n, i) => (
               <g key={i} onMouseDown={e => {
     if (addMode === 'edge') {
-      e.stopPropagation();        // không bubble lên SVG onClick
+      e.stopPropagation();
       handleNodeClickForEdge(n.id);
       return;
     }
-    handleMouseDown(e, n.id);    // drag mode bình thường
+    handleMouseDown(e, n.id);
   }}
   style={{ cursor: addMode === 'edge' ? 'pointer' : 'grab' }}>
                 <circle cx={n.x} cy={n.y} r={20} fill={nodeColor(n.id)} stroke="#ffffff"
@@ -279,7 +425,7 @@ export default function GraphPage() {
             ))}
           </svg>
 
-          {(showQueue || showStack || showPQ || showIter) && (
+          {(showQueue || showStack || showPQ || showIter || showAStar || showBestFirst) && (
             <div className="graph-ds-panel">
               {showQueue && (
                 <div className="ds-box">
@@ -335,6 +481,43 @@ export default function GraphPage() {
                   </div>
                 </div>
               )}
+              {showAStar && (
+                <div className="ds-box">
+                  <div className="ds-title">A* — g-score &amp; f-score</div>
+                  <div className="ds-dist-row">
+                    {curStep?.gScore && Object.entries(curStep.gScore).map(([k, v]) => (
+                      <div key={k} className="ds-dist-cell" style={{
+                        borderColor: curStep.closedSet?.includes?.(k) ? '#f43f5e' : 
+                                     curStep.openSet?.includes?.(k) ? '#f59e0b' : '#1e3a5f'
+                      }}>
+                        <span className="ds-dist-node">{k}</span>
+                        <span className="ds-dist-val" style={{ fontSize: 10 }}>
+                          g={v === Infinity ? '∞' : v}
+                          {curStep.fScore && <>, f={curStep.fScore[k] === Infinity ? '∞' : curStep.fScore[k]}</>}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {showBestFirst && (
+      <div className="ds-box">
+        <div className="ds-title">Best-First — Heuristic (h-score)</div>
+        <div className="ds-dist-row">
+          {curStep?.fScore && Object.entries(curStep.fScore).map(([k, v]) => (
+            <div key={k} className="ds-dist-cell" style={{
+              borderColor: curStep.closedSet?.includes?.(k) ? '#f43f5e' : 
+                           curStep.openSet?.includes?.(k) ? '#f59e0b' : '#1e3a5f'
+            }}>
+              <span className="ds-dist-node">{k}</span>
+              <span className="ds-dist-val">
+                h={v === Infinity ? '∞' : v}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
             </div>
           )}
 
@@ -379,6 +562,17 @@ export default function GraphPage() {
                 <span key={k} className="dist-cell">{k}: {v === Infinity ? '∞' : v}</span>
               ))
             }
+            {algo === 'aStar' && curStep?.gScore && (
+              Object.entries(curStep.gScore).map(([k, v]) => (
+                <span key={k} className="dist-cell" style={{
+                  color: curStep.closedSet?.includes?.(k) ? '#f43f5e' : 
+                         curStep.openSet?.includes?.(k) ? '#f59e0b' : '#8b9eb5'
+                }}>
+                  {k}: g={v === Infinity ? '∞' : v}
+                  {curStep.fScore && <>, f={curStep.fScore[k] === Infinity ? '∞' : curStep.fScore[k]}</>}
+                </span>
+              ))
+            )}
             {(algo === 'kruskal' || algo === 'prim') && curStep?.mst && (
               <span className="dist-cell">
                 MST: {curStep.mst.length} cạnh
@@ -396,7 +590,6 @@ export default function GraphPage() {
                 onClick={() => setMode('node')}>+ Nút</button>
               <button className={`mode-btn ${addMode === 'edge' ? 'active' : ''}`}
                 onClick={() => setMode('edge')}>⟶ Cạnh</button>
-              {/* FIX: Reset đầy đủ tất cả state */}
               <button className="mode-btn danger"
                 onClick={() => {
                   setGraph(defaultGraph());
@@ -431,10 +624,78 @@ export default function GraphPage() {
                 </select>
               </div>
             )}
+            {algo === 'aStar' && (
+  <>
+    <div style={{ marginBottom: 8 }}>
+      <span style={{ fontSize: 11, color: '#4a6b8a' }}>Nút đích:</span>
+      <select value={goal} onChange={e => setGoal(e.target.value)}
+        className="arr-input" style={{ width: '100%', marginTop: 4 }}>
+        {graph.nodes.map(n => <option key={n.id} value={n.id}>{n.id}</option>)}
+      </select>
+    </div>
+    <div style={{ marginBottom: 8 }}>
+      <span style={{ fontSize: 11, color: '#4a6b8a' }}>Hàm Heuristic:</span>
+      <select value={heuristicType} onChange={e => setHeuristicType(e.target.value)}
+        className="arr-input" style={{ width: '100%', marginTop: 4 }}>
+        <option value="euclidean">Euclidean </option>
+        <option value="manhattan">Manhattan </option>
+      </select>
+    </div>
+  </>
+)}
+            
             <button className="btn-generate" style={{ width: '100%' }} onClick={runAlgo}>
               ▶ Chạy {ALGOS[algo].name}
             </button>
           </div>
+
+          {algo === 'aStar' && (
+            <div className="ctrl-section">
+              <h3>A* (A-star)</h3>
+              <div style={{ fontSize: 11, color: '#4a6b8a', lineHeight: 1.7 }}>
+                Kết hợp <b style={{ color: '#f472b6' }}>Dijkstra</b> và <b style={{ color: '#f472b6' }}>Heuristic</b>.<br />
+                Dùng hàm ước lượng để ưu tiên đường đi đến đích.<br />
+                <b style={{ color: '#10b981' }}>Đường màu xanh</b> là đường đi tối ưu.<br />
+                <b style={{ color: '#f59e0b' }}>Vàng</b> = trong Open Set, <b style={{ color: '#f43f5e' }}>Đỏ</b> = đã xử lý.
+              </div>
+            </div>
+          )}
+
+          {algo === 'bestFirst' && (
+  <div className="ctrl-section">
+    <h3>Best-First Search</h3>
+    <div style={{ fontSize: 11, color: '#4a6b8a', lineHeight: 1.7 }}>
+      Thuật toán <b style={{ color: '#34d399' }}>tham lam</b> chỉ dùng heuristic.<br />
+      Ưu tiên mở rộng nút có <b style={{ color: '#34d399' }}>h-score</b> nhỏ nhất.<br />
+      Không đảm bảo tối ưu nhưng <b style={{ color: '#34d399' }}>nhanh hơn</b> A*.<br />
+      <b style={{ color: '#10b981' }}>Xanh lá</b> = đường đi tìm được.<br />
+      <b style={{ color: '#f59e0b' }}>Vàng</b> = trong Open Set, <b style={{ color: '#f43f5e' }}>Đỏ</b> = đã xử lý.
+    </div>
+  </div>
+)}
+{algo === 'beam' && (
+  <div className="ctrl-section">
+    <h3>Beam Search</h3>
+    <div style={{ fontSize: 11, color: '#4a6b8a', lineHeight: 1.7 }}>
+      Biến thể của <b style={{ color: '#fbbf24' }}>Best-First Search</b> với giới hạn Beam.<br />
+      Chỉ giữ lại <b style={{ color: '#fbbf24' }}>K</b> node tốt nhất mỗi bước.<br />
+      <b style={{ color: '#fbbf24' }}>Beam Width = 3</b> (mặc định).<br />
+      Cân bằng giữa <b style={{ color: '#fbbf24' }}>tìm kiếm rộng</b> và <b style={{ color: '#fbbf24' }}>độ sâu</b>.
+    </div>
+  </div>
+)}
+
+{algo === 'tabu' && (
+  <div className="ctrl-section">
+    <h3>Tabu Search</h3>
+    <div style={{ fontSize: 11, color: '#4a6b8a', lineHeight: 1.7 }}>
+      Thuật toán <b style={{ color: '#f87171' }}>meta-heuristic</b> tối ưu.<br />
+      Dùng <b style={{ color: '#f87171' }}>danh sách Tabu</b> để tránh lặp lại.<br />
+      <b style={{ color: '#f87171' }}>K=50</b> iterations, <b style={{ color: '#f87171' }}>T=10</b> kích thước tabu.<br />
+      Có khả năng <b style={{ color: '#f87171' }}>thoát khỏi local optimum</b>.
+    </div>
+  </div>
+)}
 
           {algo === 'bellmanFord' && (
             <div className="ctrl-section">
@@ -485,6 +746,7 @@ export default function GraphPage() {
               {curStep?.visited && <div>Đã thăm: {curStep.visited.size} nút</div>}
               {curStep?.inMST   && <div>Trong MST: {curStep.inMST.size} nút</div>}
               {curStep?.mst     && <div>MST cạnh: {curStep.mst.length}</div>}
+              {(algo === 'aStar' || algo === 'bestFirst') && curStep?.closedSet && <div>Đã xử lý: {curStep.closedSet.size} nút</div>}
             </div>
           </div>
         </div>

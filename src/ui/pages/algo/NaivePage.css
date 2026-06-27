@@ -1,0 +1,437 @@
+.naive-workspace {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  gap: 0;
+}
+
+.naive-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0 24px 12px;
+  border-right: 1px solid #1e2d3d;
+  overflow-y: auto;
+}
+
+.naive-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  padding: 12px 14px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Dataset Table - same as DecisionPage */
+.dataset-container {
+  background: #0a0e1a;
+  border: 1px solid #1e2d3d;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.dataset-title {
+  font-size: 12px;
+  color: #4a6b8a;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.dataset-table-wrap {
+  overflow-x: auto;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.dataset-table {
+  width: 100%;
+  font-size: 11px;
+  border-collapse: collapse;
+}
+
+.dataset-table th {
+  text-align: left;
+  padding: 4px 8px;
+  color: #4a6b8a;
+  font-weight: 700;
+  border-bottom: 1px solid #1e2d3d;
+  position: sticky;
+  top: 0;
+  background: #0a0e1a;
+}
+
+.dataset-table td {
+  padding: 3px 8px;
+  color: #8b9eb5;
+  border-bottom: 1px solid #0d1117;
+}
+
+.dataset-table tr:hover td {
+  background: #132135;
+}
+
+/* Visualization Container */
+.viz-container {
+  flex: 1;
+  background: #0a0e1a;
+  border: 1px solid #1e2d3d;
+  border-radius: 8px;
+  padding: 16px;
+  min-height: 300px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Chart Components */
+.chart-container {
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.chart-title {
+  font-size: 12px;
+  color: #4a6b8a;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.bar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bar-label {
+  font-size: 11px;
+  color: #8b9eb5;
+  min-width: 60px;
+}
+
+.bar-track {
+  flex: 1;
+  height: 24px;
+  background: #1e2d3d;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.bar-value {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Matrix Table */
+.matrix-container {
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 6px;
+  padding: 12px;
+  overflow-x: auto;
+}
+
+.likelihood-table {
+  width: 100%;
+  font-size: 11px;
+  border-collapse: collapse;
+}
+
+.likelihood-table th {
+  padding: 6px 10px;
+  color: #4a6b8a;
+  font-weight: 700;
+  border-bottom: 2px solid #1e2d3d;
+  text-align: center;
+}
+
+.likelihood-table td {
+  padding: 5px 10px;
+  color: #8b9eb5;
+  border-bottom: 1px solid #1e2d3d;
+  text-align: center;
+}
+
+.likelihood-table tr:hover td {
+  background: #132135;
+}
+
+/* Prediction Details */
+.prediction-detail {
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.detail-class {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.detail-formula {
+  font-size: 12px;
+  color: #8b9eb5;
+  margin-bottom: 8px;
+  font-family: monospace;
+}
+
+.detail-calculation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 12px;
+  font-family: monospace;
+  padding: 8px;
+  background: #0a0e1a;
+  border-radius: 4px;
+}
+
+.calc-prior {
+  color: #58a6ff;
+}
+
+.calc-likelihood {
+  color: #f59e0b;
+}
+
+.calc-result {
+  color: #10b981;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+/* Sample Info */
+.sample-info {
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.sample-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.sample-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 8px;
+  background: #0a0e1a;
+  border-radius: 4px;
+}
+
+.sample-key {
+  color: #4a6b8a;
+  font-size: 11px;
+}
+
+.sample-value {
+  color: #fff;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+/* Prediction Result */
+.result-container {
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.result-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.result-label {
+  font-size: 13px;
+  color: #4a6b8a;
+  font-weight: bold;
+}
+
+.result-value {
+  font-size: 20px;
+  font-weight: bold;
+  padding: 2px 12px;
+  border-radius: 4px;
+}
+
+.result-value.correct {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.result-value.incorrect {
+  color: #f43f5e;
+  background: rgba(244, 63, 94, 0.1);
+}
+
+.result-actual {
+  font-size: 12px;
+  color: #8b9eb5;
+}
+
+.result-details {
+  display: flex;
+  gap: 16px;
+  padding: 8px;
+  background: #0a0e1a;
+  border-radius: 4px;
+}
+
+.result-class {
+  font-size: 12px;
+  color: #8b9eb5;
+}
+
+/* Bayes Formula */
+.bayes-formula {
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 4px;
+}
+
+.formula-title {
+  font-size: 12px;
+  color: #4a6b8a;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.formula {
+  font-size: 16px;
+  font-family: monospace;
+  text-align: center;
+  padding: 12px;
+  background: #0a0e1a;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.formula-part.prior {
+  color: #58a6ff;
+}
+
+.formula-part.likelihood {
+  color: #f59e0b;
+}
+
+.formula-part.operator {
+  color: #4a6b8a;
+}
+
+.formula-desc {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+}
+
+.desc-item.prior {
+  color: #58a6ff;
+}
+
+.desc-item.likelihood {
+  color: #f59e0b;
+}
+
+.desc-item.posterior {
+  color: #10b981;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .naive-workspace {
+    flex-direction: column;
+  }
+  
+  .naive-sidebar {
+    width: 100%;
+    border-top: 1px solid #1e2d3d;
+  }
+  
+  .naive-main {
+    border-right: none;
+  }
+}
+
+/* ─── Custom Scrollbar cho Decision Page ────────────────────────────────── */
+
+/* Cho thanh cuộn của decision-main */
+.naive-main::-webkit-scrollbar {
+  width: 6px;
+}
+
+.naive-main::-webkit-scrollbar-track {
+  background: #0d1117;
+  border-radius: 4px;
+}
+
+.naive-main::-webkit-scrollbar-thumb {
+  background: #1e2d3d;
+  border-radius: 4px;
+}
+
+.naive-main::-webkit-scrollbar-thumb:hover {
+  background: #30363d;
+}
+
+/* Cho thanh cuộn của decision-sidebar */
+.naive-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.naive-sidebar::-webkit-scrollbar-track {
+  background: #0d1117;
+  border-radius: 4px;
+}
+
+.naive-sidebar::-webkit-scrollbar-thumb {
+  background: #1e2d3d;
+  border-radius: 4px;
+}
+
+.naive-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #30363d;
+}
+
+/* Firefox cho cả 2 */
+.naive-main,
+.naive-sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: #1e2d3d #0d1117;
+}

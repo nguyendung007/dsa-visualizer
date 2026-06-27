@@ -1,0 +1,187 @@
+.maze-workspace {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  gap: 16px;
+}
+
+.maze-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0 24px 12px;
+  border-right: 1px solid #1e2d3d;
+  overflow: hidden;
+}
+
+.step-desc {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #101726;
+  border: 1px solid #1e2d3d;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+}
+
+.step-badge {
+  background: #1e2d3d;
+  color: #8b9eb5;
+  font-size: 11px;
+  font-family: monospace;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.step-text {
+  font-size: 13px;
+  color: #e2e8f0;
+}
+
+/* Khu vực lưới Mê Cung */
+.maze-grid-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0d1117;
+  border-radius: 8px;
+  border: 1px solid #1e2d3d;
+  padding: 16px;
+  overflow: auto;
+}
+
+.maze-grid {
+  display: grid;
+  background: #161b22;
+  gap: 1px; /* Tạo đường viền mảnh giữa các ô */
+  border: 2px solid #30363d;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  user-select: none;
+}
+
+/* Cấu trúc một ô ô lưới */
+.maze-cell {
+  background: #0d1117;
+  aspect-ratio: 1 / 1;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+  cursor: pointer;
+}
+
+.maze-cell:hover {
+  transform: scale(0.95);
+  filter: brightness(1.2);
+}
+
+/* Các trạng thái tĩnh của Ô */
+.maze-cell.wall {
+  background: #21262d;
+  border-radius: 2px;
+}
+
+.maze-cell.start {
+  background: #58a6ff !important;
+  animation: pulse-marker 1.5s infinite;
+}
+
+.maze-cell.goal {
+  background: #f472b6 !important;
+  animation: pulse-marker 1.5s infinite;
+}
+
+/* Trạng thái động từ Animation Engine (curStep) */
+.maze-cell.current {
+  background: #f59e0b !important; /* Màu vàng khi đang xét */
+  transform: scale(1.05);
+  z-index: 2;
+}
+
+.maze-cell.visited {
+  background: rgba(16, 185, 129, 0.25); /* Xanh lá nhạt cho ô đã duyệt */
+  border: 1px solid rgba(16, 185, 129, 0.5);
+}
+
+.maze-cell.path {
+  background: #10b981 !important; /* Xanh lá đậm cho đường đi ngắn nhất hoàn chỉnh */
+  border: 1px solid #ffffff;
+  animation: path-grow 0.3s ease-out forward;
+}
+
+/* Sidebar và Bảng điều khiển */
+.maze-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  padding: 12px 14px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ctrl-section {
+  background: #101726;
+  border: 1px solid #1e2d3d;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.ctrl-section h3 {
+  font-size: 12px;
+  color: #8b9eb5;
+  text-transform: uppercase;
+  margin-top: 0;
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+
+.mode-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mode-btn {
+  background: #161b22;
+  border: 1px solid #30363d;
+  color: #c9d1d9;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.mode-btn:hover {
+  background: #21262d;
+}
+
+.mode-btn.active {
+  background: var(--btn-color, #1f6feb);
+  border-color: transparent;
+  color: white;
+  font-weight: 600;
+}
+
+.mode-btn.danger {
+  border-color: #f85149;
+  color: #f85149;
+}
+
+.mode-btn.danger:hover {
+  background: rgba(248, 81, 73, 0.1);
+}
+
+/* Hiệu ứng Animations */
+@keyframes pulse-marker {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.95); opacity: 0.9; }
+  100% { transform: scale(1); }
+}
+
+@keyframes path-grow {
+  0% { transform: scale(0.5); background-color: #f59e0b; }
+  100% { transform: scale(1); background-color: #10b981; }
+}

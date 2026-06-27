@@ -314,3 +314,750 @@ export function topoSortKahn(graph, nodes) {
   steps.push({ type: 'done', order, hasCycle, desc: hasCycle ? '⚠ Đồ thị có chu trình!' : `✓ Thứ tự: ${order.join(' → ')}` });
   return steps;
 }
+
+// A-star.js
+export function aStar(graph, start, goal, heuristic = null) {
+  const steps = [];
+  
+  // Lấy danh sách tất cả nodes từ graph
+  const nodes = Object.keys(graph);
+  
+  // Hàm heuristic mặc định (trả về 0 - hoạt động như Dijkstra)
+  const defaultHeuristic = (node, goal) => 0;
+  const hFunc = heuristic || defaultHeuristic;
+  
+  // Khởi tạo các cấu trúc dữ liệu
+  const gScore = {};
+  const fScore = {};
+  const cameFrom = {};
+  const openSet = new Set();
+  const closedSet = new Set();
+  
+  // Khởi tạo giá trị cho tất cả nodes
+  nodes.forEach(n => {
+    gScore[n] = Infinity;
+    fScore[n] = Infinity;
+  });
+  
+  gScore[start] = 0;
+  fScore[start] = hFunc(start, goal);
+  openSet.add(start);
+  
+  // Lưu bước khởi tạo
+  steps.push({
+    type: 'init',
+    start,
+    goal,
+    openSet: new Set(openSet),
+    closedSet: new Set(closedSet),
+    gScore: { ...gScore },
+    fScore: { ...fScore },
+    cameFrom: { ...cameFrom },
+    queue: [...openSet],
+    stack: []
+  });
+  
+  while (openSet.size > 0) {
+    // Tìm node trong openSet có fScore nhỏ nhất
+    let current = null;
+    let minF = Infinity;
+    
+    for (const node of openSet) {
+      if (fScore[node] < minF) {
+        minF = fScore[node];
+        current = node;
+      }
+    }
+    
+    // Lưu bước xử lý node hiện tại
+    steps.push({
+      type: 'process',
+      node: current,
+      openSet: new Set(openSet),
+      closedSet: new Set(closedSet),
+      gScore: { ...gScore },
+      fScore: { ...fScore },
+      cameFrom: { ...cameFrom },
+      queue: [...openSet],
+      stack: [...closedSet]
+    });
+    
+    // Kiểm tra nếu đã đến đích
+    if (current === goal) {
+      // Xây dựng đường đi
+      const path = [];
+      let temp = current;
+      while (temp) {
+        path.unshift(temp);
+        temp = cameFrom[temp];
+      }
+      
+      // Lưu bước tìm thấy đích
+      steps.push({
+        type: 'goal_found',
+        current,
+        path,
+        openSet: new Set(openSet),
+        closedSet: new Set(closedSet),
+        gScore: { ...gScore },
+        fScore: { ...fScore },
+        cameFrom: { ...cameFrom },
+        queue: [...openSet],
+        stack: [...closedSet]
+      });
+      
+      // Lưu bước kết thúc
+      steps.push({
+        type: 'done',
+        path,
+        cost: gScore[goal],
+        openSet: new Set(openSet),
+        closedSet: new Set(closedSet),
+        gScore: { ...gScore },
+        fScore: { ...fScore },
+        cameFrom: { ...cameFrom },
+        queue: [],
+        stack: []
+      });
+      
+      return steps;
+    }
+    
+    // Di chuyển current từ openSet sang closedSet
+    openSet.delete(current);
+    closedSet.add(current);
+    
+    // Duyệt qua các neighbor của current
+    for (const edge of (graph[current] || [])) {
+      const neighbor = edge.to;
+      const weight = edge.weight || 1;
+      
+      // Lưu bước xét cạnh
+      steps.push({
+        type: 'relax',
+        from: current,
+        to: neighbor,
+        weight,
+        currentG: gScore[neighbor],
+        tentativeG: gScore[current] + weight,
+        openSet: new Set(openSet),
+        closedSet: new Set(closedSet),
+        gScore: { ...gScore },
+        fScore: { ...fScore },
+        queue: [...openSet],
+        stack: [...closedSet]
+      });
+      
+      if (closedSet.has(neighbor)) {
+        continue;
+      }
+      
+      const tentativeG = gScore[current] + weight;
+      
+      if (tentativeG < gScore[neighbor]) {
+        // Cập nhật đường đi tốt hơn
+        cameFrom[neighbor] = current;
+        gScore[neighbor] = tentativeG;
+        fScore[neighbor] = tentativeG + hFunc(neighbor, goal);
+        
+        if (!openSet.has(neighbor)) {
+          openSet.add(neighbor);
+        }
+        
+        // Lưu bước cập nhật
+        steps.push({
+          type: 'update',
+          node: neighbor,
+          from: current,
+          gScore: gScore[neighbor],
+          fScore: fScore[neighbor],
+          openSet: new Set(openSet),
+          closedSet: new Set(closedSet),
+          gScoreAll: { ...gScore },
+          fScoreAll: { ...fScore },
+          cameFrom: { ...cameFrom },
+          queue: [...openSet],
+          stack: [...closedSet]
+        });
+      }
+    }
+  }
+  
+  // Không tìm thấy đường đi
+  steps.push({
+    type: 'no_path',
+    openSet: new Set(openSet),
+    closedSet: new Set(closedSet),
+    gScore: { ...gScore },
+    fScore: { ...fScore },
+    cameFrom: { ...cameFrom },
+    queue: [],
+    stack: [...closedSet]
+  });
+  
+  steps.push({
+    type: 'done',
+    path: [],
+    cost: Infinity,
+    openSet: new Set(openSet),
+    closedSet: new Set(closedSet),
+    gScore: { ...gScore },
+    fScore: { ...fScore },
+    cameFrom: { ...cameFrom },
+    queue: [],
+    stack: [...closedSet]
+  });
+  
+  return steps;
+}
+
+// Hàm heuristic Manhattan (có thể import riêng nếu cần)
+export function heuristicManhattan(goal) {
+  return function(node) {
+    const [nx, ny] = node.split(',').map(Number);
+    const [gx, gy] = goal.split(',').map(Number);
+    return Math.abs(nx - gx) + Math.abs(ny - gy);
+  };
+}
+
+// Hàm heuristic Euclidean (có thể import riêng nếu cần)
+export function heuristicEuclidean(goal) {
+  return function(node) {
+    const [nx, ny] = node.split(',').map(Number);
+    const [gx, gy] = goal.split(',').map(Number);
+    return Math.sqrt(Math.pow(nx - gx, 2) + Math.pow(ny - gy, 2));
+  };
+}
+
+// Thêm vào cuối file index.js, sau hàm aStar
+
+export function bestFirstSearch(graph, start, goal, heuristic = null) {
+  const steps = [];
+  
+  // Lấy danh sách tất cả nodes từ graph
+  const nodes = Object.keys(graph);
+  
+  // Hàm heuristic mặc định (trả về 0)
+  const defaultHeuristic = (node, goal) => 0;
+  const hFunc = heuristic || defaultHeuristic;
+  
+  // Khởi tạo các cấu trúc dữ liệu
+  const cameFrom = {};
+  const openSet = new Set();
+  const closedSet = new Set();
+  const fScore = {}; // Chỉ lưu f-score (heuristic)
+  
+  // Khởi tạo giá trị cho tất cả nodes
+  nodes.forEach(n => {
+    fScore[n] = Infinity;
+  });
+  
+  fScore[start] = hFunc(start, goal);
+  openSet.add(start);
+  
+  // Lưu bước khởi tạo
+  steps.push({
+    type: 'init',
+    start,
+    goal,
+    openSet: new Set(openSet),
+    closedSet: new Set(closedSet),
+    fScore: { ...fScore },
+    cameFrom: { ...cameFrom },
+    queue: [...openSet],
+    stack: []
+  });
+  
+  while (openSet.size > 0) {
+    // Tìm node trong openSet có fScore nhỏ nhất (heuristic tốt nhất)
+    let current = null;
+    let minF = Infinity;
+    
+    for (const node of openSet) {
+      if (fScore[node] < minF) {
+        minF = fScore[node];
+        current = node;
+      }
+    }
+    
+    // Lưu bước xử lý node hiện tại
+    steps.push({
+      type: 'process',
+      node: current,
+      openSet: new Set(openSet),
+      closedSet: new Set(closedSet),
+      fScore: { ...fScore },
+      cameFrom: { ...cameFrom },
+      queue: [...openSet],
+      stack: [...closedSet]
+    });
+    
+    // Kiểm tra nếu đã đến đích
+    if (current === goal) {
+      // Xây dựng đường đi
+      const path = [];
+      let temp = current;
+      while (temp) {
+        path.unshift(temp);
+        temp = cameFrom[temp];
+      }
+      
+      steps.push({
+        type: 'goal_found',
+        current,
+        path,
+        openSet: new Set(openSet),
+        closedSet: new Set(closedSet),
+        fScore: { ...fScore },
+        cameFrom: { ...cameFrom },
+        queue: [...openSet],
+        stack: [...closedSet]
+      });
+      
+      steps.push({
+        type: 'done',
+        path,
+        cost: path.length - 1,
+        openSet: new Set(openSet),
+        closedSet: new Set(closedSet),
+        fScore: { ...fScore },
+        cameFrom: { ...cameFrom },
+        queue: [],
+        stack: []
+      });
+      
+      return steps;
+    }
+    
+    // Di chuyển current từ openSet sang closedSet
+    openSet.delete(current);
+    closedSet.add(current);
+    
+    // Duyệt qua các neighbor của current
+    for (const edge of (graph[current] || [])) {
+      const neighbor = edge.to;
+      const weight = edge.weight || 1;
+      
+      if (closedSet.has(neighbor)) {
+        continue;
+      }
+      
+      if (!openSet.has(neighbor)) {
+        cameFrom[neighbor] = current;
+        fScore[neighbor] = hFunc(neighbor, goal);
+        openSet.add(neighbor);
+        
+        steps.push({
+          type: 'discover',
+          node: neighbor,
+          from: current,
+          fScore: fScore[neighbor],
+          openSet: new Set(openSet),
+          closedSet: new Set(closedSet),
+          fScoreAll: { ...fScore },
+          cameFrom: { ...cameFrom },
+          queue: [...openSet],
+          stack: [...closedSet]
+        });
+      }
+    }
+  }
+  
+  // Không tìm thấy đường đi
+  steps.push({
+    type: 'no_path',
+    openSet: new Set(openSet),
+    closedSet: new Set(closedSet),
+    fScore: { ...fScore },
+    cameFrom: { ...cameFrom },
+    queue: [],
+    stack: [...closedSet]
+  });
+  
+  steps.push({
+    type: 'done',
+    path: [],
+    cost: Infinity,
+    openSet: new Set(openSet),
+    closedSet: new Set(closedSet),
+    fScore: { ...fScore },
+    cameFrom: { ...cameFrom },
+    queue: [],
+    stack: [...closedSet]
+  });
+  
+  return steps;
+}
+
+// Thêm sau bestFirstSearch
+
+// ─── Beam Search ────────────────────────────────────────────────────────────
+export function beamSearch(graph, start, goal, beamWidth = 3, heuristic = null) {
+  const steps = [];
+  
+  const nodes = Object.keys(graph);
+  const defaultHeuristic = (node, goal) => 0;
+  const hFunc = heuristic || defaultHeuristic;
+  
+  // Khởi tạo
+  const cameFrom = {};
+  const gScore = {};
+  const fScore = {};
+  const openSet = new Set();
+  const closedSet = new Set();
+  
+  nodes.forEach(n => {
+    gScore[n] = Infinity;
+    fScore[n] = Infinity;
+  });
+  
+  gScore[start] = 0;
+  fScore[start] = hFunc(start, goal);
+  openSet.add(start);
+  
+  steps.push({
+    type: 'init',
+    start,
+    goal,
+    beamWidth,
+    openSet: new Set(openSet),
+    closedSet: new Set(closedSet),
+    gScore: { ...gScore },
+    fScore: { ...fScore },
+    cameFrom: { ...cameFrom },
+    queue: [...openSet],
+    stack: []
+  });
+  
+  while (openSet.size > 0) {
+    // Chọn beam tốt nhất từ openSet
+    const beam = Array.from(openSet)
+      .sort((a, b) => fScore[a] - fScore[b])
+      .slice(0, beamWidth);
+    
+    const nextOpenSet = new Set();
+    
+    for (const current of beam) {
+      steps.push({
+        type: 'process',
+        node: current,
+        beam: [...beam],
+        openSet: new Set(openSet),
+        closedSet: new Set(closedSet),
+        gScore: { ...gScore },
+        fScore: { ...fScore },
+        queue: [...openSet],
+        stack: [...closedSet]
+      });
+      
+      if (current === goal) {
+        const path = [];
+        let temp = current;
+        while (temp) {
+          path.unshift(temp);
+          temp = cameFrom[temp];
+        }
+        
+        steps.push({
+          type: 'goal_found',
+          current,
+          path,
+          openSet: new Set(openSet),
+          closedSet: new Set(closedSet),
+          gScore: { ...gScore },
+          fScore: { ...fScore },
+          queue: [...openSet],
+          stack: [...closedSet]
+        });
+        
+        steps.push({
+          type: 'done',
+          path,
+          cost: gScore[goal],
+          openSet: new Set(openSet),
+          closedSet: new Set(closedSet),
+          gScore: { ...gScore },
+          fScore: { ...fScore },
+          queue: [],
+          stack: []
+        });
+        
+        return steps;
+      }
+      
+      closedSet.add(current);
+      
+      for (const edge of (graph[current] || [])) {
+        const neighbor = edge.to;
+        const weight = edge.weight || 1;
+        
+        if (closedSet.has(neighbor)) continue;
+        
+        const tentativeG = gScore[current] + weight;
+        
+        if (tentativeG < gScore[neighbor]) {
+          cameFrom[neighbor] = current;
+          gScore[neighbor] = tentativeG;
+          fScore[neighbor] = tentativeG + hFunc(neighbor, goal);
+          
+          if (!openSet.has(neighbor)) {
+            openSet.add(neighbor);
+          }
+          
+          nextOpenSet.add(neighbor);
+          
+          steps.push({
+            type: 'update',
+            node: neighbor,
+            from: current,
+            gScore: gScore[neighbor],
+            fScore: fScore[neighbor],
+            openSet: new Set(openSet),
+            closedSet: new Set(closedSet),
+            gScoreAll: { ...gScore },
+            fScoreAll: { ...fScore },
+            cameFrom: { ...cameFrom },
+            queue: [...openSet],
+            stack: [...closedSet]
+          });
+        }
+      }
+    }
+    
+    // Cập nhật openSet cho vòng lặp tiếp theo
+    // Giữ lại các node tốt nhất dựa trên fScore
+    const allCandidates = Array.from(openSet)
+      .filter(n => !closedSet.has(n))
+      .sort((a, b) => fScore[a] - fScore[b])
+      .slice(0, beamWidth * 2); // Lấy nhiều hơn beamWidth để có đa dạng
+    
+    openSet.clear();
+    allCandidates.forEach(n => openSet.add(n));
+    
+    // Nếu không còn node nào trong openSet sau khi lọc
+    if (openSet.size === 0 && !closedSet.has(goal)) {
+      steps.push({
+        type: 'no_path',
+        openSet: new Set(openSet),
+        closedSet: new Set(closedSet),
+        gScore: { ...gScore },
+        fScore: { ...fScore },
+        queue: [],
+        stack: [...closedSet]
+      });
+      
+      steps.push({
+        type: 'done',
+        path: [],
+        cost: Infinity,
+        openSet: new Set(openSet),
+        closedSet: new Set(closedSet),
+        gScore: { ...gScore },
+        fScore: { ...fScore },
+        queue: [],
+        stack: [...closedSet]
+      });
+      
+      return steps;
+    }
+  }
+  
+  // Không tìm thấy đường đi
+  steps.push({
+    type: 'no_path',
+    openSet: new Set(openSet),
+    closedSet: new Set(closedSet),
+    gScore: { ...gScore },
+    fScore: { ...fScore },
+    queue: [],
+    stack: [...closedSet]
+  });
+  
+  steps.push({
+    type: 'done',
+    path: [],
+    cost: Infinity,
+    openSet: new Set(openSet),
+    closedSet: new Set(closedSet),
+    gScore: { ...gScore },
+    fScore: { ...fScore },
+    queue: [],
+    stack: [...closedSet]
+  });
+  
+  return steps;
+}
+
+// ─── Tabu Search ────────────────────────────────────────────────────────────
+export function tabuSearch(graph, start, goal, maxIterations = 100, tabuSize = 10, heuristic = null) {
+  const steps = [];
+  
+  const nodes = Object.keys(graph);
+  const defaultHeuristic = (node, goal) => 0;
+  const hFunc = heuristic || defaultHeuristic;
+  
+  // Khởi tạo giải pháp ban đầu (tìm đường đi đơn giản)
+  let currentPath = [start];
+  let currentCost = 0;
+  let bestPath = [start];
+  let bestCost = Infinity;
+  
+  const tabuList = [];
+  const visitedSet = new Set([start]);
+  
+  steps.push({
+    type: 'init',
+    start,
+    goal,
+    maxIterations,
+    tabuSize,
+    currentPath: [...currentPath],
+    currentCost,
+    bestPath: [...bestPath],
+    bestCost,
+    tabuList: [...tabuList],
+    visited: new Set(visitedSet),
+    gScore: { [start]: 0 },
+    fScore: { [start]: hFunc(start, goal) },
+    queue: [],
+    stack: []
+  });
+  
+  // Xây dựng danh sách hàng xóm cho mỗi node
+  const neighbors = {};
+  nodes.forEach(n => {
+    neighbors[n] = graph[n]?.map(e => e.to) || [];
+  });
+  
+  // Hàm tính chi phí của đường đi
+  const calculatePathCost = (path) => {
+    let cost = 0;
+    for (let i = 0; i < path.length - 1; i++) {
+      const edge = graph[path[i]]?.find(e => e.to === path[i + 1]);
+      if (edge) {
+        cost += edge.weight || 1;
+      } else {
+        return Infinity;
+      }
+    }
+    return cost;
+  };
+  
+  let iteration = 0;
+  let foundGoal = false;
+  
+  while (iteration < maxIterations && !foundGoal && currentPath.length > 0) {
+    const currentNode = currentPath[currentPath.length - 1];
+    
+    // Nếu đã đến goal
+    if (currentNode === goal) {
+      foundGoal = true;
+      const totalCost = calculatePathCost(currentPath);
+      if (totalCost < bestCost) {
+        bestPath = [...currentPath];
+        bestCost = totalCost;
+      }
+      
+      steps.push({
+        type: 'goal_found',
+        currentPath: [...currentPath],
+        bestPath: [...bestPath],
+        bestCost,
+        iteration,
+        tabuList: [...tabuList],
+        visited: new Set(visitedSet),
+        queue: [],
+        stack: []
+      });
+      break;
+    }
+    
+    // Lấy các hàng xóm chưa thăm hoặc không trong tabu
+    const candidates = (neighbors[currentNode] || [])
+      .filter(n => !visitedSet.has(n) && !tabuList.includes(n))
+      .sort((a, b) => hFunc(a, goal) - hFunc(b, goal));
+    
+    if (candidates.length === 0) {
+      // Nếu không có lựa chọn nào, quay lui một bước (tìm đường mới)
+      if (currentPath.length > 1) {
+        const backNode = currentPath[currentPath.length - 2];
+        const backCost = calculatePathCost(currentPath.slice(0, -1));
+        currentPath = currentPath.slice(0, -1);
+        currentCost = backCost;
+        
+        steps.push({
+          type: 'backtrack',
+          node: backNode,
+          currentPath: [...currentPath],
+          currentCost,
+          iteration: iteration + 1,
+          tabuList: [...tabuList],
+          visited: new Set(visitedSet),
+          queue: [],
+          stack: []
+        });
+      } else {
+        break;
+      }
+    } else {
+      // Chọn candidate tốt nhất
+      const nextNode = candidates[0];
+      const newCost = calculatePathCost([...currentPath, nextNode]);
+      
+      // Cập nhật
+      currentPath.push(nextNode);
+      currentCost = newCost;
+      visitedSet.add(nextNode);
+      
+      // Cập nhật tabu
+      tabuList.push(nextNode);
+      if (tabuList.length > tabuSize) {
+        tabuList.shift();
+      }
+      
+      // Cập nhật giải pháp tốt nhất
+      if (newCost < bestCost && nextNode === goal) {
+        bestPath = [...currentPath];
+        bestCost = newCost;
+      }
+      
+      steps.push({
+        type: 'explore',
+        node: nextNode,
+        from: currentNode,
+        currentPath: [...currentPath],
+        currentCost,
+        bestPath: [...bestPath],
+        bestCost,
+        iteration: iteration + 1,
+        tabuList: [...tabuList],
+        visited: new Set(visitedSet),
+        gScore: { ...Object.fromEntries(currentPath.map((n, i) => [n, i])) },
+        fScore: { ...Object.fromEntries(currentPath.map((n, i) => [n, i + hFunc(n, goal)])) },
+        queue: [...currentPath],
+        stack: [...tabuList]
+      });
+    }
+    
+    iteration++;
+  }
+  
+  // Kết thúc
+  steps.push({
+    type: 'done',
+    path: bestPath,
+    cost: bestCost,
+    iterations: iteration,
+    foundGoal,
+    currentPath: [...currentPath],
+    currentCost,
+    bestPath: [...bestPath],
+    bestCost,
+    tabuList: [...tabuList],
+    visited: new Set(visitedSet),
+    queue: [],
+    stack: [...tabuList]
+  });
+  
+  return steps;
+}

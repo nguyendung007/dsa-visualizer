@@ -9,17 +9,24 @@ import './MainLayout.css';
 import { useLocation, useOutlet } from 'react-router-dom';
 import SplitScreenTransition from '../components/SplitScreenTransition.jsx';
 const nav = [
-  { path: '/sorting',    icon: '≋', label: 'Sorting',           desc: 'Vài thuật toán sắp xếp' },
-  { path: '/trees',      icon: '⌥', label: 'BST & AVL Tree',    desc: 'Chèn-Xóa cây BST/AVL ' },
-  { path: '/traversal',  icon: '↺', label: 'Tree Traversal',    desc: 'Các loại duyệt cây - Biểu thức' },
-  { path: '/graph',      icon: '◎', label: 'Graph',             desc: 'Các thuật toán đồ thị' },
-  { path: '/structures', icon: '⊞', label: 'Data Structures',   desc: 'Các cấu trúc dữ liệu cơ bản' },
-  { path: '/linkedlist', icon: '⟶', label: 'Linked List',       desc: 'Singly·Doubly·Circular — Chèn·Xóa·Đảo ngược' },
-  { path: '/unionfind',  icon: '⊕', label: 'Union-Find',        desc: 'Quick Find·Quick Union·Weighted·Path Compression' },
-  { path: '/strings',    icon: 'Σ', label: 'String Algorithms', desc: 'TST·LSD/MSD·3-Way·Suffix Array·KMP·BM·RK' },
-  { path: '/problems',   icon: '⚡', label: 'Problems',          desc: 'Two Sum: Brute Force·Two Pointer·Hash Map' },
-  { path: '/complexity', icon: '𝑂', label: 'Complexity',        desc: 'Big-O lý thuyết + bảng tra cứu tất cả thuật toán' },
-  { path: '/settings', icon: '⚙', label: 'Settings', desc: 'Font · Màu nền' },
+  { path: '/sorting',    icon: '📊', label: 'Sorting',           desc: 'Vài thuật toán sắp xếp' },
+  { path: '/trees',      icon: '🌳', label: 'BST & AVL Tree',    desc: 'Chèn-Xóa cây BST/AVL' },
+  { path: '/traversal',  icon: '🔄', label: 'Tree Traversal',    desc: 'Các loại duyệt cây - Biểu thức' },
+  { path: '/graph',      icon: '🔗', label: 'Graph',             desc: 'Các thuật toán đồ thị' },
+  { path: '/maze',       icon: '🗺️', label: 'Maze',              desc: 'Các thuật toán tìm kiếm trong mê cung' },
+  { path: '/adversarial', icon: '⚔️', label: 'Adversarial',      desc: 'Các thuật toán tìm kiếm đối kháng' },
+  { path: '/knowledge',  icon: '🧠', label: 'Knowledge',         desc: 'Các mô hình tri thức cơ bản' },
+  { path: '/localsearch', icon: '🔍', label: 'LocalSearch',      desc: 'Các thuật toán tìm kiếm cục bộ' },
+  { path: '/decision',   icon: '🌿', label: 'Decision Tree',     desc: 'ID3 - Xây dựng cây quyết định' },
+  { path: '/naive',      icon: '📐', label: 'Naive Bayes',       desc: 'Phân loại xác suất với định lý Bayes' },
+  { path: '/structures', icon: '📦', label: 'Data Structures',   desc: 'Các cấu trúc dữ liệu cơ bản' },
+  { path: '/linkedlist', icon: '⛓️', label: 'Linked List',       desc: 'Singly·Doubly·Circular — Chèn·Xóa·Đảo ngược' },
+  { path: '/unionfind',  icon: '🔀', label: 'Union-Find',        desc: 'Quick Find·Quick Union·Weighted·Path Compression' },
+  { path: '/strings',    icon: '🔤', label: 'String Algorithms', desc: 'TST·LSD/MSD·3-Way·Suffix Array·KMP·BM·RK' },
+  { path: '/problems',   icon: '🎯', label: 'Problems',          desc: 'Two Sum: Brute Force·Two Pointer·Hash Map' },
+  { path: '/csp',   icon: '[o]', label: 'Csp',        desc: 'Các bài toán có ràng buộc CSP' },
+  { path: '/complexity', icon: '📈', label: 'Complexity',        desc: 'Big-O lý thuyết + bảng tra cứu tất cả thuật toán' },
+  { path: '/settings',   icon: '⚙️', label: 'Settings',          desc: 'Font · Màu nền' },
 ];
 
 
