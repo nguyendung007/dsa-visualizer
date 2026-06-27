@@ -119,7 +119,29 @@ Cài đặt được **lưu vào localStorage** — giữ nguyên sau khi reload
 
 ---
 
-## 4. 🛠️ Công cụ phân tích mã nguồn (Python Tools)
+## 4. 🚀 Các cải tiến của phiên bản v.15
+
+### 📌 Thuật toán tìm kiếm
+- ✅ Thêm `BestFirstSearch` vào Graph
+- ✅ Thêm thuật toán `A-star` vào Graph
+- ✅ Thêm `Tabu Search` và `Beam Search` vào GraphPage
+- ✅ Thêm `Tabu Search` và `Beam Search` vào MazePage
+
+### 📄 Trang mới
+- ✅ `KnowledgeModel` - Mô hình tri thức
+- ✅ `MazePage` - Mô phỏng mê cung
+- ✅ Trang tìm kiếm đối kháng (Adversarial Search)
+- ✅ `LocalSearch` - Tìm kiếm cục bộ với các thuật toán:
+  - Hill Climbing
+  - Simulated Annealing
+  - Genetic Algorithm
+- ✅ `DecisionTree` - Cây quyết định *(cần tối ưu UI/UX)*
+- ✅ `NaivePage` - Naive Bayes *(còn thô)*
+- ✅ `CspPage` - Bài toán thỏa mãn ràng buộc CSP (Constraint Satisfaction Problem)
+
+---
+
+## 5. 🛠️ Công cụ phân tích mã nguồn (Python Tools)
 
 Để hỗ trợ cho những ai muốn viết lại mã nguồn, ở đây có đính kèm 1 tệp web phân tích mã nguồn viết bằng Python, giúp bạn dễ dàng hiểu cấu trúc và mở rộng ứng dụng.
 
@@ -178,59 +200,87 @@ print(result['summary']['total_states_found'])
 
 ```text
 src/
-├── api/  
+├── api
 │   ├── auth.js
 │   ├── client.js
 │   └── progress.js
-├── assets/
+├── assets
 │   ├── bg1.png
 │   ├── bg2.png
 │   └── bg3.png
-├── context/
+├── context
 │   ├── AuthContext.jsx
 │   └── ProgressContext.jsx
-├── core/
-│   ├── dataStructures/
+├── core
+│   ├── adversarialSearch
 │   │   └── index.js
-│   ├── graph/
+│   ├── csp
 │   │   └── index.js
-│   ├── linkedlist/
+│   ├── dataStructures
 │   │   └── index.js
-│   ├── problems/
+│   ├── decision
 │   │   └── index.js
-│   ├── sorting/
+│   ├── graph
+│   │   └── index.js
+│   ├── knowledge
+│   │   └── index.js
+│   ├── linkedlist
+│   │   └── index.js
+│   ├── localSearch
+│   │   └── index.js
+│   ├── maze
+│   │   └── index.js
+│   ├── naive
+│   │   └── index.js
+│   ├── problems
+│   │   └── index.js
+│   ├── sorting
 │   │   ├── index.js
 │   │   └── proxyWrapper.js
-│   ├── string/
+│   ├── string
 │   │   └── index.js
-│   ├── trees/
+│   ├── trees
 │   │   ├── index.js
 │   │   └── traversal.js
-│   └── unionfind/
+│   └── unionfind
 │       └── index.js
-├── shell/
-│   └── animation/
+├── shell
+│   └── animation
 │       └── AnimationEngine.js
-├── ui/
-│   ├── components/
+├── ui
+│   ├── components
 │   │   ├── Controls.css
 │   │   ├── Controls.jsx
 │   │   ├── GlobalUIEffects.jsx
 │   │   ├── LoadingSpinner.jsx
 │   │   ├── SplitScreenTransition.jsx
 │   │   └── Toast.jsx
-│   ├── custom/
+│   ├── custom
 │   │   ├── CustomSorting.css
 │   │   └── CustomSorting.jsx
-│   ├── layouts/
+│   ├── layouts
 │   │   ├── MainLayout.css
 │   │   └── MainLayout.jsx
-│   ├── pages/
-│   │   ├── algo/
+│   ├── pages
+│   │   ├── algo
+│   │   │   ├── AdversarialPage.css
+│   │   │   ├── AdversarialPage.jsx
+│   │   │   ├── CspPage.css
+│   │   │   ├── CspPage.jsx
+│   │   │   ├── DecisionPage.css
+│   │   │   ├── DecisionPage.jsx
 │   │   │   ├── GraphPage.css
 │   │   │   ├── GraphPage.jsx
+│   │   │   ├── KnowledgePage.css
+│   │   │   ├── KnowledgePage.jsx
 │   │   │   ├── LinkedListPage.css
 │   │   │   ├── LinkedListPage.jsx
+│   │   │   ├── LocalSearchPage.css
+│   │   │   ├── LocalSearchPage.jsx
+│   │   │   ├── MazePage.css
+│   │   │   ├── MazePage.jsx
+│   │   │   ├── NaivePage.css
+│   │   │   ├── NaivePage.jsx
 │   │   │   ├── ProblemsPage.css
 │   │   │   ├── ProblemsPage.jsx
 │   │   │   ├── SortingPage.css
@@ -245,7 +295,7 @@ src/
 │   │   │   ├── TreePage.jsx
 │   │   │   ├── UnionFindPage.css
 │   │   │   └── UnionFindPage.jsx
-│   │   └── system/
+│   │   └── system
 │   │       ├── ComplexityPage.css
 │   │       ├── ComplexityPage.jsx
 │   │       ├── LoginPage.css
@@ -254,11 +304,9 @@ src/
 │   │       ├── ProgressPage.jsx
 │   │       ├── SettingsPage.css
 │   │       └── SettingsPage.jsx
-│   └── styles/
+│   └── styles
 │       └── global.css
 ├── App.jsx
 └── main.jsx
 ```
-
-
-## Cuối cùng : Đừng tạch môn này nhé mọi người :((((
+## Cuối cùng : Đây mới chỉ là bản 1.5,vẫn còn rất nhiều vấn đề và sẽ được khắc phục sớm nhất ở bản v2 hoàn chỉnh 
