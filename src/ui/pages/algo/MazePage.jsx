@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { mazeBFS, mazeDFS, mazeDijkstra, mazeAStar, mazeBeamSearch, mazeTabuSearch, generateMaze } from '../../../core/maze/index.js';
+import { mazeBFS, mazeDFS, mazeDijkstra, mazeAStar, mazeBeamSearch, mazeTabuSearch, generateMaze } from '../../../core/maze/index.ts';
 import { AnimationEngine } from '../../../shell/animation/AnimationEngine.js';
 import Controls from '../../components/Controls.jsx';
 import { useProgress } from '../../../context/ProgressContext.jsx';

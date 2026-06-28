@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
-import { bstInsert, bstDelete, treeToLayout, avlInsert, bstFloor, bstCeil } from '../../../core/trees/index.js';
+import { BSTNode, bstInsert, bstDelete, avlInsert, bstFloor, bstCeil, treeToLayout } from '../../../core/trees/index.ts';
 import { AnimationEngine } from '../../../shell/animation/AnimationEngine.js';
 import Controls from '../../components/Controls.jsx';
-import './TreePage.css';
+import { useProgress } from '../../../context/ProgressContext.jsx';
+import './TreePage.css';   // FIX 1: import đúng file CSS của chính nó
 
-const W = 640, H = 340;
+const W = 680, H = 380;  // FIX 2: width đồng bộ với treeToLayout(root, 680)
 
+// ─── Tree SVG Component ──────────────────────────────────────
 function TreeSVG({ layout, highlight, rotatingNodes, rotationPhase }) {
   return (
     <svg width="100%" viewBox={`0 0 ${W} ${H}`} className="tree-svg">
@@ -16,14 +18,14 @@ function TreeSVG({ layout, highlight, rotatingNodes, rotationPhase }) {
       {layout.nodes.map((n, i) => {
         const isRotating = rotatingNodes?.includes(n.val);
         const col = (() => {
-          if (highlight[n.val] === 'comparing')    return '#f59e0b';
-          if (highlight[n.val] === 'placed')       return '#10b981';
-          if (highlight[n.val] === 'deleting')     return '#ef4444';
-          if (highlight[n.val] === 'searching')    return '#8b5cf6';
-          if (highlight[n.val] === 'path')         return '#06b6d4';
-          if (highlight[n.val] === 'rotating')     return '#f97316';
-          if (highlight[n.val] === 'balance_ok')   return '#10b981';
-          if (highlight[n.val] === 'balance_bad')  return '#ef4444';
+          if (highlight[n.val] === 'comparing')   return '#f59e0b';
+          if (highlight[n.val] === 'placed')      return '#10b981';
+          if (highlight[n.val] === 'deleting')    return '#ef4444';
+          if (highlight[n.val] === 'searching')   return '#8b5cf6';
+          if (highlight[n.val] === 'path')        return '#06b6d4';
+          if (highlight[n.val] === 'rotating')    return '#f97316';
+          if (highlight[n.val] === 'balance_ok')  return '#10b981';
+          if (highlight[n.val] === 'balance_bad') return '#ef4444';
           return '#1d4ed8';
         })();
         return (
@@ -44,7 +46,7 @@ function TreeSVG({ layout, highlight, rotatingNodes, rotationPhase }) {
         );
       })}
       {layout.nodes.length === 0 && (
-        <text x={W/2} y={H/2} textAnchor="middle" fill="#1e3a5f" fontSize="14" fontFamily="monospace">
+        <text x={W / 2} y={H / 2} textAnchor="middle" fill="#1e3a5f" fontSize="14" fontFamily="monospace">
           Cây rỗng — nhập phần tử để bắt đầu
         </text>
       )}
@@ -52,6 +54,13 @@ function TreeSVG({ layout, highlight, rotatingNodes, rotationPhase }) {
   );
 }
 
+// ─── Algo Config ──────────────────────────────────────────────
+const ALGOS = {
+  bst: { name: 'BST', color: '#58a6ff', desc: 'Binary Search Tree' },
+  avl: { name: 'AVL Tree', color: '#f97316', desc: 'Self-balancing BST' },
+};
+
+// ─── Main Component ──────────────────────────────────────────
 export default function TreePage() {
   const [algo, setAlgo]                   = useState('bst');
   const [root, setRoot]                   = useState(null);
@@ -69,12 +78,23 @@ export default function TreePage() {
   const [log, setLog]                     = useState([]);
   const [rotatingNodes, setRotatingNodes] = useState([]);
   const [rotationPhase, setRotationPhase] = useState('');
-
-  // FIX: liveRoot được update mỗi step thay vì chỉ reset khi done
   const [liveRoot, setLiveRoot]           = useState(null);
-  const engineRef                         = useRef(null);
 
-  function highlight(step) {
+  const engineRef = useRef(null);
+  const { saveProgress } = useProgress();
+
+  // ── Helper: clone node tree (tránh mutation) ─────────────
+  function cloneTree(node) {
+    if (!node) return null;
+    const n = new BSTNode(node.val);
+    n.h = node.h ?? 1;
+    n.left  = cloneTree(node.left);
+    n.right = cloneTree(node.right);
+    return n;
+  }
+
+  // ── Helper: extract highlight từ step ────────────────────
+  function getHighlight(step) {
     if (!step) return {};
     const h = {};
     if (step.comparing !== undefined) h[step.comparing] = 'comparing';
@@ -91,113 +111,8 @@ export default function TreePage() {
     return h;
   }
 
-  function animate(newSteps, newRoot) {
-    engineRef.current?.pause();
-    setSteps(newSteps);
-    setStepIdx(0);
-    // FIX: reset liveRoot về trạng thái hiện tại trước khi bắt đầu animate
-    setLiveRoot(JSON.parse(JSON.stringify(root)));
-    const eng = new AnimationEngine({
-      steps: newSteps, speed,
-      onStep: (s, idx) => {
-        setCurStep(s);
-        setStepIdx(idx + 1);
-        // FIX: cập nhật liveRoot mỗi step nếu step mang theo tree snapshot
-        if (s.tree) setLiveRoot(s.tree);
-        if (s.type === 'pre_rotate') {
-          setRotatingNodes([s.node, s.pivot]);
-          setRotationPhase('pre');
-          setTimeout(() => setRotationPhase('post'), 200);
-        } else if (s.type !== 'rotate') {
-          setRotatingNodes([]);
-          setRotationPhase('');
-        }
-      },
-      onDone: () => {
-        setPlaying(false);
-        setRoot(newRoot);
-        setLiveRoot(null); // animation xong, dùng root thật
-        setRotatingNodes([]);
-      },
-    });
-    engineRef.current = eng;
-    eng.play();
-    setPlaying(true);
-  }
-
-  function handleInsert() {
-    const v = parseInt(insertVal);
-    if (isNaN(v)) return;
-    setInsertVal('');
-    const s = [];
-    const res = algo === 'avl'
-      ? avlInsert(root ? JSON.parse(JSON.stringify(root)) : null, v, s)
-      : bstInsert(root ? JSON.parse(JSON.stringify(root)) : null, v, s);
-    setLog(prev => [`Chèn ${v} vào ${algo.toUpperCase()}`, ...prev.slice(0, 9)]);
-    animate(s, res.root);
-  }
-
-  function handleDelete() {
-    const v = parseInt(deleteVal);
-    if (isNaN(v) || !root) return;
-    setDeleteVal('');
-    const s = [];
-    const res = bstDelete(JSON.parse(JSON.stringify(root)), v, s);
-    setLog(prev => [`Xóa ${v} khỏi BST`, ...prev.slice(0, 9)]);
-    animate(s, res.root);
-  }
-
-  function handleFloor() {
-    const v = parseInt(floorVal);
-    if (isNaN(v) || !root) return;
-    const s = [];
-    const res = bstFloor(JSON.parse(JSON.stringify(root)), v, s);
-    setFloorResult(res.floor);
-    setLog(prev => [`Floor(${v}) = ${res.floor ?? 'không tồn tại'}`, ...prev.slice(0, 9)]);
-    animate(s, root);
-  }
-
-  function handleCeil() {
-    const v = parseInt(ceilVal);
-    if (isNaN(v) || !root) return;
-    const s = [];
-    const res = bstCeil(JSON.parse(JSON.stringify(root)), v, s);
-    setCeilResult(res.ceil);
-    setLog(prev => [`Ceil(${v}) = ${res.ceil ?? 'không tồn tại'}`, ...prev.slice(0, 9)]);
-    animate(s, root);
-  }
-
-  function handleBulkInsert() {
-    const vals = [50, 30, 70, 20, 40, 60, 80, 10, 90].slice(0, 7);
-    let r = null, allSteps = [];
-    for (const v of vals) {
-      const s = [];
-      const res = algo === 'avl' ? avlInsert(r, v, s) : bstInsert(r, v, s);
-      r = res.root;
-      allSteps = allSteps.concat(s);
-    }
-    setLog([`Chèn mảng: ${vals.join(', ')}`]);
-    animate(allSteps, r);
-  }
-
-  function handleReset() {
-    engineRef.current?.pause();
-    setRoot(null);
-    setLiveRoot(null);
-    setSteps([]);
-    setStepIdx(0);
-    setCurStep(null);
-    setPlaying(false);
-    setLog([]);
-    setFloorResult(null);
-    setCeilResult(null);
-  }
-
-  // FIX: dùng liveRoot nếu đang animate, không thì dùng root thật
-  const layout = treeToLayout(liveRoot ?? root);
-  const hl = highlight(curStep);
-
-  function stepDesc(s) {
+  // ── Step description ──────────────────────────────────────
+  function getStepDesc(s) {
     if (!s) return 'Thêm phần tử để xem cây';
     if (s.type === 'compare')       return `So sánh ${s.val} với nút ${s.comparing}: ${s.val < s.comparing ? 'đi trái ←' : 'đi phải →'}`;
     if (s.type === 'placed')        return `✓ Đặt ${s.val} ở bên ${s.side} của nút ${s.parent}`;
@@ -213,15 +128,135 @@ export default function TreePage() {
       if (s.ceil  !== undefined) return `Ceil candidate = ${s.ceil}`;
     }
     if (s.type === 'exact') return s.desc || `Tìm thấy chính xác: ${s.node}`;
-    return '';
+    return s.desc || '';
   }
+
+  // ── Animation engine ──────────────────────────────────────
+  function animate(newSteps, newRoot, actionName = '') {
+    engineRef.current?.pause();
+    setSteps(newSteps);
+    setStepIdx(0);
+    setLiveRoot(cloneTree(root));  // FIX 3: dùng cloneTree thay vì JSON.parse
+
+    const eng = new AnimationEngine({
+      steps: newSteps,
+      speed,
+      onStep: (s, idx) => {
+        setCurStep(s);
+        setStepIdx(idx + 1);
+        if (s.tree) setLiveRoot(s.tree);
+        if (s.type === 'pre_rotate') {
+          setRotatingNodes([s.node, s.pivot]);
+          setRotationPhase('pre');
+          setTimeout(() => setRotationPhase('post'), 200);
+        } else if (s.type !== 'rotate') {
+          setRotatingNodes([]);
+          setRotationPhase('');
+        }
+      },
+      onDone: () => {
+        setPlaying(false);
+        setRoot(newRoot);
+        setLiveRoot(null);
+        setRotatingNodes([]);
+        if (actionName) {
+          saveProgress('trees', `${ALGOS[algo].name} — ${actionName}`);
+        }
+      },
+    });
+    engineRef.current = eng;
+    eng.play();
+    setPlaying(true);
+  }
+
+  // ── Reset state ────────────────────────────────────────────
+  function resetAll() {
+    engineRef.current?.pause();
+    setRoot(null);
+    setLiveRoot(null);
+    setSteps([]);
+    setStepIdx(0);
+    setCurStep(null);
+    setPlaying(false);
+    setLog([]);
+    setFloorResult(null);
+    setCeilResult(null);
+    setRotatingNodes([]);
+    setRotationPhase('');
+  }
+
+  // ── Handlers ──────────────────────────────────────────────
+  function handleInsert() {
+    const v = parseInt(insertVal);
+    if (isNaN(v)) return;
+    setInsertVal('');
+    const s = [];
+    const res = algo === 'avl'
+      ? avlInsert(cloneTree(root), v, s)   // FIX 4: clone trước khi truyền
+      : bstInsert(cloneTree(root), v, s);
+    setLog(prev => [`Chèn ${v} vào ${ALGOS[algo].name}`, ...prev.slice(0, 9)]);
+    animate(s, res.root, `Insert ${v}`);
+  }
+
+  function handleDelete() {
+    const v = parseInt(deleteVal);
+    if (isNaN(v) || !root) return;
+    setDeleteVal('');
+    const s = [];
+    const res = bstDelete(cloneTree(root), v, s);  // FIX 4: clone
+    setLog(prev => [`Xóa ${v} khỏi BST`, ...prev.slice(0, 9)]);
+    animate(s, res.root, `Delete ${v}`);
+  }
+
+  function handleFloor() {
+    const v = parseInt(floorVal);
+    if (isNaN(v) || !root) return;
+    const s = [];
+    const res = bstFloor(cloneTree(root), v, s);   // FIX 4: clone
+    setFloorResult(res.floor);
+    setLog(prev => [`Floor(${v}) = ${res.floor ?? 'không tồn tại'}`, ...prev.slice(0, 9)]);
+    animate(s, root, `Floor ${v}`);
+  }
+
+  function handleCeil() {
+    const v = parseInt(ceilVal);
+    if (isNaN(v) || !root) return;
+    const s = [];
+    const res = bstCeil(cloneTree(root), v, s);    // FIX 4: clone
+    setCeilResult(res.ceil);
+    setLog(prev => [`Ceil(${v}) = ${res.ceil ?? 'không tồn tại'}`, ...prev.slice(0, 9)]);
+    animate(s, root, `Ceil ${v}`);
+  }
+
+  function handleBulkInsert() {
+    const vals = [50, 30, 70, 20, 40, 60, 80].slice(0, 7);
+    let r = null;
+    let allSteps = [];
+    for (const v of vals) {
+      const s = [];
+      // FIX 5: clone r mỗi bước, không dùng null trực tiếp với avlInsert
+      const res = algo === 'avl'
+        ? avlInsert(cloneTree(r), v, s)
+        : bstInsert(cloneTree(r), v, s);
+      r = res.root;
+      allSteps = allSteps.concat(s);
+    }
+    setLog([`Chèn mảng: ${vals.join(', ')}`]);
+    animate(allSteps, r, 'Bulk Insert');
+  }
+
+  // ── Render ──────────────────────────────────────────────────
+  // FIX 6: truyền width W để treeToLayout tính đúng tọa độ
+  const layout = treeToLayout(liveRoot ?? root, W);
+  const hl = getHighlight(curStep);
 
   return (
     <div className="page">
+      {/* CSS cho rotation animations */}
       <style>{`
         @keyframes rotPre {
           0%   { transform: rotate(0deg) scale(1); }
-          50%  { transform: rotate(${rotationPhase === 'pre' ? '15deg' : '-15deg'}) scale(1.15); }
+          50%  { transform: rotate(15deg) scale(1.15); }
           100% { transform: rotate(0deg) scale(1); }
         }
         @keyframes rotPost {
@@ -229,25 +264,46 @@ export default function TreePage() {
           100% { transform: scale(1); }
         }
       `}</style>
-      <div className="page-header"><h1>Tree Structures</h1></div>
 
+      <div className="page-header">
+        <h1>🌳 Tree Structures</h1>
+        <p>BST và AVL Tree — Chèn, Xóa, Floor, Ceil với từng bước trực quan</p>
+      </div>
+
+      {/* Algo tabs */}
       <div className="algo-tabs">
-        {[{ k: 'bst', n: 'BST' }, { k: 'avl', n: 'AVL Tree' }].map(({ k, n }) => (
-          <button key={k} className={`algo-tab ${algo === k ? 'active' : ''}`}
-            onClick={() => { setAlgo(k); handleReset(); }}>
-            {n}
+        {Object.entries(ALGOS).map(([k, v]) => (
+          <button
+            key={k}
+            className={`algo-tab ${algo === k ? 'active' : ''}`}
+            style={{ '--tab-color': v.color }}
+            onClick={() => { setAlgo(k); resetAll(); }}
+          >
+            {v.name}
           </button>
         ))}
       </div>
 
       <div className="tree-workspace">
-        <div className="tree-panel">
-          <div className="step-desc" style={{ padding: '8px 0', minHeight: 32 }}>
+        {/* Main panel — FIX 7: đổi tree-panel → tree-main để khớp CSS TreePage.css gốc */}
+        <div className="tree-main">
+          <div className="step-desc">
             <span className="step-badge">Bước {stepIdx}/{steps.length}</span>
-            <span className="step-text">{stepDesc(curStep)}</span>
+            <span className="step-text">{getStepDesc(curStep)}</span>
           </div>
 
-          <TreeSVG layout={layout} highlight={hl} rotatingNodes={rotatingNodes} rotationPhase={rotationPhase} />
+          {/* FIX 8: bọc SVG trong tree-container + tree-svg-wrap như các page khác */}
+          <div className="tree-container">
+            <div className="tree-title">🌲 Cây hiện tại</div>
+            <div className="tree-svg-wrap">
+              <TreeSVG
+                layout={layout}
+                highlight={hl}
+                rotatingNodes={rotatingNodes}
+                rotationPhase={rotationPhase}
+              />
+            </div>
+          </div>
 
           <div className="tree-legend">
             <span style={{ color: '#f59e0b' }}>■ So sánh</span>
@@ -267,39 +323,54 @@ export default function TreePage() {
           )}
         </div>
 
+        {/* Sidebar */}
         <div className="tree-sidebar">
           <div className="ctrl-section">
-            <h3>Chèn phần tử</h3>
+            <h3>📥 Chèn phần tử</h3>
             <div className="input-pair">
-              <input className="arr-input" placeholder="Giá trị..." value={insertVal}
+              <input
+                className="arr-input"
+                placeholder="Giá trị..."
+                value={insertVal}
                 onChange={e => setInsertVal(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleInsert()} type="number" />
+                onKeyDown={e => e.key === 'Enter' && handleInsert()}
+                type="number"
+              />
               <button className="btn-generate" onClick={handleInsert}>Chèn</button>
             </div>
-            <button className="btn-random" style={{ width: '100%', marginTop: 8 }}
-              onClick={handleBulkInsert}>⚄ Tự động chèn mảng mẫu</button>
+            <button
+              className="btn-random"
+              style={{ width: '100%', marginTop: 8 }}
+              onClick={handleBulkInsert}
+            >
+              ⚄ Tự động chèn mảng mẫu
+            </button>
           </div>
 
           <div className="ctrl-section">
-            <h3>Xóa phần tử (BST)</h3>
+            <h3>🗑 Xóa phần tử (BST)</h3>
             <div className="input-pair">
-              <input className="arr-input" placeholder="Giá trị cần xóa..." value={deleteVal}
+              <input
+                className="arr-input"
+                placeholder="Giá trị cần xóa..."
+                value={deleteVal}
                 onChange={e => setDeleteVal(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleDelete()} type="number" />
+                onKeyDown={e => e.key === 'Enter' && handleDelete()}
+                type="number"
+              />
               <button className="btn-danger" onClick={handleDelete}>Xóa</button>
             </div>
           </div>
 
-          {/* FIX: thêm nút Reset cây */}
           <div className="ctrl-section">
-            <button className="btn-danger" style={{ width: '100%' }} onClick={handleReset}>
+            <button className="btn-danger" style={{ width: '100%' }} onClick={resetAll}>
               🗑 Xóa toàn bộ cây
             </button>
           </div>
 
           {algo === 'avl' && (
             <div className="ctrl-section">
-              <h3>Loại xoay AVL</h3>
+              <h3>🔄 Loại xoay AVL</h3>
               <div style={{ fontSize: 11, color: '#4a6b8a', lineHeight: 1.8 }}>
                 <div><b style={{ color: '#f97316' }}>LL</b>: Xoay phải đơn</div>
                 <div><b style={{ color: '#f97316' }}>RR</b>: Xoay trái đơn</div>
@@ -310,27 +381,37 @@ export default function TreePage() {
           )}
 
           <div className="ctrl-section">
-            <h3>Floor / Ceil (BST)</h3>
+            <h3>📐 Floor / Ceil (BST)</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               <div className="input-pair">
-                <input className="arr-input" placeholder="Tìm Floor..." value={floorVal}
+                <input
+                  className="arr-input"
+                  placeholder="Tìm Floor..."
+                  value={floorVal}
                   onChange={e => setFloorVal(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleFloor()} type="number" />
+                  onKeyDown={e => e.key === 'Enter' && handleFloor()}
+                  type="number"
+                />
                 <button className="btn-random" onClick={handleFloor}>Floor</button>
               </div>
               {floorResult !== null && (
-                <div style={{ fontSize: 12, color: '#10b981', padding: '4px 8px', background: 'rgba(16,185,129,0.1)', borderRadius: 4 }}>
+                <div className="floor-ceil-result floor-result">
                   Floor({floorVal}) = <b>{floorResult}</b>
                 </div>
               )}
               <div className="input-pair">
-                <input className="arr-input" placeholder="Tìm Ceil..." value={ceilVal}
+                <input
+                  className="arr-input"
+                  placeholder="Tìm Ceil..."
+                  value={ceilVal}
                   onChange={e => setCeilVal(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleCeil()} type="number" />
+                  onKeyDown={e => e.key === 'Enter' && handleCeil()}
+                  type="number"
+                />
                 <button className="btn-random" onClick={handleCeil}>Ceil</button>
               </div>
               {ceilResult !== null && (
-                <div style={{ fontSize: 12, color: '#58a6ff', padding: '4px 8px', background: 'rgba(88,166,255,0.1)', borderRadius: 4 }}>
+                <div className="floor-ceil-result ceil-result">
                   Ceil({ceilVal}) = <b>{ceilResult}</b>
                 </div>
               )}
@@ -341,7 +422,7 @@ export default function TreePage() {
           </div>
 
           <div className="ctrl-section">
-            <h3>Nhật ký thao tác</h3>
+            <h3>📋 Nhật ký thao tác</h3>
             <div className="log-panel">
               {log.length === 0 && <div className="log-empty">Chưa có thao tác nào</div>}
               {log.map((entry, i) => (
@@ -356,11 +437,18 @@ export default function TreePage() {
         playing={playing}
         onPlay={() => { setPlaying(true); engineRef.current?.play(); }}
         onPause={() => { setPlaying(false); engineRef.current?.pause(); }}
-        onReset={() => { setPlaying(false); engineRef.current?.reset(); setStepIdx(0); setCurStep(steps[0]); }}
+        onReset={() => {
+          setPlaying(false);
+          engineRef.current?.reset();
+          setStepIdx(0);
+          setCurStep(steps[0] ?? null);
+        }}
         onStep={() => engineRef.current?.stepForward()}
         onStepBack={() => engineRef.current?.stepBack()}
-        speed={speed} onSpeedChange={s => { setSpeed(s); engineRef.current?.setSpeed(s); }}
-        step={stepIdx} total={steps.length}
+        speed={speed}
+        onSpeedChange={s => { setSpeed(s); engineRef.current?.setSpeed(s); }}
+        step={stepIdx}
+        total={steps.length}
       />
     </div>
   );

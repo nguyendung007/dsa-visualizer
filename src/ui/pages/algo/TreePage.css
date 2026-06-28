@@ -1,35 +1,28 @@
+/* ============================================
+   TEST1 PAGE - Đồng bộ với TreePage pattern
+   ============================================ */
+
+/* ---------- Layout ---------- */
 .tree-workspace {
   display: flex;
   flex: 1;
+  height: calc(100vh - 200px);   /* đồng bộ với TreePage.css */
   overflow: hidden;
   gap: 0;
 }
 
-.tree-panel {
+/* FIX: dùng tree-main (khớp JSX) thay vì tree-panel */
+.tree-main {
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  min-height: 0;
   padding: 0 24px 12px;
+  overflow-y: auto;
   border-right: 1px solid #1e2d3d;
-  overflow: hidden;
 }
-
-.tree-svg {
-  flex: 1;
-  background: #0d1117;
-  border-radius: 8px;
-  border: 1px solid #1e2d3d;
-}
-
-.tree-legend {
-  display: flex;
-  gap: 16px;
-  padding: 6px 0;
-  font-size: 11px;
-  flex-wrap: wrap;
-}
-
-.tree-legend span { color: inherit; }
 
 .tree-sidebar {
   width: 240px;
@@ -38,57 +31,351 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
-.ctrl-section h3 {
-  font-size: 11px;
-  text-transform: uppercase;
-  color: #4a6b8a;
-  letter-spacing: 1px;
-  margin-bottom: 8px;
+/* ---------- Scrollbar ---------- */
+.tree-main::-webkit-scrollbar,
+.tree-sidebar::-webkit-scrollbar {
+  width: 6px;
 }
 
-.input-pair {
-  display: flex;
-  gap: 6px;
-}
-
-
-/* Danger button styling relocated to global CSS */
-
-.log-panel {
+.tree-main::-webkit-scrollbar-track,
+.tree-sidebar::-webkit-scrollbar-track {
   background: #0d1117;
-  border: 1px solid #1e2d3d;
-  border-radius: 8px;
-  padding: 8px;
-  max-height: 180px;
-  overflow-y: auto;
+  border-radius: 4px;
 }
 
-.log-empty { font-size: 12px; color: #4a6b8a; text-align: center; padding: 8px; }
+.tree-main::-webkit-scrollbar-thumb,
+.tree-sidebar::-webkit-scrollbar-thumb {
+  background: #1e2d3d;
+  border-radius: 4px;
+}
 
-/* Log entry styling is now provided by global CSS */
+.tree-main::-webkit-scrollbar-thumb:hover,
+.tree-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #2d4a6a;
+}
 
-.avl-info-box {
+.tree-main,
+.tree-sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: #1e2d3d #0d1117;
+}
+
+/* ---------- Step description ---------- */
+.step-desc {
   display: flex;
-  gap: 16px;
   align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  min-height: 40px;
+  padding: 8px 0;
+}
+
+.step-badge {
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #58a6ff;
+  white-space: nowrap;
+  background: #1e2d3d;
+  border-radius: 12px;
+}
+
+.step-text {
+  flex: 1;
+  font-size: 13px;
+  color: #8b9eb5;
+}
+
+/* ---------- Tree container (bọc SVG như các page khác) ---------- */
+.tree-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 12px;
   background: #0a0e1a;
   border: 1px solid #1e2d3d;
-  border-radius: 6px;
-  padding: 6px 12px;
+  border-radius: 8px;
+}
+
+.tree-title {
+  margin-bottom: 8px;
   font-size: 12px;
+  font-weight: 700;
+  color: #4a6b8a;
+  flex-shrink: 0;
+}
+
+/* FIX: wrapper định kích thước cho SVG — giống tree-svg-wrap trong TreePage.css */
+.tree-svg-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 280px;
+  width: 100%;
+  background: #0d1117;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* FIX: SVG fill toàn bộ wrapper */
+.tree-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------- Legend ---------- */
+.tree-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  flex-shrink: 0;
+  padding: 8px 0 4px;
+  font-size: 11px;
   color: #8b9eb5;
+  border-top: 1px solid #1e2d3d;
   margin-top: 4px;
 }
 
-.tree-workspace      { display: flex; flex: 1; overflow: hidden; }
-.tree-panel          { flex: 1; display: flex; flex-direction: column; padding: 0 24px 12px; border-right: 1px solid #1e2d3d; }
-.tree-sidebar        { width: 220px; flex-shrink: 0; padding: 12px 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
-.tree-legend         { display: flex; gap: 12px; flex-wrap: wrap; padding: 6px 0; font-size: 11px; }
-.avl-info-box        { display: flex; gap: 12px; align-items: center; padding: 6px 10px; background: rgba(249,115,22,0.08); border-radius: 6px; border: 1px solid rgba(249,115,22,0.2); font-size: 12px; }
-.tree-type-info      { font-size: 11px; color: #4a6b8a; line-height: 1.7; }
-.floor-ceil-result   { font-size: 12px; padding: 4px 8px; border-radius: 4px; }
-.floor-result        { color: #10b981; background: rgba(16,185,129,0.1); }
-.ceil-result         { color: #58a6ff; background: rgba(88,166,255,0.1); }
+/* ---------- AVL info box ---------- */
+.avl-info-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  flex-shrink: 0;
+  padding: 6px 12px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #8b9eb5;
+  background: rgba(249, 115, 22, 0.08);
+  border: 1px solid rgba(249, 115, 22, 0.2);
+  border-radius: 6px;
+}
+
+.avl-info-box b {
+  font-weight: 700;
+}
+
+/* ---------- Sidebar sections ---------- */
+.ctrl-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ctrl-section h3 {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #4a6b8a;
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+
+/* ---------- Input pair ---------- */
+.input-pair {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.input-pair .arr-input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ---------- Inputs ---------- */
+.arr-input {
+  padding: 5px 8px;
+  font-size: 12px;
+  color: #e2e8f0;
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 4px;
+  outline: none;
+  font-family: monospace;
+  width: 100%;
+  min-width: 50px;
+  transition: border-color 0.15s;
+}
+
+.arr-input:focus {
+  border-color: #58a6ff;
+}
+
+.arr-input::placeholder {
+  color: #4a6b8a;
+  font-size: 11px;
+}
+
+/* ---------- Buttons ---------- */
+.btn-generate {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  background: #58a6ff;
+  border: none;
+  border-radius: 4px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.btn-generate:hover {
+  background: #4a8fd4;
+  transform: scale(1.02);
+}
+
+.btn-random {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #10b981;
+  cursor: pointer;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 4px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.btn-random:hover {
+  background: rgba(16, 185, 129, 0.2);
+  transform: scale(1.02);
+}
+
+.btn-danger {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ef4444;
+  cursor: pointer;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 4px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+  transform: scale(1.02);
+}
+
+/* ---------- Log panel ---------- */
+.log-panel {
+  max-height: 160px;
+  padding: 6px 8px;
+  overflow-y: auto;
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 6px;
+  font-size: 11px;
+  font-family: 'Fira Code', Consolas, monospace;
+}
+
+.log-panel::-webkit-scrollbar { width: 4px; }
+.log-panel::-webkit-scrollbar-track { background: #0d1117; }
+.log-panel::-webkit-scrollbar-thumb { background: #1e2d3d; border-radius: 2px; }
+.log-panel::-webkit-scrollbar-thumb:hover { background: #2d4a6a; }
+
+.log-empty {
+  font-size: 11px;
+  font-style: italic;
+  color: #1e3a5f;
+  text-align: center;
+  padding: 12px 0;
+}
+
+.log-entry {
+  padding: 3px 4px;
+  color: #8b9eb5;
+  border-bottom: 1px solid rgba(30, 45, 61, 0.3);
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+/* ---------- Floor/Ceil results ---------- */
+.floor-ceil-result {
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+.floor-result {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.ceil-result {
+  color: #58a6ff;
+  background: rgba(88, 166, 255, 0.1);
+}
+
+/* ---------- Algo tabs ---------- */
+.algo-tabs {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 8px 16px;
+  background: #0a0e1a;
+  border-bottom: 1px solid #1e2d3d;
+}
+
+.algo-tab {
+  padding: 6px 16px;
+  font-size: 12px;
+  color: #4a6b8a;
+  cursor: pointer;
+  background: #0a0e1a;
+  border: 1px solid #1e2d3d;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.algo-tab:hover {
+  color: #8b9eb5;
+  border-color: var(--tab-color, #58a6ff);
+}
+
+.algo-tab.active {
+  font-weight: 600;
+  color: var(--tab-color, #58a6ff);
+  background: color-mix(in srgb, var(--tab-color, #58a6ff) 8%, #0a0e1a);
+  border-color: var(--tab-color, #58a6ff);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .tree-workspace {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .tree-main {
+    border-right: none;
+    border-bottom: 1px solid #1e2d3d;
+  }
+
+  .tree-sidebar {
+    width: 100%;
+    padding: 12px;
+  }
+
+  .input-pair {
+    flex-wrap: wrap;
+  }
+
+  .input-pair .arr-input {
+    min-width: 80px;
+  }
+}

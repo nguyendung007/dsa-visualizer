@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { naiveBayes, generateDataset, predictSample } from '../../../core/naive/index.js';
+import { naiveBayes, generateDataset, predictSample } from '../../../core/naive/index.ts';
 import { AnimationEngine } from '../../../shell/animation/AnimationEngine.js';
 import Controls from '../../components/Controls.jsx';
 import { useProgress } from '../../../context/ProgressContext.jsx';

@@ -9,7 +9,7 @@ import {
   kmpSearch, buildKMPTable,
   boyerMoore, rabinKarp,
   radixQuick3Way, buildSuffixArray
-} from '../../../core/string/index.js';
+} from '../../../core/string/index.ts';
 import { AnimationEngine } from '../../../shell/animation/AnimationEngine.js';
 import Controls from '../../components/Controls.jsx';
 import { useProgress } from '../../../context/ProgressContext.jsx';

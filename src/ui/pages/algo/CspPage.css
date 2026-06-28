@@ -1,139 +1,125 @@
-/* ─── Layout ─────────────────────────────────────────────────── */
+/* ============================================
+   CSP PAGE - Tối ưu và dễ đọc
+   ============================================ */
+
+/* ---------- Variables ---------- */
+:root {
+  --csp-bg: #0a0e1a;
+  --csp-border: #1e2d3d;
+  --csp-text: #8b9eb5;
+  --csp-text-light: #e2e8f0;
+  --csp-highlight-yellow: #fde68a;
+  --csp-highlight-red: #f87171;
+  --csp-highlight-green: #34d399;
+  --csp-highlight-blue: #93c5fd;
+  --csp-highlight-purple: #c4b5fd;
+}
+
+/* ---------- Layout ---------- */
 .csp-workspace {
   display: flex;
   flex: 1;
-  overflow: hidden;
   gap: 0;
-  height: calc(100vh - 180px); /* Điều chỉnh chiều cao */
+  height: calc(100vh - 180px);
   min-height: 500px;
+  overflow: hidden;
 }
 
 .csp-problem-sidebar {
-  width: 190px;
-  flex-shrink: 0;
-  padding: 12px 14px;
-  border-right: 1px solid #1e2d3d;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  background: #0a0e1a;
+  width: 190px;
+  padding: 12px 14px;
+  overflow-y: auto;
+  flex-shrink: 0;
+  background: var(--csp-bg);
+  border-right: 1px solid var(--csp-border);
 }
 
 .csp-main {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 0 20px 12px;
-  border-right: 1px solid #1e2d3d;
-  overflow: hidden;
+  flex: 1;
   min-width: 0;
+  padding: 0 20px 12px;
+  overflow: hidden;
   background: #0d1117;
+  border-right: 1px solid var(--csp-border);
 }
 
 .csp-info-sidebar {
-  width: 210px;
-  flex-shrink: 0;
-  padding: 12px 14px;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  background: #0a0e1a;
+  width: 210px;
+  padding: 12px 14px;
+  overflow-y: auto;
+  flex-shrink: 0;
+  background: var(--csp-bg);
 }
 
-/* ─── Step description ───────────────────────────────────────── */
+/* ---------- Common components ---------- */
+.ds-title {
+  margin-bottom: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #4a6b8a;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.ds-empty {
+  font-size: 11px;
+  font-style: italic;
+  color: #1e3a5f;
+}
+
+/* ---------- Step description ---------- */
 .step-desc {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 0;
-  min-height: 36px;
   flex-shrink: 0;
+  min-height: 36px;
+  padding: 8px 0;
 }
 
 .step-badge {
+  padding: 2px 12px;
   font-size: 11px;
   font-weight: 700;
   color: #58a6ff;
-  background: #0a0e1a;
-  padding: 2px 12px;
-  border-radius: 12px;
-  border: 1px solid #1e2d3d;
   white-space: nowrap;
+  background: var(--csp-bg);
+  border: 1px solid var(--csp-border);
+  border-radius: 12px;
 }
 
 .step-text {
-  font-size: 13px;
-  color: #e2e8f0;
   flex: 1;
   overflow: hidden;
+  font-size: 13px;
+  color: var(--csp-text-light);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* ─── Canvas area ────────────────────────────────────────────── */
+/* ---------- Canvas area ---------- */
 .csp-canvas-area {
-  flex: 1;
   display: flex;
+  flex: 1;
   align-items: center;
   justify-content: center;
-  background: #0d1117;
-  border-radius: 8px;
-  border: 1px solid #1e2d3d;
-  overflow: hidden;
-  padding: 12px;
   min-height: 300px;
+  padding: 12px;
+  background: #0d1117;
+  border: 1px solid var(--csp-border);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-/* ─── Problem buttons (left sidebar) ────────────────────────── */
-.csp-problem-btns {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.csp-problem-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #0a0e1a;
-  border: 1px solid #1e2d3d;
-  border-radius: 6px;
-  padding: 8px 10px;
-  cursor: pointer;
-  transition: all 0.15s;
-  text-align: left;
-  width: 100%;
-  color: #8b9eb5;
-  font-size: 12px;
-}
-
-.csp-problem-btn:hover {
-  border-color: var(--p-color, #58a6ff);
-  background: #0f1a2e;
-  color: #e2e8f0;
-}
-
-.csp-problem-btn.active {
-  border-color: var(--p-color, #58a6ff);
-  background: color-mix(in srgb, var(--p-color, #58a6ff) 12%, #0a0e1a);
-  color: var(--p-color, #58a6ff);
-  font-weight: 600;
-}
-
-.csp-problem-icon {
-  font-size: 16px;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.csp-problem-name {
-  font-size: 11px;
-  line-height: 1.3;
-}
-
-/* ─── SVG canvases ───────────────────────────────────────────── */
+/* ---------- SVG canvases ---------- */
 .csp-map-svg {
   width: 100%;
   max-width: 520px;
@@ -150,12 +136,92 @@
 
 .csp-sudoku-svg {
   width: 100%;
-  max-width: 420px; /* Tăng lên để hiển thị domain */
+  max-width: 420px;
   height: 100%;
   max-height: 420px;
 }
 
-/* ─── Scheduling canvas ──────────────────────────────────────── */
+/* ---------- Problem buttons ---------- */
+.csp-problem-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.csp-problem-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--csp-text);
+  text-align: left;
+  cursor: pointer;
+  background: var(--csp-bg);
+  border: 1px solid var(--csp-border);
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+
+.csp-problem-btn:hover {
+  color: var(--csp-text-light);
+  background: #0f1a2e;
+  border-color: var(--p-color, #58a6ff);
+}
+
+.csp-problem-btn.active {
+  font-weight: 600;
+  color: var(--p-color, #58a6ff);
+  background: color-mix(in srgb, var(--p-color, #58a6ff) 12%, var(--csp-bg));
+  border-color: var(--p-color, #58a6ff);
+}
+
+.csp-problem-icon {
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.csp-problem-name {
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+/* ---------- Algo tabs ---------- */
+.algo-tabs {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 8px 16px;
+  background: var(--csp-bg);
+  border-bottom: 1px solid var(--csp-border);
+}
+
+.algo-tab {
+  padding: 6px 16px;
+  font-size: 12px;
+  color: #4a6b8a;
+  cursor: pointer;
+  background: var(--csp-bg);
+  border: 1px solid var(--csp-border);
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.algo-tab:hover {
+  color: var(--csp-text);
+  border-color: var(--tab-color, #58a6ff);
+}
+
+.algo-tab.active {
+  font-weight: 600;
+  color: var(--tab-color, #58a6ff);
+  background: color-mix(in srgb, var(--tab-color, #58a6ff) 8%, var(--csp-bg));
+  border-color: var(--tab-color, #58a6ff);
+}
+
+/* ---------- Scheduling canvas ---------- */
 .csp-schedule-wrapper {
   display: flex;
   flex-direction: column;
@@ -167,9 +233,9 @@
 }
 
 .csp-schedule-svg {
+  flex: 1;
   width: 100%;
   max-width: 580px;
-  flex: 1;
   max-height: 220px;
 }
 
@@ -178,28 +244,27 @@
   flex-wrap: wrap;
   gap: 6px;
   justify-content: center;
-  padding: 8px;
-  background: #0a0e1a;
-  border-radius: 6px;
-  border: 1px solid #1e2d3d;
   width: 100%;
+  padding: 8px;
+  background: var(--csp-bg);
+  border: 1px solid var(--csp-border);
+  border-radius: 6px;
 }
 
-/* ─── Course badges ──────────────────────────────────────────── */
 .csp-course-badge {
+  padding: 3px 10px;
   font-size: 11px;
+  color: var(--csp-text);
   background: #132135;
   border: 1px solid #1e3a5f;
   border-radius: 4px;
-  padding: 3px 10px;
-  color: #8b9eb5;
   transition: all 0.15s;
 }
 
 .csp-course-badge.active {
-  border-color: #f59e0b;
-  color: #fde68a;
+  color: var(--csp-highlight-yellow);
   background: #2a1f05;
+  border-color: #f59e0b;
 }
 
 .csp-course-item {
@@ -210,19 +275,19 @@
 
 .csp-course-domain {
   font-size: 9px;
-  color: #a78bfa;
   font-family: monospace;
+  color: var(--csp-highlight-purple);
 }
 
-/* ─── Info panel ─────────────────────────────────────────────── */
+/* ---------- Info panel ---------- */
 .csp-info-panel {
-  background: #0a0e1a;
-  border: 1px solid #1e2d3d;
-  border-radius: 6px;
-  padding: 10px 12px;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  padding: 10px 12px;
+  background: var(--csp-bg);
+  border: 1px solid var(--csp-border);
+  border-radius: 6px;
 }
 
 .csp-info-row {
@@ -250,23 +315,23 @@
 .csp-info-val {
   font-size: 11px;
   font-family: monospace;
-  color: #8b9eb5;
+  color: var(--csp-text);
   text-align: right;
 }
 
-.csp-info-val.highlight-yellow { color: #fde68a; }
-.csp-info-val.highlight-red    { color: #f87171; }
-.csp-info-val.highlight-green  { color: #34d399; }
-.csp-info-val.highlight-blue   { color: #93c5fd; }
-.csp-info-val.highlight-purple { color: #c4b5fd; }
+.csp-info-val.highlight-yellow { color: var(--csp-highlight-yellow); }
+.csp-info-val.highlight-red    { color: var(--csp-highlight-red); }
+.csp-info-val.highlight-green  { color: var(--csp-highlight-green); }
+.csp-info-val.highlight-blue   { color: var(--csp-highlight-blue); }
+.csp-info-val.highlight-purple { color: var(--csp-highlight-purple); }
 
-/* ─── Assignment list ────────────────────────────────────────── */
+/* ---------- Assignment list ---------- */
 .csp-assignment-list {
-  margin-top: 4px;
   display: flex;
   flex-direction: column;
   gap: 4px;
   max-height: 150px;
+  margin-top: 4px;
   overflow-y: auto;
 }
 
@@ -274,15 +339,15 @@
   display: flex;
   align-items: center;
   gap: 5px;
+  padding: 2px 0;
   font-size: 11px;
   font-family: monospace;
-  padding: 2px 0;
 }
 
 .csp-assign-var {
-  color: #58a6ff;
-  font-weight: 700;
   min-width: 32px;
+  font-weight: 700;
+  color: #58a6ff;
 }
 
 .csp-assign-eq {
@@ -292,23 +357,23 @@
 .csp-assign-dot {
   width: 10px;
   height: 10px;
-  border-radius: 50%;
   flex-shrink: 0;
+  border-radius: 50%;
 }
 
 .csp-assign-val {
-  color: #e2e8f0;
   font-size: 10px;
+  color: var(--csp-text-light);
 }
 
-/* ─── Legend ─────────────────────────────────────────────────── */
+/* ---------- Legend ---------- */
 .csp-legend {
   display: flex;
   flex-direction: column;
   gap: 5px;
   padding: 8px 10px;
-  background: #0a0e1a;
-  border: 1px solid #1e2d3d;
+  background: var(--csp-bg);
+  border: 1px solid var(--csp-border);
   border-radius: 6px;
 }
 
@@ -323,64 +388,48 @@
 .csp-legend-dot {
   width: 9px;
   height: 9px;
-  border-radius: 50%;
   flex-shrink: 0;
+  border-radius: 50%;
 }
 
-/* ─── Reuse ds-* từ GraphPage ────────────────────────────────── */
-.ds-title {
-  font-size: 10px;
-  color: #4a6b8a;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 4px;
-  font-weight: 700;
-}
-
-.ds-empty {
-  font-size: 11px;
-  color: #1e3a5f;
-  font-style: italic;
-}
-
-/* ─── Controls style ─────────────────────────────────────────── */
+/* ---------- Controls ---------- */
 .controls {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 12px 20px;
-  border-top: 1px solid #1e2d3d;
-  background: #0a0e1a;
   flex-shrink: 0;
+  padding: 12px 20px;
+  background: var(--csp-bg);
+  border-top: 1px solid var(--csp-border);
 }
 
 .controls button {
+  padding: 6px 12px;
+  font-size: 14px;
+  color: var(--csp-text);
+  cursor: pointer;
   background: #132135;
   border: 1px solid #1e3a5f;
   border-radius: 4px;
-  padding: 6px 12px;
-  color: #8b9eb5;
-  cursor: pointer;
   transition: all 0.15s;
-  font-size: 14px;
 }
 
 .controls button:hover {
-  border-color: #58a6ff;
-  color: #e2e8f0;
+  color: var(--csp-text-light);
   background: #1a2a3f;
+  border-color: #58a6ff;
 }
 
 .controls button.active {
-  border-color: #58a6ff;
   color: #58a6ff;
+  border-color: #58a6ff;
 }
 
 .controls .step-info {
+  min-width: 80px;
   font-size: 12px;
   color: #4a6b8a;
-  min-width: 80px;
   text-align: center;
 }
 
@@ -402,40 +451,7 @@
   color: #4a6b8a;
 }
 
-/* ─── Algo tabs ──────────────────────────────────────────────── */
-.algo-tabs {
-  display: flex;
-  gap: 4px;
-  padding: 8px 16px;
-  background: #0a0e1a;
-  border-bottom: 1px solid #1e2d3d;
-  flex-shrink: 0;
-}
-
-.algo-tab {
-  padding: 6px 16px;
-  border: 1px solid #1e2d3d;
-  border-radius: 4px;
-  background: #0a0e1a;
-  color: #4a6b8a;
-  cursor: pointer;
-  font-size: 12px;
-  transition: all 0.15s;
-}
-
-.algo-tab:hover {
-  border-color: var(--tab-color, #58a6ff);
-  color: #8b9eb5;
-}
-
-.algo-tab.active {
-  border-color: var(--tab-color, #58a6ff);
-  color: var(--tab-color, #58a6ff);
-  background: color-mix(in srgb, var(--tab-color, #58a6ff) 8%, #0a0e1a);
-  font-weight: 600;
-}
-
-/* ─── Scrollbar styles ───────────────────────────────────────── */
+/* ---------- Scrollbar styles ---------- */
 .csp-problem-sidebar::-webkit-scrollbar,
 .csp-info-sidebar::-webkit-scrollbar {
   width: 4px;
@@ -443,12 +459,12 @@
 
 .csp-problem-sidebar::-webkit-scrollbar-track,
 .csp-info-sidebar::-webkit-scrollbar-track {
-  background: #0a0e1a;
+  background: var(--csp-bg);
 }
 
 .csp-problem-sidebar::-webkit-scrollbar-thumb,
 .csp-info-sidebar::-webkit-scrollbar-thumb {
-  background: #1e2d3d;
+  background: var(--csp-border);
   border-radius: 2px;
 }
 
@@ -457,13 +473,68 @@
   background: #2d4a6a;
 }
 
-/* ─── Responsive ─────────────────────────────────────────────── */
+/* ---------- Input ---------- */
+.arr-input {
+  width: 60px;
+  padding: 4px 6px;
+  font-size: 12px;
+  color: var(--csp-text);
+  background: var(--csp-bg);
+  border: 1px solid var(--csp-border);
+  border-radius: 4px;
+  outline: none;
+}
+
+.arr-input:focus {
+  border-color: #58a6ff;
+}
+
+/* ---------- Buttons ---------- */
+.btn-generate {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  background: #58a6ff;
+  border: none;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.btn-generate:hover {
+  background: #4a8fd4;
+  transform: scale(1.02);
+}
+
+.mode-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--csp-text);
+  cursor: pointer;
+  background: var(--csp-bg);
+  border: 1px solid var(--csp-border);
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.mode-btn:hover {
+  color: var(--csp-text-light);
+  border-color: #58a6ff;
+}
+
+.mode-btn.danger:hover {
+  color: var(--csp-highlight-red);
+  border-color: var(--csp-highlight-red);
+}
+
+/* ---------- Responsive ---------- */
 @media (max-width: 1024px) {
   .csp-problem-sidebar {
     width: 150px;
     padding: 8px 10px;
   }
-  
+
   .csp-info-sidebar {
     width: 170px;
     padding: 8px 10px;
@@ -475,34 +546,33 @@
     flex-direction: column;
     height: auto;
   }
-  
+
   .csp-problem-sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid #1e2d3d;
     flex-direction: row;
     flex-wrap: wrap;
+    width: 100%;
     padding: 8px 12px;
+    border-right: none;
+    border-bottom: 1px solid var(--csp-border);
   }
-  
+
   .csp-problem-btns {
     flex-direction: row;
     flex-wrap: wrap;
   }
-  
+
   .csp-problem-btn {
     width: auto;
     padding: 4px 10px;
   }
-  
+
+  .csp-main {
+    min-height: 400px;
+    border-right: none;
+  }
+
   .csp-info-sidebar {
     width: 100%;
-    border-top: 1px solid #1e2d3d;
-  }
-  
-  .csp-main {
-    border-right: none;
-    min-height: 400px;
+    border-top: 1px solid var(--csp-border);
   }
 }
-

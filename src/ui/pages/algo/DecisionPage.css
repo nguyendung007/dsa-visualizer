@@ -1,59 +1,126 @@
+/* ============================================
+   DECISION PAGE - Tối ưu và dễ đọc
+   ============================================ */
+
+/* ---------- Variables ---------- */
+:root {
+  --dec-bg: #0a0e1a;
+  --dec-border: #1e2d3d;
+  --dec-text: #8b9eb5;
+  --dec-text-light: #e2e8f0;
+  --dec-highlight: #58a6ff;
+  --dec-purple: #8b5cf6;
+}
+
+/* ---------- Layout ---------- */
 .decision-workspace {
   display: flex;
   flex: 1;
-  overflow: hidden;
   gap: 0;
+  height: calc(100vh - 200px);
+  overflow: hidden;
 }
 
 .decision-main {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 0 24px 12px;
-  border-right: 1px solid #1e2d3d;
-  overflow-y: auto; /* Sinh thanh cuộn dọc tại đây */
-  height: 100%;     /* Giới hạn chiều cao khít với workspace */
-  min-height: 0;    
+  flex: 1;
   gap: 12px;
-}
-.decision-sidebar {
-  width: 240px;
-  flex-shrink: 0;
-  padding: 12px 14px;
+  height: 100%;
+  min-height: 0;
+  padding: 0 24px 12px;
   overflow-y: auto;
+  border-right: 1px solid var(--dec-border);
+}
+
+.decision-sidebar {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  width: 240px;
+  padding: 12px 14px;
+  overflow-y: auto;
+  flex-shrink: 0;
 }
 
+/* ---------- Scrollbar styles ---------- */
+.decision-main::-webkit-scrollbar,
+.decision-sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.decision-main::-webkit-scrollbar-track,
+.decision-sidebar::-webkit-scrollbar-track {
+  background: #0d1117;
+  border-radius: 4px;
+}
+
+.decision-main::-webkit-scrollbar-thumb,
+.decision-sidebar::-webkit-scrollbar-thumb {
+  background: var(--dec-border);
+  border-radius: 4px;
+}
+
+.decision-main::-webkit-scrollbar-thumb:hover,
+.decision-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #30363d;
+}
+
+.decision-main,
+.decision-sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--dec-border) #0d1117;
+}
+
+/* ---------- Step description ---------- */
+.step-desc {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  min-height: 40px;
+  padding: 8px 0;
+}
+
+.step-badge {
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--dec-highlight);
+  white-space: nowrap;
+  background: var(--dec-border);
+  border-radius: 12px;
+}
+
+.step-text {
+  flex: 1;
+  font-size: 13px;
+  color: var(--dec-text);
+}
+
+/* ---------- Dataset table ---------- */
 .dataset-container {
-  background: #0a0e1a;
-  border: 1px solid #1e2d3d;
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 0; /* Bỏ margin-bottom */
-  flex-shrink: 0; /* Không co lại */
-  max-height: 220px; /* Giới hạn chiều cao */
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
+  max-height: 220px;
+  padding: 12px;
+  background: var(--dec-bg);
+  border: 1px solid var(--dec-border);
+  border-radius: 8px;
 }
 
 .dataset-title {
-  font-size: 12px;
-  color: #4a6b8a;
-  font-weight: 700;
   margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #4a6b8a;
 }
 
 .dataset-table-wrap {
-  overflow: auto; /* Thay đổi từ overflow-x: auto */
-  flex: 1; /* Chiếm phần còn lại */
-  min-height: 0; /* Cho phép co lại */
-}
-.dataset-table {
-  width: 100%;
-  font-size: 11px;
-  border-collapse: collapse;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
 }
 
 .dataset-table-wrap::-webkit-scrollbar {
@@ -66,24 +133,30 @@
 }
 
 .dataset-table-wrap::-webkit-scrollbar-thumb {
-  background: #1e2d3d;
+  background: var(--dec-border);
   border-radius: 4px;
 }
 
+.dataset-table {
+  width: 100%;
+  font-size: 11px;
+  border-collapse: collapse;
+}
+
 .dataset-table th {
-  text-align: left;
-  padding: 4px 8px;
-  color: #4a6b8a;
-  font-weight: 700;
-  border-bottom: 1px solid #1e2d3d;
   position: sticky;
   top: 0;
-  background: #0a0e1a;
+  padding: 4px 8px;
+  font-weight: 700;
+  color: #4a6b8a;
+  text-align: left;
+  background: var(--dec-bg);
+  border-bottom: 1px solid var(--dec-border);
 }
 
 .dataset-table td {
   padding: 3px 8px;
-  color: #8b9eb5;
+  color: var(--dec-text);
   border-bottom: 1px solid #0d1117;
 }
 
@@ -91,29 +164,30 @@
   background: #132135;
 }
 
+/* ---------- Tree container ---------- */
 .tree-container {
-  flex: 2; /* Tăng tỷ lệ ưu tiên hiển thị cho Cây đồ thị */
-  background: #0a0e1a;
-  border: 1px solid #1e2d3d;
-  border-radius: 8px;
-  padding: 12px;
   display: flex;
   flex-direction: column;
+  flex: 2;
   min-height: 0;
+  padding: 12px;
+  background: var(--dec-bg);
+  border: 1px solid var(--dec-border);
+  border-radius: 8px;
 }
 
 .tree-title {
-  font-size: 12px;
-  color: #4a6b8a;
-  font-weight: 700;
   margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #4a6b8a;
 }
 
 .tree-svg-wrap {
-  flex: 1;
-  width: 100%;
-  min-height: 250px;
   position: relative;
+  flex: 1;
+  min-height: 250px;
+  width: 100%;
   background: #0d1117;
   border-radius: 8px;
   overflow: hidden;
@@ -127,14 +201,13 @@
   height: 100%;
 }
 
-/* Sửa decision-info-panel */
+/* ---------- Info panel ---------- */
 .decision-info-panel {
-  background: #0a0e1a;
-  border: 1px solid #1e2d3d;
-  border-radius: 8px;
+  flex-shrink: 0;
   padding: 10px 12px;
-  margin-top: 0; /* Bỏ margin-top */
-  flex-shrink: 0; /* Không co lại */
+  background: var(--dec-bg);
+  border: 1px solid var(--dec-border);
+  border-radius: 8px;
 }
 
 .info-grid {
@@ -151,134 +224,87 @@
 }
 
 .info-label {
-  color: #4a6b8a;
   font-weight: 600;
+  color: #4a6b8a;
 }
 
 .info-value {
-  color: #58a6ff;
   font-family: monospace;
+  color: var(--dec-highlight);
 }
 
-
-.step-desc {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 0;
-  flex-shrink: 0; /* Không co lại */
-  min-height: 40px;
-}
-
-.step-badge {
-  background: #1e2d3d;
-  color: #58a6ff;
-  padding: 2px 10px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.step-text {
-  color: #8b9eb5;
-  font-size: 13px;
-  flex: 1;
-}
-
-/* Style dành cho thanh mô tả bước độc lập đặt ở phía trên */
-.step-desc-top-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 24px;
-  background: #0a0e1a;
-  border: 1px solid #1e2d3d;
-  border-radius: 8px;
-  margin: 0 24px 12px;
-  flex-shrink: 0;
-}
-
-/* Đảm bảo vùng workspace bao quát chiều cao và cho phép vùng main cuộn */
-.decision-workspace {
-  display: flex;
-  flex: 1;
-  overflow: hidden; /* Cố định khung, không cho toàn trang bị cuộn */
-  gap: 0;
-  height: calc(100vh - 200px); /* Tùy chỉnh phù hợp để khít chiều cao màn hình */
-}
-
-.decision-main {
-  flex: 1;
+/* ---------- Sidebar controls ---------- */
+.ctrl-section {
   display: flex;
   flex-direction: column;
-  padding: 0 24px 12px;
-  border-right: 1px solid #1e2d3d;
-  overflow-y: auto; /* QUAN TRỌNG: Kích hoạt thanh cuộn dọc riêng phần ở giữa */
-  height: 100%;
-  gap: 12px;
+  gap: 6px;
 }
 
-/* Responsive */
+.ctrl-section h3 {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: #4a6b8a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ctrl-section label {
+  font-size: 11px;
+  color: #4a6b8a;
+}
+
+.ctrl-section input[type="range"] {
+  width: 100%;
+  margin-top: 4px;
+  background: var(--dec-border);
+  accent-color: var(--dec-highlight);
+}
+
+.ctrl-section .btn-generate {
+  width: 100%;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  background: var(--dec-highlight);
+  border: none;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.ctrl-section .btn-generate:hover {
+  background: #4a8fd4;
+  transform: scale(1.02);
+}
+
+.ctrl-section .btn-generate[style*="background: #8b5cf6"] {
+  background: var(--dec-purple) !important;
+}
+
+.ctrl-section .btn-generate[style*="background: #8b5cf6"]:hover {
+  background: #7c3aed !important;
+}
+
+/* ---------- Attributes list ---------- */
+.ctrl-section div[style*="font-size: 11px"] {
+  line-height: 1.8;
+}
+
+/* ---------- Responsive ---------- */
 @media (max-width: 900px) {
   .decision-workspace {
     flex-direction: column;
+    height: auto;
   }
-  
-  .decision-sidebar {
-    width: 100%;
-    border-top: 1px solid #1e2d3d;
-  }
-  
+
   .decision-main {
     border-right: none;
   }
-}
 
-
-/* ─── Custom Scrollbar cho Decision Page ────────────────────────────────── */
-
-/* Cho thanh cuộn của decision-main */
-.decision-main::-webkit-scrollbar {
-  width: 6px;
-}
-
-.decision-main::-webkit-scrollbar-track {
-  background: #0d1117;
-  border-radius: 4px;
-}
-
-.decision-main::-webkit-scrollbar-thumb {
-  background: #1e2d3d;
-  border-radius: 4px;
-}
-
-.decision-main::-webkit-scrollbar-thumb:hover {
-  background: #30363d;
-}
-
-/* Cho thanh cuộn của decision-sidebar */
-.decision-sidebar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.decision-sidebar::-webkit-scrollbar-track {
-  background: #0d1117;
-  border-radius: 4px;
-}
-
-.decision-sidebar::-webkit-scrollbar-thumb {
-  background: #1e2d3d;
-  border-radius: 4px;
-}
-
-.decision-sidebar::-webkit-scrollbar-thumb:hover {
-  background: #30363d;
-}
-
-/* Firefox cho cả 2 */
-.decision-main,
-.decision-sidebar {
-  scrollbar-width: thin;
-  scrollbar-color: #1e2d3d #0d1117;
+  .decision-sidebar {
+    width: 100%;
+    border-top: 1px solid var(--dec-border);
+  }
 }

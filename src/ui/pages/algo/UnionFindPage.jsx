@@ -2,7 +2,7 @@
 // Fix: thêm nút Find(p) riêng để demo pcFind() / path compression
 // Fix: QU/WQU runFind push step-by-step từng node trong path thay vì 1 step duy nhất
 import { useState, useRef } from 'react';
-import { createUF, qfFind, qfUnion, quUnion, wquUnion, pcUnion, pcFind } from '../../../core/unionfind/index.js';
+import { createUF, qfFind, qfUnion, quUnion, wquUnion, pcUnion, pcFind } from '../../../core/unionfind/index.ts';
 import { AnimationEngine } from '../../../shell/animation/AnimationEngine.js';
 import Controls from '../../components/Controls.jsx';
 import { useProgress } from '../../../context/ProgressContext.jsx';

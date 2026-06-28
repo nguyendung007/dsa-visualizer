@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { frameOps, conceptGraphOps, semanticNetOps } from '../../../core/knowledge/index.js';
+import { frameOps, conceptGraphOps, semanticNetOps } from '../../../core/knowledge/index.ts';
 import { AnimationEngine } from '../../../shell/animation/AnimationEngine.js';
 import Controls from '../../components/Controls.jsx';
 import { useProgress } from '../../../context/ProgressContext.jsx';

@@ -1,12 +1,10 @@
-// Fix: saveProgress dùng biến `algo` không tồn tại → đổi đúng theo mode (traversal/exprMode)
-// Fix: buildDefaultTree() trả về null → nay trả về cây mẫu (50,30,70,20,40,60,80)
 import { useState, useRef } from 'react';
-import { bstInsert, treeToLayout, BSTNode } from '../../../core/trees/index.js';
-import { inorder, preorder, postorder, levelOrder, parseExpression, exprInfix, exprPrefix, exprPostfix, evalExpr } from '../../../core/trees/traversal.js';
+import { bstInsert, treeToLayout, BSTNode } from '../../../core/trees/index.ts';
+import { inorder, preorder, postorder, levelOrder, parseExpression, exprInfix, exprPrefix, exprPostfix, evalExpr } from '../../../core/trees/traversal.ts';
 import { AnimationEngine } from '../../../shell/animation/AnimationEngine.js';
 import Controls from '../../components/Controls.jsx';
-import './TraversalPage.css';
 import { useProgress } from '../../../context/ProgressContext.jsx';
+import './TraversalPage.css';   // FIX 1: import đúng file CSS
 
 const TRAVERSALS = {
   inorder:    { name: 'Inorder',     color: '#10b981', order: 'Trái → Gốc → Phải' },
@@ -16,16 +14,25 @@ const TRAVERSALS = {
 };
 
 const EXPR_MODES = {
-  infix:   { name: 'Infix (Trung tố)',   color: '#10b981' },
-  prefix:  { name: 'Prefix (Tiền tố)',   color: '#58a6ff' },
-  postfix: { name: 'Postfix (Hậu tố)',   color: '#f59e0b' },
+  infix:   { name: 'Infix (Trung tố)',  color: '#10b981' },
+  prefix:  { name: 'Prefix (Tiền tố)',  color: '#58a6ff' },
+  postfix: { name: 'Postfix (Hậu tố)',  color: '#f59e0b' },
 };
 
-const W = 640, H = 280;
+const W = 640, H = 300;
 
-// FIX: trả về cây mẫu thay vì null, để nút "Cây mặc định" hoạt động đúng nghĩa
+// FIX 2: buildDefaultTree trả về cây mẫu thực sự thay vì null
+function cloneTree(node) {
+  if (!node) return null;
+  const n = new BSTNode(node.val);
+  n.h = node.h ?? 1;
+  n.left  = cloneTree(node.left);
+  n.right = cloneTree(node.right);
+  return n;
+}
+
 function buildDefaultTree() {
-  const values = [];
+  const values = [50, 30, 70, 20, 40, 60, 80];
   let root = null;
   for (const v of values) {
     root = bstInsert(root, v, []).root;
@@ -34,24 +41,22 @@ function buildDefaultTree() {
 }
 
 export default function TraversalPage() {
-  const [mode, setMode] = useState('tree'); // 'tree' | 'expr'
+  const [mode, setMode]           = useState('tree');
   const [traversal, setTraversal] = useState('inorder');
-  const [exprMode, setExprMode] = useState('infix');
-  const [root, setRoot] = useState(buildDefaultTree);
+  const [exprMode, setExprMode]   = useState('infix');
+  const [root, setRoot]           = useState(buildDefaultTree);
   const [insertVal, setInsertVal] = useState('');
   const [exprInput, setExprInput] = useState('(3 + 4) * (2 - 1)');
-  const [exprRoot, setExprRoot] = useState(null);
-  const [steps, setSteps] = useState([]);
-  const [stepIdx, setStepIdx] = useState(0);
-  const [curStep, setCurStep] = useState(null);
-  const [playing, setPlaying] = useState(false);
-  const [speed, setSpeed] = useState(500);
+  const [exprRoot, setExprRoot]   = useState(null);
+  const [steps, setSteps]         = useState([]);
+  const [stepIdx, setStepIdx]     = useState(0);
+  const [curStep, setCurStep]     = useState(null);
+  const [playing, setPlaying]     = useState(false);
+  const [speed, setSpeed]         = useState(500);
   const [resultArr, setResultArr] = useState([]);
   const engineRef = useRef(null);
-
   const { saveProgress } = useProgress();
 
-  // FIX: nhận thêm tham số `name` để biết tên thuật toán đang chạy (mode tree hay expr)
   function runAnim(s, name) {
     engineRef.current?.pause();
     setSteps(s); setStepIdx(0); setCurStep(s[0] || null); setResultArr([]);
@@ -63,7 +68,6 @@ export default function TraversalPage() {
       },
       onDone: () => {
         setPlaying(false);
-        // FIX: dùng `name` được truyền vào, không còn tham chiếu biến `algo` không tồn tại
         saveProgress('traversal', name);
       },
     });
@@ -74,11 +78,10 @@ export default function TraversalPage() {
   function runTraversal() {
     if (!root) return;
     let s;
-    if (traversal === 'inorder') s = inorder(root);
-    else if (traversal === 'preorder') s = preorder(root);
+    if (traversal === 'inorder')    s = inorder(root);
+    else if (traversal === 'preorder')  s = preorder(root);
     else if (traversal === 'postorder') s = postorder(root);
-    else s = levelOrder(root);
-    // FIX: truyền tên traversal hiện tại
+    else                                s = levelOrder(root);
     runAnim(s, TRAVERSALS[traversal]?.name);
   }
 
@@ -87,10 +90,9 @@ export default function TraversalPage() {
     if (!tree) return;
     setExprRoot(tree);
     const s = [];
-    if (exprMode === 'infix') exprInfix(tree, s);
+    if (exprMode === 'infix')       exprInfix(tree, s);
     else if (exprMode === 'prefix') exprPrefix(tree, s);
-    else exprPostfix(tree, s);
-    // FIX: truyền tên expr mode hiện tại
+    else                            exprPostfix(tree, s);
     runAnim(s, EXPR_MODES[exprMode]?.name);
   }
 
@@ -98,7 +100,8 @@ export default function TraversalPage() {
     const v = parseInt(insertVal);
     if (isNaN(v)) return;
     setInsertVal('');
-    const res = bstInsert(root ? JSON.parse(JSON.stringify(root)) : null, v, []);
+    // FIX 3: dùng cloneTree thay vì JSON.parse — giữ đúng prototype BSTNode
+    const res = bstInsert(cloneTree(root), v, []);
     setRoot(res.root);
     setSteps([]); setCurStep(null); setResultArr([]);
   }
@@ -108,18 +111,23 @@ export default function TraversalPage() {
     setSteps([]); setCurStep(null); setResultArr([]);
   }
 
-  // Build layout
-  const layout = treeToLayout(mode === 'tree' ? root : null, W);
-  const exprLayout = mode === 'expr' && exprRoot ? buildExprLayout(exprRoot, W) : { nodes: [], edges: [] };
-  const displayLayout = mode === 'tree' ? layout : exprLayout;
+  // Build layouts
+  const treeLayout = treeToLayout(root, W);
+  const exprLayout = exprRoot ? buildExprLayout(exprRoot, W) : { nodes: [], edges: [] };
+  const displayLayout = mode === 'tree' ? treeLayout : exprLayout;
 
   const visitedNode = curStep?.node;
-  const level = curStep?.level;
-  const queueNodes = curStep?.queue || [];
+  const queueNodes  = curStep?.queue || [];
 
   function nodeColor(val) {
-    if (visitedNode === val && curStep?.type === 'visit') return '#f59e0b';
-    if (resultArr.includes(val)) return TRAVERSALS[traversal]?.color || EXPR_MODES[exprMode]?.color || '#10b981';
+    if (visitedNode === val && curStep?.type === 'visit') {
+      return '#f59e0b';
+    }
+    if (resultArr.includes(val)) {
+      return mode === 'tree'
+        ? (TRAVERSALS[traversal]?.color  || '#10b981')
+        : (EXPR_MODES[exprMode]?.color   || '#10b981');
+    }
     if (visitedNode === val) return '#1d4ed8';
     return '#1e3a5f';
   }
@@ -134,27 +142,37 @@ export default function TraversalPage() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>Tree Traversal & Expressions</h1>
+        <h1>🔄 Tree Traversal & Expressions</h1>
         <p>Inorder / Preorder / Postorder / Level-order — Biểu thức Trung tố / Tiền tố / Hậu tố</p>
       </div>
 
+      {/* Mode tabs */}
       <div className="algo-tabs">
-        <button className={`algo-tab ${mode === 'tree' ? 'active' : ''}`}
-          style={{ '--tab-color': '#10b981' }} onClick={() => { setMode('tree'); setSteps([]); setCurStep(null); setResultArr([]); }}>
+        <button
+          className={`algo-tab ${mode === 'tree' ? 'active' : ''}`}
+          style={{ '--tab-color': '#10b981' }}
+          onClick={() => { setMode('tree'); setSteps([]); setCurStep(null); setResultArr([]); }}
+        >
           🌳 Duyệt cây
         </button>
-        <button className={`algo-tab ${mode === 'expr' ? 'active' : ''}`}
-          style={{ '--tab-color': '#58a6ff' }} onClick={() => { setMode('expr'); setSteps([]); setCurStep(null); setResultArr([]); }}>
+        <button
+          className={`algo-tab ${mode === 'expr' ? 'active' : ''}`}
+          style={{ '--tab-color': '#58a6ff' }}
+          onClick={() => { setMode('expr'); setSteps([]); setCurStep(null); setResultArr([]); }}
+        >
           ƒ Biểu thức
         </button>
       </div>
 
+      {/* Sub-mode tabs */}
       {mode === 'tree' && (
         <div className="trav-tab-row">
           {Object.entries(TRAVERSALS).map(([k, v]) => (
-            <button key={k} className={`trav-btn ${traversal === k ? 'active' : ''}`}
+            <button key={k}
+              className={`trav-btn ${traversal === k ? 'active' : ''}`}
               style={{ '--tv-color': v.color }}
-              onClick={() => { setTraversal(k); setSteps([]); setCurStep(null); setResultArr([]); }}>
+              onClick={() => { setTraversal(k); setSteps([]); setCurStep(null); setResultArr([]); }}
+            >
               {v.name}
               <span className="trav-order">{v.order}</span>
             </button>
@@ -165,9 +183,11 @@ export default function TraversalPage() {
       {mode === 'expr' && (
         <div className="trav-tab-row">
           {Object.entries(EXPR_MODES).map(([k, v]) => (
-            <button key={k} className={`trav-btn ${exprMode === k ? 'active' : ''}`}
+            <button key={k}
+              className={`trav-btn ${exprMode === k ? 'active' : ''}`}
               style={{ '--tv-color': v.color }}
-              onClick={() => { setExprMode(k); setSteps([]); setCurStep(null); setResultArr([]); }}>
+              onClick={() => { setExprMode(k); setSteps([]); setCurStep(null); setResultArr([]); }}
+            >
               {v.name}
             </button>
           ))}
@@ -176,60 +196,79 @@ export default function TraversalPage() {
 
       <div className="trav-workspace">
         <div className="trav-main">
+          {/* Step description */}
           <div className="step-desc">
             <span className="step-badge">Bước {stepIdx}/{steps.length}</span>
             <span className="step-text">{stepDesc(curStep)}</span>
           </div>
 
-          {/* Tree SVG */}
-          <svg width="100%" viewBox={`0 0 ${W} ${mode === 'tree' ? H : 300}`} className="tree-svg">
-            {displayLayout.edges.map((e, i) => (
-              <line key={i} x1={e.from.x} y1={e.from.y + 10} x2={e.to.x} y2={e.to.y - 10}
-                stroke="#1e3a5f" strokeWidth="1.5" />
-            ))}
-            {displayLayout.nodes.map((n, i) => {
-              const col = nodeColor(n.val);
-              const isOp = mode === 'expr' && ['+','-','*','/'].includes(String(n.val));
-              return (
-                <g key={i}>
-                  <circle cx={n.x} cy={n.y} r={isOp ? 18 : 20}
-                    fill={col} stroke="#f2f4fa" strokeWidth="2"
-                    style={{ transition: 'fill 0.3s' }} />
-                  <text x={n.x} y={n.y} textAnchor="middle" dominantBaseline="central"
-                    fill="white" fontSize={isOp ? 15 : 12} fontWeight="700" fontFamily="monospace">
-                    {n.val}
-                  </text>
-                </g>
-              );
-            })}
-            {displayLayout.nodes.length === 0 && (
-              <text x={W/2} y={H/2} textAnchor="middle" fill="#1e3a5f" fontSize="14">Chưa có dữ liệu</text>
-            )}
-          </svg>
+          {/* FIX 4: bọc SVG trong wrapper có kích thước xác định */}
+          <div className="trav-svg-wrap">
+            <svg width="100%" viewBox={`0 0 ${W} ${H}`} className="trav-svg">
+              {displayLayout.edges.map((e, i) => (
+                <line key={i}
+                  x1={e.from.x} y1={e.from.y + 10}
+                  x2={e.to.x}   y2={e.to.y   - 10}
+                  stroke="#1e3a5f" strokeWidth="1.5"
+                />
+              ))}
+              {displayLayout.nodes.map((n, i) => {
+                const col = nodeColor(n.val);
+                const isOp = mode === 'expr' && ['+', '-', '*', '/'].includes(String(n.val));
+                return (
+                  <g key={i}>
+                    <circle
+                      cx={n.x} cy={n.y} r={isOp ? 18 : 20}
+                      fill={col} stroke="#f2f4fa" strokeWidth="2"
+                      style={{ transition: 'fill 0.3s' }}
+                    />
+                    <text
+                      x={n.x} y={n.y}
+                      textAnchor="middle" dominantBaseline="central"
+                      fill="white" fontSize={isOp ? 15 : 12}
+                      fontWeight="700" fontFamily="monospace"
+                    >
+                      {n.val}
+                    </text>
+                  </g>
+                );
+              })}
+              {displayLayout.nodes.length === 0 && (
+                <text x={W / 2} y={H / 2} textAnchor="middle" fill="#1e3a5f" fontSize="14">
+                  {mode === 'tree' ? 'Cây rỗng — nhấn "Cây mặc định" hoặc chèn phần tử' : 'Nhập biểu thức và nhấn ▶'}
+                </text>
+              )}
+            </svg>
+          </div>
 
           {/* Result array */}
           <div className="trav-result-section">
             <div className="trav-result-label">
-              {mode === 'tree' ? `${TRAVERSALS[traversal]?.name} Result:` : `${EXPR_MODES[exprMode]?.name.split('(')[0]} Result:`}
+              {mode === 'tree'
+                ? `${TRAVERSALS[traversal]?.name} Result:`
+                : `${EXPR_MODES[exprMode]?.name.split('(')[0]} Result:`}
               {doneResult && <span className="trav-done-tag">✓ Hoàn thành</span>}
             </div>
             <div className="trav-result-arr">
               {resultArr.length === 0 && <span className="trav-empty">Chưa có kết quả</span>}
               {resultArr.map((v, i) => (
-                <div key={i} className={`trav-res-cell ${i === resultArr.length - 1 ? 'latest' : ''}`}
-                  style={{ '--res-color': mode === 'tree' ? TRAVERSALS[traversal]?.color : EXPR_MODES[exprMode]?.color }}>
+                <div
+                  key={i}
+                  className={`trav-res-cell ${i === resultArr.length - 1 ? 'latest' : ''}`}
+                  style={{ '--res-color': mode === 'tree' ? TRAVERSALS[traversal]?.color : EXPR_MODES[exprMode]?.color }}
+                >
                   {v}
                 </div>
               ))}
             </div>
-            {doneResult && mode === 'expr' && (
+            {doneResult && mode === 'expr' && exprRoot && (
               <div className="expr-eval">
                 = <b style={{ color: '#10b981', fontSize: 16 }}>{evalExpr(exprRoot)}</b>
               </div>
             )}
           </div>
 
-          {/* Level-order queue display */}
+          {/* Level-order queue */}
           {mode === 'tree' && traversal === 'levelorder' && queueNodes.length > 0 && (
             <div className="level-queue">
               <span className="lq-label">Queue:</span>
@@ -242,37 +281,54 @@ export default function TraversalPage() {
             </div>
           )}
 
-          {/* Expr: show token path */}
+          {/* Expr: token path */}
           {mode === 'expr' && curStep?.expr && (
             <div className="expr-path">
               {curStep.expr.map((t, i) => (
-                <span key={i} className={`expr-token ${i === curStep.expr.length - 1 ? 'latest-token' : ''}`}>{t}</span>
+                <span
+                  key={i}
+                  className={`expr-token ${i === curStep.expr.length - 1 ? 'latest-token' : ''}`}
+                >
+                  {t}
+                </span>
               ))}
             </div>
           )}
         </div>
 
+        {/* Sidebar */}
         <div className="trav-sidebar">
           {mode === 'tree' && (
             <>
               <div className="ctrl-section">
                 <h3>Chỉnh sửa cây</h3>
                 <div className="input-pair">
-                  <input className="arr-input" placeholder="Giá trị..." value={insertVal}
+                  <input
+                    className="arr-input"
+                    placeholder="Giá trị..."
+                    value={insertVal}
                     onChange={e => setInsertVal(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && handleInsert()} type="number" />
+                    onKeyDown={e => e.key === 'Enter' && handleInsert()}
+                    type="number"
+                  />
                   <button className="btn-generate" onClick={handleInsert}>Chèn</button>
                 </div>
-                <button className="btn-random" style={{ width: '100%', marginTop: 8 }} onClick={resetTree}>
+                <button
+                  className="btn-random"
+                  style={{ width: '100%', marginTop: 8 }}
+                  onClick={resetTree}
+                >
                   ⚄ Cây mặc định (50,30,70...)
                 </button>
               </div>
+
               <div className="ctrl-section">
                 <h3>Duyệt cây</h3>
                 <button className="btn-generate" style={{ width: '100%' }} onClick={runTraversal}>
                   ▶ Duyệt {TRAVERSALS[traversal]?.name}
                 </button>
               </div>
+
               <div className="ctrl-section">
                 <h3>Thứ tự duyệt</h3>
                 <div style={{ fontSize: 11, color: '#4a6b8a', lineHeight: 1.8 }}>
@@ -293,20 +349,26 @@ export default function TraversalPage() {
             <>
               <div className="ctrl-section">
                 <h3>Biểu thức</h3>
-                <input className="arr-input" value={exprInput}
+                <input
+                  className="arr-input"
+                  value={exprInput}
                   onChange={e => setExprInput(e.target.value)}
                   style={{ width: '100%', marginBottom: 8 }}
-                  placeholder="(3 + 4) * (2 - 1)" />
+                  placeholder="(3 + 4) * (2 - 1)"
+                />
                 <button className="btn-generate" style={{ width: '100%' }} onClick={runExpr}>
                   ▶ Duyệt {EXPR_MODES[exprMode]?.name.split('(')[0]}
                 </button>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 }}>
                   {['(3 + 4) * 2', '(1 + 2) * (3 + 4)', '5 * (3 - 1) + 2'].map(e => (
                     <button key={e} className="btn-random" style={{ fontSize: 10 }}
-                      onClick={() => setExprInput(e)}>{e}</button>
+                      onClick={() => setExprInput(e)}>
+                      {e}
+                    </button>
                   ))}
                 </div>
               </div>
+
               <div className="ctrl-section">
                 <h3>Giải thích</h3>
                 <div style={{ fontSize: 11, color: '#4a6b8a', lineHeight: 1.8 }}>
@@ -327,11 +389,19 @@ export default function TraversalPage() {
         playing={playing}
         onPlay={() => { setPlaying(true); engineRef.current?.play(); }}
         onPause={() => { setPlaying(false); engineRef.current?.pause(); }}
-        onReset={() => { setPlaying(false); engineRef.current?.reset(); setStepIdx(0); setCurStep(steps[0]); setResultArr(steps[0]?.result || []); }}
+        onReset={() => {
+          setPlaying(false);
+          engineRef.current?.reset();
+          setStepIdx(0);
+          setCurStep(steps[0] ?? null);
+          setResultArr(steps[0]?.result || []);
+        }}
         onStep={() => engineRef.current?.stepForward()}
         onStepBack={() => engineRef.current?.stepBack()}
-        speed={speed} onSpeedChange={s => { setSpeed(s); engineRef.current?.setSpeed(s); }}
-        step={stepIdx} total={steps.length}
+        speed={speed}
+        onSpeedChange={s => { setSpeed(s); engineRef.current?.setSpeed(s); }}
+        step={stepIdx}
+        total={steps.length}
       />
     </div>
   );
@@ -346,12 +416,12 @@ function buildExprLayout(root, W = 640) {
     const mx = (xMin + xMax) / 2;
     nodes.push({ val: node.val, x: mx, y });
     if (node.left) {
-      edges.push({ from: { x: mx, y }, to: { x: (xMin+mx)/2, y: y+70 } });
-      traverse(node.left, mx, y+70, xMin, mx);
+      edges.push({ from: { x: mx, y }, to: { x: (xMin + mx) / 2, y: y + 70 } });
+      traverse(node.left, mx, y + 70, xMin, mx);
     }
     if (node.right) {
-      edges.push({ from: { x: mx, y }, to: { x: (mx+xMax)/2, y: y+70 } });
-      traverse(node.right, mx, y+70, mx, xMax);
+      edges.push({ from: { x: mx, y }, to: { x: (mx + xMax) / 2, y: y + 70 } });
+      traverse(node.right, mx, y + 70, mx, xMax);
     }
   }
   traverse(root, 0, 40, 0, W);

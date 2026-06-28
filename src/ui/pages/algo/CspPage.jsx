@@ -14,7 +14,7 @@ import {
   // Scheduling
   SCHEDULING_PROBLEM,
   schedulingBacktracking, schedulingAC3, schedulingMinConflicts, schedulingBranchBound,
-} from '../../../core/csp/index.js';
+} from '../../../core/csp/index.ts';
 import './CspPage.css';
 
 // ─── Config ───────────────────────────────────────────────────

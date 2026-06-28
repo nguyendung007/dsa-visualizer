@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { llBuild, llInsertHead, llInsertTail, llInsertAt, llDelete, llSearch, llReverse } from '../../../core/linkedlist/index.js';
+import { llBuild, llInsertHead, llInsertTail, llInsertAt, llDelete, llSearch, llReverse } from '../../../core/linkedlist/index.ts';
 import { AnimationEngine } from '../../../shell/animation/AnimationEngine.js';
 import Controls from '../../components/Controls.jsx';
 import './LinkedListPage.css';

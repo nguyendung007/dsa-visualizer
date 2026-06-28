@@ -4,7 +4,7 @@ import {
   hillClimbing,
   simulatedAnnealing,
   geneticAlgorithm,
-} from '../../../core/localSearch/index.js';
+} from '../../../core/localSearch/index.ts';
 import { AnimationEngine } from '../../../shell/animation/AnimationEngine.js';
 import Controls from '../../components/Controls.jsx';
 import { useProgress } from '../../../context/ProgressContext.jsx';

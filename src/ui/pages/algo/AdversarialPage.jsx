@@ -6,7 +6,7 @@ import {
   PLAYER_X,
   PLAYER_O,
   EMPTY,
-} from '../../../core/adversarialSearch/index.js';
+} from '../../../core/adversarialSearch/index.ts';
 import Controls from '../../components/Controls.jsx';
 import './AdversarialPage.css';
 
