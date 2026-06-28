@@ -1,341 +1,312 @@
 import { useEffect } from 'react';
 
-const DEFAULT_PARTICLE_COUNT = 50
-const DEFAULT_PARTICLE_COLORS = ['#17ecdb', '#4714d1', '#de0de6', '#d6e2e2', '#0a041a', '#2ae619'];
+// ─── CONFIG ──────────────────────────────────────────────────────────────────
+const CONFIG = {
+  particle: {
+    defaultCount:  50,
+    defaultColors: ['#17ecdb', '#4714d1', '#de0de6', '#f50808', '#0a041a', '#2ae619'],
+    spawnInterval: 2800,   // ms
+    lifetime:      12000,  // ms
+    maxOverflow:   20,
+    trimBatch:     5,
+  },
+  sparkle: {
+    interval:  400,  // ms
+    lifetime:  1800, // ms
+  },
+  bigFlame: {
+    interval:  4200, // ms
+    lifetime:  2400, // ms
+    size:      '120px',
+  },
+  subGlow: {
+    interval: 150, // ms
+  },
+  ripple: {
+    lifetime: 600, // ms
+  },
+  shockwave: {
+    lifetime:    1100, // ms
+    buttonLabel: '⚡ BLAZING ⚡',
+    resetDelay:  1000, // ms
+  },
+  ids: {
+    effectRoot:       'global-ui-effect-root',
+    particleContainer:'particleContainer',
+  },
+  selectors: {
+    button: '#magicBtn',
+    hero:   '.hero',
+    ring:   '.glow-ring',
+    border: '.flame-border',
+    sub:    '.sub',
+    title:  '.title',
+  },
+  flags: {
+    enableSparkle:  true,
+    enableBigFlame: true,
+    enableRipple:   true,
+  },
+};
+// ─────────────────────────────────────────────────────────────────────────────
 
-function createStyleSheet(effectRootId) {
-  const styleSheet = document.createElement('style');
-  styleSheet.textContent = `
-    #${effectRootId} {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
+function createStyleSheet(rootId) {
+  const sheet = document.createElement('style');
+  sheet.textContent = `
+    #${rootId} {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 0;
     }
-
-    #${effectRootId} .particle {
-      position: absolute;
-      border-radius: 100%;
-      pointer-events: none;
-      will-change: transform, opacity;
+    #${rootId} .particle {
+      position: absolute; border-radius: 100%;
+      pointer-events: none; will-change: transform, opacity;
       animation-name: floatParticle;
       animation-timing-function: linear;
       animation-iteration-count: infinite;
     }
-
-    #${effectRootId} .sparkle,
-    #${effectRootId} .ripple-effect {
-      position: fixed;
-      pointer-events: none;
-      border-radius: 50%;
-      z-index: 999;
-      opacity: 0;
+    #${rootId} .sparkle, #${rootId} .ripple-effect {
+      position: fixed; pointer-events: none;
+      border-radius: 50%; z-index: 999; opacity: 0;
     }
-
-    #${effectRootId} .sparkle {
-      width: 8px;
-      height: 8px;
+    #${rootId} .sparkle {
+      width: 8px; height: 8px;
       background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 70%);
       filter: blur(1px);
       animation: sparkleFade 1.4s ease-out forwards;
     }
-
-    #${effectRootId} .ripple-effect {
-      border: 2px solid rgba(48, 19, 207, 0.75);
-      transform: translate(-50%, -50%) scale(0.5);
+    #${rootId} .ripple-effect {
+      border: 2px solid rgba(48,19,207,0.75);
+      transform: translate(-50%,-50%) scale(0.5);
       opacity: 0.9;
       animation: rippleGrow 0.6s ease-out forwards;
     }
-
     @keyframes floatParticle {
       from { transform: translateY(0px); }
-      to { transform: translateY(-140px); }
+      to   { transform: translateY(-140px); }
     }
-
     @keyframes sparkleFade {
-      0% { opacity: 1; transform: scale(0.8); }
+      0%   { opacity: 1; transform: scale(0.8); }
       100% { opacity: 0; transform: scale(1.4); }
     }
-
     @keyframes rippleGrow {
-      to { transform: translate(-50%, -50%) scale(3); opacity: 0; }
+      to { transform: translate(-50%,-50%) scale(3); opacity: 0; }
     }
   `;
-
-  document.head.appendChild(styleSheet);
-  return styleSheet;
+  document.head.appendChild(sheet);
+  return sheet;
 }
 
-function createParticle(particleContainer, colors) {
-  const particle = document.createElement('div');
-  particle.classList.add('particle');
+function spawnParticle(container, colors) {
+  const el = document.createElement('div');
+  el.classList.add('particle');
   const size = Math.random() * 7 + 3;
-  particle.style.width = `${size}px`;
-  particle.style.height = `${size}px`;
-  particle.style.left = `${Math.random() * 100}%`;
-  particle.style.top = `${Math.random() * 100}%`;
-  particle.style.animationDuration = `${Math.random() * 8 + 5}s`;
-  particle.style.animationDelay = `${Math.random() * 5}s`;
-  const colorChoice = colors[Math.floor(Math.random() * colors.length)];
-  particle.style.backgroundColor = colorChoice;
-  particle.style.boxShadow = `0 0 ${size * 1.8}px ${colorChoice}`;
-  particle.style.opacity = `${Math.random() * 0.7 + 0.2}`;
-  particleContainer.appendChild(particle);
-  return particle;
+  const color = colors[Math.floor(Math.random() * colors.length)];
+  Object.assign(el.style, {
+    width:             `${size}px`,
+    height:            `${size}px`,
+    left:              `${Math.random() * 100}%`,
+    top:               `${Math.random() * 100}%`,
+    animationDuration: `${Math.random() * 8 + 5}s`,
+    animationDelay:    `${Math.random() * 5}s`,
+    backgroundColor:   color,
+    boxShadow:         `0 0 ${size * 1.8}px ${color}`,
+    opacity:           `${Math.random() * 0.7 + 0.2}`,
+  });
+  container.appendChild(el);
+  return el;
 }
 
-function createSparkle() {
-  const spark = document.createElement('div');
-  spark.classList.add('sparkle');
-  spark.style.left = `${Math.random() * window.innerWidth}px`;
-  spark.style.top = `${Math.random() * window.innerHeight}px`;
-  document.body.appendChild(spark);
-  setTimeout(() => {
-    spark.remove();
-  }, 1800);
+function spawnSparkle(rootId) {
+  const el = document.createElement('div');
+  el.classList.add('sparkle');
+  el.style.left = `${Math.random() * window.innerWidth}px`;
+  el.style.top  = `${Math.random() * window.innerHeight}px`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), CONFIG.sparkle.lifetime);
 }
 
-function createRipple(event) {
-  const ripple = document.createElement('div');
-  ripple.classList.add('ripple-effect');
-  ripple.style.left = `${event.clientX}px`;
-  ripple.style.top = `${event.clientY}px`;
-  document.body.appendChild(ripple);
-  setTimeout(() => {
-    ripple.remove();
-  }, 600);
+function spawnRipple(e) {
+  const el = document.createElement('div');
+  el.classList.add('ripple-effect');
+  el.style.left = `${e.clientX}px`;
+  el.style.top  = `${e.clientY}px`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), CONFIG.ripple.lifetime);
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * GlobalUIEffects
+ * Tất cả tuỳ chọn được truyền qua props (hoặc dùng CONFIG mặc định).
+ * Component không đọc bất kỳ context / localStorage nào.
+ *
+ * Props:
+ *   particleCount   number
+ *   particleColors  string[]
+ *   enableSparkle   boolean
+ *   enableBigFlame  boolean
+ *   enableRipple    boolean
+ */
 export default function GlobalUIEffects({
-  particleCount = DEFAULT_PARTICLE_COUNT,
-  particleColors = DEFAULT_PARTICLE_COLORS,
-  effectRootId = 'global-ui-effect-root',
-  particleContainerId = 'particleContainer',
-  buttonSelector = '#magicBtn',
-  heroSelector = '.hero',
-  ringSelector = '.glow-ring',
-  borderSelector = '.flame-border',
-  subSelector = '.sub',
-  titleSelector = '.title',
-  enableSparkle = true,
-  enableBigFlame = true,
-  enableRipple = true,
+  particleCount  = CONFIG.particle.defaultCount,
+  particleColors = CONFIG.particle.defaultColors,
+  enableSparkle  = CONFIG.flags.enableSparkle,
+  enableBigFlame = CONFIG.flags.enableBigFlame,
+  enableRipple   = CONFIG.flags.enableRipple,
 }) {
   useEffect(() => {
-    const colors = particleColors.length ? particleColors : DEFAULT_PARTICLE_COLORS;
+    const colors = particleColors.length ? particleColors : CONFIG.particle.defaultColors;
+    const { ids, selectors, particle, sparkle, bigFlame, subGlow, shockwave } = CONFIG;
+
+    // Root DOM node
     const root = document.createElement('div');
-    root.id = effectRootId;
+    root.id = ids.effectRoot;
     document.body.appendChild(root);
 
-    const particleContainer = document.createElement('div');
-    particleContainer.id = particleContainerId;
-    root.appendChild(particleContainer);
+    const container = document.createElement('div');
+    container.id = ids.particleContainer;
+    root.appendChild(container);
 
-    const styleSheet = createStyleSheet(effectRootId);
+    const sheet = createStyleSheet(ids.effectRoot);
 
-    const particles = [];
-    for (let i = 0; i < particleCount; i += 1) {
-      particles.push(createParticle(particleContainer, colors));
-    }
+    // Initial particles
+    for (let i = 0; i < particleCount; i++) spawnParticle(container, colors);
 
-    const particleInterval = window.setInterval(() => {
-      if (particleContainer.children.length < particleCount + 15) {
-        const newParticle = createParticle(particleContainer, colors);
-        setTimeout(() => {
-          newParticle.remove();
-        }, 12000);
+    // Particle pool maintenance
+    const particleTimer = setInterval(() => {
+      if (container.children.length < particleCount + 15) {
+        const p = spawnParticle(container, colors);
+        setTimeout(() => p.remove(), particle.lifetime);
       }
-      if (particleContainer.children.length > particleCount + 20) {
-        for (let i = 0; i < 5; i += 1) {
-          if (particleContainer.children[i]) {
-            particleContainer.children[i].remove();
-          }
-        }
+      if (container.children.length > particleCount + particle.maxOverflow) {
+        for (let i = 0; i < particle.trimBatch; i++)
+          container.children[i]?.remove();
       }
-    }, 2800);
+    }, particle.spawnInterval);
 
-    const sparkleInterval = enableSparkle ? window.setInterval(createSparkle, 400) : null;
-
-    const clickHandler = (event) => {
-      if (enableRipple) {
-        createRipple(event);
-      }
-      const igniteBtn = document.querySelector(buttonSelector);
-      if (igniteBtn && event.target.closest(buttonSelector)) {
-        igniteBtn.style.transform = 'scale(0.97)';
-        setTimeout(() => {
-          igniteBtn.style.transform = '';
-        }, 150);
-      }
-    };
-
-  const fireHandler = (event) => {
-  event.stopPropagation();
-
-  const button = document.querySelector(buttonSelector);
-
-  // Shockwave Glow Effect
-  const glow = document.createElement('div');
-
-  glow.style.position = 'fixed';
-  glow.style.left = `${event.clientX}px`;
-  glow.style.top = `${event.clientY}px`;
-
-  glow.style.width = '10px';
-  glow.style.height = '10px';
-
-  glow.style.borderRadius = '50%';
-
-  glow.style.background =
-    'radial-gradient(circle, rgba(0,180,255,0.95) 0%, rgba(0,180,255,0.45) 35%, rgba(0,180,255,0.15) 60%, transparent 80%)';
-
-  glow.style.boxShadow = `
-    0 0 20px #00d9ff,
-    0 0 50px #00d9ff,
-    0 0 100px #00d9ff,
-    0 0 180px #00d9ff
-  `;
-
-  glow.style.transform =
-    'translate(-50%, -50%) scale(0)';
-
-  glow.style.opacity = '1';
-  glow.style.pointerEvents = 'none';
-  glow.style.zIndex = '9999';
-
-  glow.style.transition =
-    'transform 1s cubic-bezier(0.22, 1, 0.36, 1), opacity 1s ease-out';
-
-  document.body.appendChild(glow);
-
-  requestAnimationFrame(() => {
-    glow.style.transform =
-      'translate(-50%, -50%) scale(18)';
-    glow.style.opacity = '0';
-  });
-
-  setTimeout(() => {
-    glow.remove();
-  }, 1100);
-
-  // Button Effect
-  if (button) {
-    const originalText = button.innerText;
-
-    button.innerText = '⚡ BLAZING ⚡';
-    button.style.letterSpacing = '4px';
-    button.style.boxShadow = '0 0 35px #00d9ff';
-
-    setTimeout(() => {
-      button.innerText = originalText;
-      button.style.letterSpacing = '';
-      button.style.boxShadow = '';
-    }, 1000);
-  }
-
-  // Title Effect
-  const titleEl = document.querySelector(titleSelector);
-
-  if (titleEl) {
-    titleEl.style.animation = 'none';
-
-    // Force Reflow
-    void titleEl.offsetWidth;
-
-    titleEl.style.animation =
-      'gradientShift 5s ease infinite, textGlitch 2.2s infinite';
-
-    titleEl.style.transform = 'scale(1.02)';
-
-    setTimeout(() => {
-      titleEl.style.transform = '';
-    }, 200);
-  }
-};
-
-    const mouseMoveHandler = (event) => {
-      const heroBox = document.querySelector(heroSelector);
-      const ring = document.querySelector(ringSelector);
-      if (!heroBox) return;
-      const rect = heroBox.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      const distX = (event.clientX - centerX) * 0.03;
-      const distY = (event.clientY - centerY) * 0.03;
-
-      if (ring) {
-        ring.style.transform = `translate(calc(-50% + ${distX}px), calc(-50% + ${distY}px)) scale(${1 + Math.abs(distX) * 0.01})`;
-      }
-
-      const borderDiv = document.querySelector(borderSelector);
-      if (borderDiv) {
-        const intensity = Math.min(0.8, Math.abs(distX) * 0.03 + 0.3);
-        borderDiv.style.borderColor = `rgba(255, ${40 + intensity * 50}, 80, ${0.5 + intensity * 0.4})`;
-      }
-    };
-
-    const subGlowInterval = window.setInterval(() => {
-      const subEl = document.querySelector(subSelector);
-      if (!subEl) return;
-      const glowIntensity = Math.sin(Date.now() / 800) * 0.2 + 0.6;
-      subEl.style.boxShadow = `0 0 ${12 + glowIntensity * 12}px rgba(255, 40, 80, ${0.4 + glowIntensity * 0.3})`;
-    }, 150);
-
-    const bigFlameInterval = enableBigFlame
-      ? window.setInterval(() => {
-          const bigFlare = document.createElement('div');
-          bigFlare.style.position = 'fixed';
-          bigFlare.style.width = '120px';
-          bigFlare.style.height = '120px';
-          bigFlare.style.left = `${Math.random() * 80 + 10}%`;
-          bigFlare.style.top = `${Math.random() * 80 + 10}%`;
-          bigFlare.style.background = 'radial-gradient(circle, rgba(255, 50, 80, 0.25), rgba(100, 0, 0, 0))';
-          bigFlare.style.borderRadius = '50%';
-          bigFlare.style.filter = 'blur(35px)';
-          bigFlare.style.pointerEvents = 'none';
-          bigFlare.style.zIndex = '2';
-          document.body.appendChild(bigFlare);
-          setTimeout(() => {
-            bigFlare.remove();
-          }, 2400);
-        }, 4200)
+    const sparkleTimer = enableSparkle
+      ? setInterval(() => spawnSparkle(ids.effectRoot), sparkle.interval)
       : null;
 
-    window.addEventListener('click', clickHandler);
-    document.body.addEventListener('click', fireHandler);
-    document.body.addEventListener('mousemove', mouseMoveHandler);
-
-    return () => {
-      window.removeEventListener('click', clickHandler);
-      document.body.removeEventListener('click', fireHandler);
-      document.body.removeEventListener('mousemove', mouseMoveHandler);
-      window.clearInterval(particleInterval);
-      if (sparkleInterval) window.clearInterval(sparkleInterval);
-      window.clearInterval(subGlowInterval);
-      if (bigFlameInterval) window.clearInterval(bigFlameInterval);
-      if (styleSheet && styleSheet.parentNode) {
-        styleSheet.parentNode.removeChild(styleSheet);
-      }
-      if (root && root.parentNode) {
-        root.parentNode.removeChild(root);
+    // Click: ripple + button press
+    const onClickWindow = (e) => {
+      if (enableRipple) spawnRipple(e);
+      const btn = document.querySelector(selectors.button);
+      if (btn && e.target.closest(selectors.button)) {
+        btn.style.transform = 'scale(0.97)';
+        setTimeout(() => { btn.style.transform = ''; }, 150);
       }
     };
-  }, [
-    particleCount,
-    particleColors,
-    effectRootId,
-    particleContainerId,
-    buttonSelector,
-    heroSelector,
-    ringSelector,
-    borderSelector,
-    subSelector,
-    titleSelector,
-    enableSparkle,
-    enableBigFlame,
-    enableRipple,
-  ]);
+
+    // Body click: shockwave glow
+    const onClickBody = (e) => {
+      e.stopPropagation();
+      const glow = document.createElement('div');
+      Object.assign(glow.style, {
+        position:     'fixed',
+        left:         `${e.clientX}px`,
+        top:          `${e.clientY}px`,
+        width:        '10px',
+        height:       '10px',
+        borderRadius: '50%',
+        background:   'radial-gradient(circle, rgba(0,180,255,0.95) 0%, rgba(0,180,255,0.45) 35%, rgba(0,180,255,0.15) 60%, transparent 80%)',
+        boxShadow:    '0 0 20px #00d9ff, 0 0 50px #00d9ff, 0 0 100px #00d9ff, 0 0 180px #00d9ff',
+        transform:    'translate(-50%,-50%) scale(0)',
+        opacity:      '1',
+        pointerEvents:'none',
+        zIndex:       '9999',
+        transition:   'transform 1s cubic-bezier(0.22,1,0.36,1), opacity 1s ease-out',
+      });
+      document.body.appendChild(glow);
+      requestAnimationFrame(() => {
+        glow.style.transform = 'translate(-50%,-50%) scale(18)';
+        glow.style.opacity   = '0';
+      });
+      setTimeout(() => glow.remove(), shockwave.lifetime);
+
+      const btn = document.querySelector(selectors.button);
+      if (btn) {
+        const orig = btn.innerText;
+        btn.innerText = shockwave.buttonLabel;
+        btn.style.letterSpacing = '4px';
+        btn.style.boxShadow     = '0 0 35px #00d9ff';
+        setTimeout(() => {
+          btn.innerText = orig;
+          btn.style.letterSpacing = '';
+          btn.style.boxShadow     = '';
+        }, shockwave.resetDelay);
+      }
+
+      const titleEl = document.querySelector(selectors.title);
+      if (titleEl) {
+        titleEl.style.animation = 'none';
+        void titleEl.offsetWidth;
+        titleEl.style.animation = 'gradientShift 5s ease infinite, textGlitch 2.2s infinite';
+        titleEl.style.transform = 'scale(1.02)';
+        setTimeout(() => { titleEl.style.transform = ''; }, 200);
+      }
+    };
+
+    // Mouse move: parallax ring + border glow
+    const onMouseMove = (e) => {
+      const heroBox = document.querySelector(selectors.hero);
+      if (!heroBox) return;
+      const rect    = heroBox.getBoundingClientRect();
+      const distX   = (e.clientX - rect.left - rect.width  / 2) * 0.03;
+      const distY   = (e.clientY - rect.top  - rect.height / 2) * 0.03;
+      const ring    = document.querySelector(selectors.ring);
+      if (ring) ring.style.transform = `translate(calc(-50% + ${distX}px), calc(-50% + ${distY}px)) scale(${1 + Math.abs(distX) * 0.01})`;
+      const border  = document.querySelector(selectors.border);
+      if (border) {
+        const intensity = Math.min(0.8, Math.abs(distX) * 0.03 + 0.3);
+        border.style.borderColor = `rgba(255, ${40 + intensity * 50}, 80, ${0.5 + intensity * 0.4})`;
+      }
+    };
+
+    const subGlowTimer = setInterval(() => {
+      const subEl = document.querySelector(selectors.sub);
+      if (!subEl) return;
+      const g = Math.sin(Date.now() / 800) * 0.2 + 0.6;
+      subEl.style.boxShadow = `0 0 ${12 + g * 12}px rgba(255,40,80,${0.4 + g * 0.3})`;
+    }, subGlow.interval);
+
+    const bigFlameTimer = enableBigFlame
+      ? setInterval(() => {
+          const flare = document.createElement('div');
+          Object.assign(flare.style, {
+            position:     'fixed',
+            width:        bigFlame.size,
+            height:       bigFlame.size,
+            left:         `${Math.random() * 80 + 10}%`,
+            top:          `${Math.random() * 80 + 10}%`,
+            background:   'radial-gradient(circle, rgba(255,50,80,0.25), rgba(100,0,0,0))',
+            borderRadius: '50%',
+            filter:       'blur(35px)',
+            pointerEvents:'none',
+            zIndex:       '2',
+          });
+          document.body.appendChild(flare);
+          setTimeout(() => flare.remove(), bigFlame.lifetime);
+        }, bigFlame.interval)
+      : null;
+
+    window.addEventListener('click', onClickWindow);
+    document.body.addEventListener('click', onClickBody);
+    document.body.addEventListener('mousemove', onMouseMove);
+
+    return () => {
+      window.removeEventListener('click', onClickWindow);
+      document.body.removeEventListener('click', onClickBody);
+      document.body.removeEventListener('mousemove', onMouseMove);
+      clearInterval(particleTimer);
+      if (sparkleTimer)  clearInterval(sparkleTimer);
+      clearInterval(subGlowTimer);
+      if (bigFlameTimer) clearInterval(bigFlameTimer);
+      sheet?.parentNode?.removeChild(sheet);
+      root?.parentNode?.removeChild(root);
+    };
+  }, [particleCount, particleColors, enableSparkle, enableBigFlame, enableRipple]);
 
   return null;
 }
