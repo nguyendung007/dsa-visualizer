@@ -6,3 +6,5 @@ deploy/
 work/
 tests/
 package-lock.json
+sp.py
+v2
