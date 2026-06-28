@@ -1,3 +1,4 @@
+// index.ts
 // ============================================================
 // CSP Core — Functional Core (pure functions → steps[])
 // Mỗi hàm trả về mảng steps để AnimationEngine consume
@@ -6,59 +7,76 @@
 //     conflictVars, arcFrom, arcTo, iteration, desc }
 // ============================================================
 
-// ─── MAP COLORING ────────────────────────────────────────────
-// Graph Australia mặc định
-export const MAP_COLORING_PROBLEM = {
-  variables: ['WA', 'NT', 'SA', 'Q', 'NSW', 'V', 'T'],
-  domains: {
-    WA: ['R', 'G', 'B'],
-    NT: ['R', 'G', 'B'],
-    SA: ['R', 'G', 'B'],
-    Q:  ['R', 'G', 'B'],
-    NSW:['R', 'G', 'B'],
-    V:  ['R', 'G', 'B'],
-    T:  ['R', 'G', 'B'],
-  },
-  neighbors: {
-    WA:  ['NT', 'SA'],
-    NT:  ['WA', 'SA', 'Q'],
-    SA:  ['WA', 'NT', 'Q', 'NSW', 'V'],
-    Q:   ['NT', 'SA', 'NSW'],
-    NSW: ['Q', 'SA', 'V'],
-    V:   ['SA', 'NSW'],
-    T:   [],
-  },
-};
+import {
+  MAP_COLORING_PROBLEM,
+  MAP_NODE_POSITIONS,
+  SUDOKU_EASY,
+  SCHEDULING_PROBLEM
+} from './config.ts';
 
-// Tọa độ SVG cho từng vùng (dùng khi render)
-export const MAP_NODE_POSITIONS = {
-  WA:  { x: 100, y: 200 },
-  NT:  { x: 240, y: 130 },
-  SA:  { x: 290, y: 230 },
-  Q:   { x: 390, y: 150 },
-  NSW: { x: 420, y: 240 },
-  V:   { x: 370, y: 310 },
-  T:   { x: 390, y: 390 },
-};
+// ============================================================
+// Type Definitions
+// ============================================================
 
-function cloneDomains(d) {
-  const r = {};
+export interface MapColoringProblem {
+  variables: string[];
+  domains: Record<string, string[]>;
+  neighbors: Record<string, string[]>;
+}
+
+export interface SchedulingProblem {
+  courses: string[];
+  rooms: string[];
+  slots: string[];
+  conflicts: [string, string][];
+}
+
+export interface Step {
+  type: string;
+  assignment?: Record<string, any>;
+  domains?: Record<string, any>;
+  currentVar?: string;
+  currentVal?: any;
+  conflictVars?: string[];
+  arcFrom?: string;
+  arcTo?: string;
+  iteration?: number;
+  desc?: string;
+  // Map specific
+  [key: string]: any;
+}
+
+// ============================================================
+// Utility Functions
+// ============================================================
+
+function cloneDomains<T extends Record<string, any[]>>(d: T): T {
+  const r: any = {};
   for (const k in d) r[k] = [...d[k]];
   return r;
 }
 
-function isConsistentMap(variable, value, assignment, neighbors) {
+function isConsistentMap(
+  variable: string,
+  value: string,
+  assignment: Record<string, string>,
+  neighbors: Record<string, string[]>
+): boolean {
   for (const nb of (neighbors[variable] || [])) {
     if (assignment[nb] === value) return false;
   }
   return true;
 }
 
+// ============================================================
+// MAP COLORING
+// ============================================================
+
 // Backtracking — Map Coloring
-export function mapColoringBacktracking(problem) {
+export function mapColoringBacktracking(problem: MapColoringProblem): Step[] {
   const { variables, domains, neighbors } = problem;
-  const steps = [];
-  const assignment = {};
+  const steps: Step[] = [];
+  const assignment: Record<string, string> = {};
 
   steps.push({
     type: 'init',
@@ -67,7 +85,7 @@ export function mapColoringBacktracking(problem) {
     desc: 'Khởi tạo: tất cả biến chưa được gán, domain đầy đủ',
   });
 
-  function backtrack(vars) {
+  function backtrack(vars: string[]): boolean {
     if (vars.length === 0) return true;
     const variable = vars[0];
     const rest = vars.slice(1);
@@ -132,13 +150,13 @@ export function mapColoringBacktracking(problem) {
 }
 
 // AC-3 — Map Coloring
-export function mapColoringAC3(problem) {
+export function mapColoringAC3(problem: MapColoringProblem): Step[] {
   const { variables, neighbors } = problem;
-  const steps = [];
+  const steps: Step[] = [];
   const domains = cloneDomains(problem.domains);
 
   // Build arc queue
-  const queue = [];
+  const queue: [string, string][] = [];
   for (const xi of variables) {
     for (const xj of (neighbors[xi] || [])) {
       queue.push([xi, xj]);
@@ -154,7 +172,7 @@ export function mapColoringAC3(problem) {
   });
 
   while (queue.length > 0) {
-    const [xi, xj] = queue.shift();
+    const [xi, xj] = queue.shift()!;
 
     steps.push({
       type: 'arc_check',
@@ -167,7 +185,7 @@ export function mapColoringAC3(problem) {
     });
 
     // Revise
-    const removed = [];
+    const removed: string[] = [];
     const newDomain = domains[xi].filter(vx => {
       return domains[xj].some(vy => vy !== vx);
     });
@@ -232,7 +250,7 @@ export function mapColoringAC3(problem) {
   }
 
   // Sau AC-3, nếu domain nào = 1 giá trị → tự suy ra assignment
-  const assignment = {};
+  const assignment: Record<string, string> = {};
   for (const v of variables) {
     if (domains[v].length === 1) assignment[v] = domains[v][0];
   }
@@ -247,12 +265,12 @@ export function mapColoringAC3(problem) {
 }
 
 // Min-Conflicts — Map Coloring
-export function mapColoringMinConflicts(problem, maxSteps = 100) {
+export function mapColoringMinConflicts(problem: MapColoringProblem, maxSteps: number = 100): Step[] {
   const { variables, domains, neighbors } = problem;
-  const steps = [];
+  const steps: Step[] = [];
 
   // Gán ngẫu nhiên ban đầu
-  const assignment = {};
+  const assignment: Record<string, string> = {};
   for (const v of variables) {
     assignment[v] = domains[v][Math.floor(Math.random() * domains[v].length)];
   }
@@ -265,7 +283,7 @@ export function mapColoringMinConflicts(problem, maxSteps = 100) {
     desc: 'Gán ngẫu nhiên ban đầu',
   });
 
-  function countConflicts(variable, value, asgn) {
+  function countConflicts(variable: string, value: string, asgn: Record<string, string>): number {
     return (neighbors[variable] || []).filter(nb => asgn[nb] === value).length;
   }
 
@@ -291,7 +309,7 @@ export function mapColoringMinConflicts(problem, maxSteps = 100) {
     const conflictsBefore = countConflicts(variable, assignment[variable], assignment);
 
     // Chọn giá trị ít xung đột nhất
-    let minConf = Infinity, bestVals = [];
+    let minConf = Infinity, bestVals: string[] = [];
     for (const val of domains[variable]) {
       const c = countConflicts(variable, val, assignment);
       if (c < minConf) { minConf = c; bestVals = [val]; }
@@ -325,11 +343,11 @@ export function mapColoringMinConflicts(problem, maxSteps = 100) {
 }
 
 // Branch & Bound — Map Coloring
-export function mapColoringBranchBound(problem) {
+export function mapColoringBranchBound(problem: MapColoringProblem): Step[] {
   const { variables, domains, neighbors } = problem;
-  const steps = [];
-  const assignment = {};
-  let bestSolution = null;
+  const steps: Step[] = [];
+  const assignment: Record<string, string> = {};
+  let bestSolution: Record<string, string> | null = null;
 
   steps.push({
     type: 'init',
@@ -338,19 +356,19 @@ export function mapColoringBranchBound(problem) {
     desc: 'Branch & Bound: khởi tạo tìm kiếm',
   });
 
-  function bound(asgn) {
+  function bound(asgn: Record<string, string>): number {
     // Số biến chưa gán còn lại (bound đơn giản)
     return variables.filter(v => !(v in asgn)).length;
   }
 
-  function branch(varIdx) {
+  function branch(varIdx: number): boolean {
     if (varIdx === variables.length) {
       bestSolution = { ...assignment };
       steps.push({
         type: 'solution',
         assignment: { ...assignment },
         domains: cloneDomains(domains),
-        desc: `✓ Tìm thấy lời giải! ${Object.entries(assignment).map(([k,v]) => `${k}=${v}`).join(', ')}`,
+        desc: `✓ Tìm thấy lời giải! ${Object.entries(assignment).map(([k, v]) => `${k}=${v}`).join(', ')}`,
       });
       return true;
     }
@@ -416,7 +434,7 @@ export function mapColoringBranchBound(problem) {
   } else {
     steps.push({
       type: 'done',
-      assignment: { ...bestSolution },
+      assignment: { ...(bestSolution as Record<string, string>) },
       domains: cloneDomains(domains),
       desc: '✓ Branch & Bound hoàn thành!',
     });
@@ -424,21 +442,24 @@ export function mapColoringBranchBound(problem) {
   return steps;
 }
 
-// ─── N-QUEENS ────────────────────────────────────────────────
-function queensConflict(row, col, placement) {
+// ============================================================
+// N-QUEENS
+// ============================================================
+
+function queensConflict(row: number, col: number, placement: (number | undefined)[]): boolean {
   for (let r = 0; r < placement.length; r++) {
-    if (placement[r] === undefined) continue;
     const c = placement[r];
+    if (c === undefined) continue;
     if (c === col) return true;
     if (Math.abs(r - row) === Math.abs(c - col)) return true;
   }
   return false;
 }
 
-export function nQueensBacktracking(n) {
-  const steps = [];
-  const placement = new Array(n).fill(undefined); // placement[row] = col
-  const domains = {};
+export function nQueensBacktracking(n: number): Step[] {
+  const steps: Step[] = [];
+  const placement: (number | undefined)[] = new Array(n).fill(undefined);
+  const domains: Record<string, number[]> = {};
   for (let i = 0; i < n; i++) domains[`Q${i}`] = Array.from({ length: n }, (_, j) => j);
 
   steps.push({
@@ -449,7 +470,7 @@ export function nQueensBacktracking(n) {
     desc: `Khởi tạo ${n}-Queens: cần đặt ${n} quân Hậu trên bàn ${n}×${n}`,
   });
 
-  function backtrack(row) {
+  function backtrack(row: number): boolean {
     if (row === n) return true;
     for (let col = 0; col < n; col++) {
       steps.push({
@@ -486,9 +507,9 @@ export function nQueensBacktracking(n) {
           desc: `✗ Quay lui từ hàng ${row}, cột ${col}`,
         });
       } else {
-        const conflictRows = [];
+        const conflictRows: number[] = [];
         for (let r = 0; r < row; r++) {
-          if (placement[r] === col || Math.abs(r - row) === Math.abs(placement[r] - col))
+          if (placement[r] === col || Math.abs(r - row) === Math.abs((placement[r] as number) - col))
             conflictRows.push(r);
         }
         steps.push({
@@ -517,13 +538,13 @@ export function nQueensBacktracking(n) {
   return steps;
 }
 
-export function nQueensAC3(n) {
-  const steps = [];
+export function nQueensAC3(n: number): Step[] {
+  const steps: Step[] = [];
   // Với N-Queens, domain của mỗi hàng = cột có thể đặt
-  const domains = {};
+  const domains: Record<string, number[]> = {};
   for (let i = 0; i < n; i++) domains[`Q${i}`] = Array.from({ length: n }, (_, j) => j);
 
-  const queue = [];
+  const queue: [string, string][] = [];
   for (let i = 0; i < n; i++)
     for (let j = 0; j < n; j++)
       if (i !== j) queue.push([`Q${i}`, `Q${j}`]);
@@ -538,7 +559,7 @@ export function nQueensAC3(n) {
   });
 
   while (queue.length > 0) {
-    const [xi, xj] = queue.shift();
+    const [xi, xj] = queue.shift()!;
     const ri = parseInt(xi.slice(1)), rj = parseInt(xj.slice(1));
 
     steps.push({
@@ -551,7 +572,6 @@ export function nQueensAC3(n) {
       desc: `Kiểm tra cung (${xi}, ${xj})`,
     });
 
-    const removedVals = [];
     const newDomain = domains[xi].filter(ci => {
       return domains[xj].some(cj => {
         return cj !== ci && Math.abs(rj - ri) !== Math.abs(cj - ci);
@@ -593,7 +613,7 @@ export function nQueensAC3(n) {
     }
   }
 
-  const placement = new Array(n).fill(undefined);
+  const placement: (number | undefined)[] = new Array(n).fill(undefined);
   for (let i = 0; i < n; i++) {
     if (domains[`Q${i}`].length === 1) placement[i] = domains[`Q${i}`][0];
   }
@@ -605,10 +625,10 @@ export function nQueensAC3(n) {
   return steps;
 }
 
-export function nQueensMinConflicts(n, maxIter = 200) {
-  const steps = [];
+export function nQueensMinConflicts(n: number, maxIter: number = 200): Step[] {
+  const steps: Step[] = [];
   // Gán ngẫu nhiên mỗi hàng một cột
-  const placement = Array.from({ length: n }, () => Math.floor(Math.random() * n));
+  const placement: number[] = Array.from({ length: n }, () => Math.floor(Math.random() * n));
 
   steps.push({
     type: 'init', placement: [...placement],
@@ -616,7 +636,7 @@ export function nQueensMinConflicts(n, maxIter = 200) {
     desc: 'Gán ngẫu nhiên ban đầu cho N-Queens',
   });
 
-  function conflicts(row, col, pl) {
+  function conflicts(row: number, col: number, pl: number[]): number {
     let c = 0;
     for (let r = 0; r < n; r++) {
       if (r === row) continue;
@@ -626,7 +646,7 @@ export function nQueensMinConflicts(n, maxIter = 200) {
   }
 
   for (let iter = 1; iter <= maxIter; iter++) {
-    const conflictedRows = [];
+    const conflictedRows: number[] = [];
     for (let r = 0; r < n; r++) {
       if (conflicts(r, placement[r], placement) > 0) conflictedRows.push(r);
     }
@@ -641,7 +661,7 @@ export function nQueensMinConflicts(n, maxIter = 200) {
     }
 
     const row = conflictedRows[Math.floor(Math.random() * conflictedRows.length)];
-    let minConf = Infinity, bestCols = [];
+    let minConf = Infinity, bestCols: number[] = [];
     for (let c = 0; c < n; c++) {
       const cf = conflicts(row, c, placement);
       if (cf < minConf) { minConf = cf; bestCols = [c]; }
@@ -667,16 +687,16 @@ export function nQueensMinConflicts(n, maxIter = 200) {
   return steps;
 }
 
-export function nQueensBranchBound(n) {
-  const steps = [];
-  const placement = new Array(n).fill(undefined);
+export function nQueensBranchBound(n: number): Step[] {
+  const steps: Step[] = [];
+  const placement: (number | undefined)[] = new Array(n).fill(undefined);
 
   steps.push({
     type: 'init', placement: [...placement], domains: {}, n,
     desc: `Branch & Bound ${n}-Queens`,
   });
 
-  function branch(row) {
+  function branch(row: number): boolean {
     if (row === n) return true;
     steps.push({
       type: 'branch', currentVar: `Q${row}`,
@@ -719,22 +739,11 @@ export function nQueensBranchBound(n) {
   return steps;
 }
 
-// ─── SUDOKU ──────────────────────────────────────────────────
-export const SUDOKU_EASY = [
-  [5,3,0, 0,7,0, 0,0,0],
-  [6,0,0, 1,9,5, 0,0,0],
-  [0,9,8, 0,0,0, 0,6,0],
+// ============================================================
+// SUDOKU
+// ============================================================
 
-  [8,0,0, 0,6,0, 0,0,3],
-  [4,0,0, 8,0,3, 0,0,1],
-  [7,0,0, 0,2,0, 0,0,6],
-
-  [0,6,0, 0,0,0, 2,8,0],
-  [0,0,0, 4,1,9, 0,0,5],
-  [0,0,0, 0,8,0, 0,7,9],
-];
-
-function sudokuIsValid(board, row, col, num) {
+function sudokuIsValid(board: number[][], row: number, col: number, num: number): boolean {
   for (let c = 0; c < 9; c++) if (board[row][c] === num) return false;
   for (let r = 0; r < 9; r++) if (board[r][col] === num) return false;
   const br = Math.floor(row / 3) * 3, bc = Math.floor(col / 3) * 3;
@@ -744,12 +753,12 @@ function sudokuIsValid(board, row, col, num) {
   return true;
 }
 
-function copyBoard(board) { return board.map(r => [...r]); }
+function copyBoard(board: number[][]): number[][] { return board.map(r => [...r]); }
 
-function sudokuCellKey(r, c) { return `${r},${c}`; }
+function sudokuCellKey(r: number, c: number): string { return `${r},${c}`; }
 
-export function sudokuBacktracking(initBoard) {
-  const steps = [];
+export function sudokuBacktracking(initBoard: number[][]): Step[] {
+  const steps: Step[] = [];
   const board = copyBoard(initBoard);
 
   steps.push({
@@ -757,14 +766,14 @@ export function sudokuBacktracking(initBoard) {
     desc: 'Sudoku Backtracking: bắt đầu điền ô trống',
   });
 
-  function findEmpty() {
+  function findEmpty(): [number, number] | null {
     for (let r = 0; r < 9; r++)
       for (let c = 0; c < 9; c++)
         if (board[r][c] === 0) return [r, c];
     return null;
   }
 
-  function backtrack() {
+  function backtrack(): boolean {
     const cell = findEmpty();
     if (!cell) return true;
     const [row, col] = cell;
@@ -809,39 +818,39 @@ export function sudokuBacktracking(initBoard) {
   return steps;
 }
 
-export function sudokuAC3(initBoard) {
-  const steps = [];
+export function sudokuAC3(initBoard: number[][]): Step[] {
+  const steps: Step[] = [];
   const board = copyBoard(initBoard);
 
   // Domains cho từng ô
-  const domains = {};
+  const domains: Record<string, number[]> = {};
   for (let r = 0; r < 9; r++)
     for (let c = 0; c < 9; c++) {
       const key = sudokuCellKey(r, c);
       if (board[r][c] !== 0) domains[key] = [board[r][c]];
-      else domains[key] = [1,2,3,4,5,6,7,8,9];
+      else domains[key] = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     }
 
-  function peers(r, c) {
-    const p = new Set();
+  function peers(r: number, c: number): string[] {
+    const p = new Set<string>();
     for (let i = 0; i < 9; i++) {
       if (i !== c) p.add(sudokuCellKey(r, i));
       if (i !== r) p.add(sudokuCellKey(i, c));
     }
-    const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3;
+    const br = Math.floor(r / 3) * 3, bc = Math.floor(c / 3) * 3;
     for (let dr = 0; dr < 3; dr++)
       for (let dc = 0; dc < 3; dc++) {
-        const nr = br+dr, nc = bc+dc;
+        const nr = br + dr, nc = bc + dc;
         if (nr !== r || nc !== c) p.add(sudokuCellKey(nr, nc));
       }
     return [...p];
   }
 
-  const queue = [];
+  const queue: [string, string][] = [];
   for (let r = 0; r < 9; r++)
     for (let c = 0; c < 9; c++)
       for (const peer of peers(r, c))
-        queue.push([sudokuCellKey(r,c), peer]);
+        queue.push([sudokuCellKey(r, c), peer]);
 
   steps.push({
     type: 'init', board: copyBoard(board), domains: { ...domains },
@@ -851,7 +860,7 @@ export function sudokuAC3(initBoard) {
   let iterations = 0;
   while (queue.length > 0 && iterations < 2000) {
     iterations++;
-    const [xi, xj] = queue.shift();
+    const [xi, xj] = queue.shift()!;
     const [ri, ci] = xi.split(',').map(Number);
 
     steps.push({
@@ -885,7 +894,7 @@ export function sudokuAC3(initBoard) {
         desc: `Thu hẹp domain ô ${xi}: bỏ {${removed.join(',')}} → còn {${domains[xi].join(',')}}`,
       });
       for (const xk of peers(ri, ci)) {
-        if (xk !== xj && !queue.some(([a,b]) => a===xk && b===xi)) {
+        if (xk !== xj && !queue.some(([a, b]) => a === xk && b === xi)) {
           queue.push([xk, xi]);
         }
       }
@@ -905,8 +914,8 @@ export function sudokuAC3(initBoard) {
   return steps;
 }
 
-export function sudokuMinConflicts(initBoard, maxIter = 500) {
-  const steps = [];
+export function sudokuMinConflicts(initBoard: number[][], maxIter: number = 500): Step[] {
+  const steps: Step[] = [];
   const board = copyBoard(initBoard);
 
   // Điền ngẫu nhiên các ô trống
@@ -919,50 +928,50 @@ export function sudokuMinConflicts(initBoard, maxIter = 500) {
     desc: 'Điền ngẫu nhiên ban đầu vào Sudoku',
   });
 
-  function cellConflicts(r, c, val, b) {
+  function cellConflicts(r: number, c: number, val: number, b: number[][]): number {
     let count = 0;
     for (let i = 0; i < 9; i++) {
       if (i !== c && b[r][i] === val) count++;
       if (i !== r && b[i][c] === val) count++;
     }
-    const br = Math.floor(r/3)*3, bc = Math.floor(c/3)*3;
+    const br = Math.floor(r / 3) * 3, bc = Math.floor(c / 3) * 3;
     for (let dr = 0; dr < 3; dr++)
       for (let dc = 0; dc < 3; dc++) {
-        const nr = br+dr, nc = bc+dc;
+        const nr = br + dr, nc = bc + dc;
         if ((nr !== r || nc !== c) && b[nr][nc] === val) count++;
       }
     return count;
   }
 
-  const fixedCells = new Set();
+  const fixedCells = new Set<string>();
   for (let r = 0; r < 9; r++)
     for (let c = 0; c < 9; c++)
-      if (initBoard[r][c] !== 0) fixedCells.add(sudokuCellKey(r,c));
+      if (initBoard[r][c] !== 0) fixedCells.add(sudokuCellKey(r, c));
 
   for (let iter = 1; iter <= maxIter; iter++) {
-    const conflicted = [];
+    const conflicted: [number, number][] = [];
     for (let r = 0; r < 9; r++)
       for (let c = 0; c < 9; c++)
-        if (!fixedCells.has(sudokuCellKey(r,c)) && cellConflicts(r,c,board[r][c],board) > 0)
-          conflicted.push([r,c]);
+        if (!fixedCells.has(sudokuCellKey(r, c)) && cellConflicts(r, c, board[r][c], board) > 0)
+          conflicted.push([r, c]);
 
     if (conflicted.length === 0) {
-      steps.push({ type: 'done', board: copyBoard(board), iteration: iter, desc: `✓ Sudoku giải xong sau ${iter-1} bước!` });
+      steps.push({ type: 'done', board: copyBoard(board), iteration: iter, desc: `✓ Sudoku giải xong sau ${iter - 1} bước!` });
       return steps;
     }
 
-    const [row,col] = conflicted[Math.floor(Math.random()*conflicted.length)];
-    let minConf = Infinity, bestVals = [];
+    const [row, col] = conflicted[Math.floor(Math.random() * conflicted.length)];
+    let minConf = Infinity, bestVals: number[] = [];
     for (let v = 1; v <= 9; v++) {
       const cf = cellConflicts(row, col, v, board);
       if (cf < minConf) { minConf = cf; bestVals = [v]; }
       else if (cf === minConf) bestVals.push(v);
     }
-    const chosen = bestVals[Math.floor(Math.random()*bestVals.length)];
+    const chosen = bestVals[Math.floor(Math.random() * bestVals.length)];
     const before = cellConflicts(row, col, board[row][col], board);
 
     steps.push({
-      type: 'min_conflict', currentVar: sudokuCellKey(row,col),
+      type: 'min_conflict', currentVar: sudokuCellKey(row, col),
       currentVal: chosen, conflictsBefore: before, conflictsAfter: minConf,
       board: copyBoard(board), iteration: iter,
       desc: `Bước ${iter}: ô [${row},${col}] ${board[row][col]}→${chosen} (xung đột: ${before}→${minConf})`,
@@ -975,8 +984,8 @@ export function sudokuMinConflicts(initBoard, maxIter = 500) {
   return steps;
 }
 
-export function sudokuBranchBound(initBoard) {
-  const steps = [];
+export function sudokuBranchBound(initBoard: number[][]): Step[] {
+  const steps: Step[] = [];
   const board = copyBoard(initBoard);
 
   steps.push({
@@ -985,24 +994,24 @@ export function sudokuBranchBound(initBoard) {
   });
 
   // MRV: tìm ô trống có ít giá trị hợp lệ nhất
-  function findMRV() {
-    let best = null, bestCount = 10;
+  function findMRV(): [number, number, number] | null {
+    let best: [number, number] | null = null, bestCount = 10;
     for (let r = 0; r < 9; r++)
       for (let c = 0; c < 9; c++)
         if (board[r][c] === 0) {
-          const count = [1,2,3,4,5,6,7,8,9].filter(n => sudokuIsValid(board,r,c,n)).length;
-          if (count < bestCount) { bestCount = count; best = [r,c]; }
+          const count = [1, 2, 3, 4, 5, 6, 7, 8, 9].filter(n => sudokuIsValid(board, r, c, n)).length;
+          if (count < bestCount) { bestCount = count; best = [r, c]; }
         }
-    return best ? [...best, bestCount] : null;
+    return best ? [...best, bestCount] as [number, number, number] : null;
   }
 
-  function branch() {
+  function branch(): boolean {
     const cell = findMRV();
     if (!cell) return true;
     const [row, col, remaining] = cell;
 
     steps.push({
-      type: 'branch', currentVar: sudokuCellKey(row,col),
+      type: 'branch', currentVar: sudokuCellKey(row, col),
       board: copyBoard(board), boundVal: remaining,
       desc: `MRV: chọn ô [${row},${col}] — còn ${remaining} giá trị hợp lệ`,
     });
@@ -1011,20 +1020,20 @@ export function sudokuBranchBound(initBoard) {
       if (sudokuIsValid(board, row, col, num)) {
         board[row][col] = num;
         steps.push({
-          type: 'assign', currentVar: sudokuCellKey(row,col), currentVal: num,
+          type: 'assign', currentVar: sudokuCellKey(row, col), currentVal: num,
           board: copyBoard(board),
           desc: `Gán ô [${row},${col}] = ${num}`,
         });
         if (branch()) return true;
         board[row][col] = 0;
         steps.push({
-          type: 'backtrack', currentVar: sudokuCellKey(row,col),
+          type: 'backtrack', currentVar: sudokuCellKey(row, col),
           board: copyBoard(board),
           desc: `Cắt nhánh ô [${row},${col}] = ${num}`,
         });
       } else {
         steps.push({
-          type: 'prune', currentVar: sudokuCellKey(row,col), currentVal: num,
+          type: 'prune', currentVar: sudokuCellKey(row, col), currentVal: num,
           board: copyBoard(board),
           desc: `Cắt tỉa: ô [${row},${col}] = ${num} không hợp lệ`,
         });
@@ -1041,31 +1050,13 @@ export function sudokuBranchBound(initBoard) {
   return steps;
 }
 
-// ─── SCHEDULING ──────────────────────────────────────────────
-// Lập lịch thi: 6 môn học, 3 phòng, 4 slot thời gian
-// Ràng buộc: môn cùng sinh viên không được cùng slot
-export const SCHEDULING_PROBLEM = {
-  courses: ['Toán', 'Lý', 'Hóa', 'Văn', 'Anh', 'GDTC'],
-  rooms:   ['P101', 'P102', 'P103'],
-  slots:   ['Sáng T2', 'Chiều T2', 'Sáng T3', 'Chiều T3'],
-  // Các cặp môn cùng nhóm sinh viên (không được cùng slot)
-  conflicts: [
-    ['Toán','Lý'], ['Toán','Hóa'], ['Lý','Hóa'],
-    ['Văn','Anh'], ['Toán','Văn'], ['Lý','Anh'],
-  ],
-};
+// ============================================================
+// SCHEDULING
+// ============================================================
 
-function schedulingConflict(course, slot, assignment, conflictsMap) {
-  const conflictCourses = conflictsMap[course] || [];
-  for (const other of conflictCourses) {
-    if (assignment[other] && assignment[other].slot === slot) return other;
-  }
-  return null;
-}
-
-function buildConflictsMap(conflicts) {
-  const map = {};
-  for (const [a,b] of conflicts) {
+function buildConflictsMap(conflicts: [string, string][]): Record<string, string[]> {
+  const map: Record<string, string[]> = {};
+  for (const [a, b] of conflicts) {
     if (!map[a]) map[a] = [];
     if (!map[b]) map[b] = [];
     map[a].push(b);
@@ -1074,14 +1065,27 @@ function buildConflictsMap(conflicts) {
   return map;
 }
 
-export function schedulingBacktracking(problem) {
+function schedulingConflict(
+  course: string,
+  slot: string,
+  assignment: Record<string, { slot: string; room: string }>,
+  conflictsMap: Record<string, string[]>
+): string | null {
+  const conflictCourses = conflictsMap[course] || [];
+  for (const other of conflictCourses) {
+    if (assignment[other] && assignment[other].slot === slot) return other;
+  }
+  return null;
+}
+
+export function schedulingBacktracking(problem: SchedulingProblem): Step[] {
   const { courses, rooms, slots, conflicts } = problem;
   const conflictsMap = buildConflictsMap(conflicts);
-  const steps = [];
-  const assignment = {}; // assignment[course] = { slot, room }
+  const steps: Step[] = [];
+  const assignment: Record<string, { slot: string; room: string }> = {};
 
   // Domain: tất cả combo (slot × room)
-  const domain = [];
+  const domain: { slot: string; room: string }[] = [];
   for (const slot of slots) for (const room of rooms) domain.push({ slot, room });
 
   steps.push({
@@ -1089,7 +1093,7 @@ export function schedulingBacktracking(problem) {
     desc: 'Khởi tạo lập lịch: mỗi môn có thể xếp vào bất kỳ slot/phòng nào',
   });
 
-  function backtrack(idx) {
+  function backtrack(idx: number): boolean {
     if (idx === courses.length) return true;
     const course = courses[idx];
 
@@ -1139,17 +1143,17 @@ export function schedulingBacktracking(problem) {
   return steps;
 }
 
-export function schedulingAC3(problem) {
+export function schedulingAC3(problem: SchedulingProblem): Step[] {
   const { courses, rooms, slots, conflicts } = problem;
-  const steps = [];
-  const domain = [];
+  const steps: Step[] = [];
+  const domain: string[] = [];
   for (const slot of slots) for (const room of rooms) domain.push(`${slot}|${room}`);
 
-  const domains = Object.fromEntries(courses.map(c => [c, [...domain]]));
+  const domains: Record<string, string[]> = Object.fromEntries(courses.map(c => [c, [...domain]]));
   const conflictsMap = buildConflictsMap(conflicts);
 
-  const queue = [];
-  for (const [a,b] of conflicts) { queue.push([a,b]); queue.push([b,a]); }
+  const queue: [string, string][] = [];
+  for (const [a, b] of conflicts) { queue.push([a, b]); queue.push([b, a]); }
 
   steps.push({
     type: 'init', assignment: {}, schedDomains: { ...domains },
@@ -1157,7 +1161,7 @@ export function schedulingAC3(problem) {
   });
 
   while (queue.length > 0) {
-    const [xi, xj] = queue.shift();
+    const [xi, xj] = queue.shift()!;
     steps.push({
       type: 'arc_check', arcFrom: xi, arcTo: xj,
       assignment: {}, schedDomains: { ...domains },
@@ -1190,7 +1194,7 @@ export function schedulingAC3(problem) {
         desc: `Thu hẹp domain[${xi}]: bỏ ${removed.length} slot xung đột`,
       });
       for (const xk of (conflictsMap[xi] || [])) {
-        if (xk !== xj && !queue.some(([a,b]) => a===xk && b===xi)) queue.push([xk,xi]);
+        if (xk !== xj && !queue.some(([a, b]) => a === xk && b === xi)) queue.push([xk, xi]);
       }
     } else {
       steps.push({
@@ -1201,7 +1205,7 @@ export function schedulingAC3(problem) {
     }
   }
 
-  const assignment = {};
+  const assignment: Record<string, { slot: string; room: string }> = {};
   for (const c of courses) {
     if (domains[c].length > 0) {
       const [slot, room] = domains[c][0].split('|');
@@ -1216,16 +1220,16 @@ export function schedulingAC3(problem) {
   return steps;
 }
 
-export function schedulingMinConflicts(problem, maxIter = 200) {
+export function schedulingMinConflicts(problem: SchedulingProblem, maxIter: number = 200): Step[] {
   const { courses, rooms, slots, conflicts } = problem;
   const conflictsMap = buildConflictsMap(conflicts);
-  const steps = [];
+  const steps: Step[] = [];
 
-  const assignment = {};
+  const assignment: Record<string, { slot: string; room: string }> = {};
   for (const c of courses) {
     assignment[c] = {
-      slot: slots[Math.floor(Math.random()*slots.length)],
-      room: rooms[Math.floor(Math.random()*rooms.length)],
+      slot: slots[Math.floor(Math.random() * slots.length)],
+      room: rooms[Math.floor(Math.random() * rooms.length)],
     };
   }
 
@@ -1234,9 +1238,14 @@ export function schedulingMinConflicts(problem, maxIter = 200) {
     desc: 'Gán ngẫu nhiên lịch thi ban đầu',
   });
 
-  function countConflictsFor(course, slot, room, asgn) {
+  function countConflictsFor(
+    course: string,
+    slot: string,
+    room: string,
+    asgn: Record<string, { slot: string; room: string }>
+  ): number {
     let c = 0;
-    for (const other of (conflictsMap[course]||[])) {
+    for (const other of (conflictsMap[course] || [])) {
       if (asgn[other]?.slot === slot) c++;
     }
     for (const other of courses) {
@@ -1250,18 +1259,18 @@ export function schedulingMinConflicts(problem, maxIter = 200) {
       countConflictsFor(c, assignment[c].slot, assignment[c].room, assignment) > 0
     );
     if (conflicted.length === 0) {
-      steps.push({ type: 'done', assignment: { ...assignment }, iteration: iter, desc: `✓ Lịch thi hoàn chỉnh sau ${iter-1} bước!` });
+      steps.push({ type: 'done', assignment: { ...assignment }, iteration: iter, desc: `✓ Lịch thi hoàn chỉnh sau ${iter - 1} bước!` });
       return steps;
     }
 
-    const course = conflicted[Math.floor(Math.random()*conflicted.length)];
-    let minConf = Infinity, bestOpts = [];
+    const course = conflicted[Math.floor(Math.random() * conflicted.length)];
+    let minConf = Infinity, bestOpts: { slot: string; room: string }[] = [];
     for (const slot of slots) for (const room of rooms) {
       const cf = countConflictsFor(course, slot, room, assignment);
-      if (cf < minConf) { minConf = cf; bestOpts = [{slot,room}]; }
-      else if (cf === minConf) bestOpts.push({slot,room});
+      if (cf < minConf) { minConf = cf; bestOpts = [{ slot, room }]; }
+      else if (cf === minConf) bestOpts.push({ slot, room });
     }
-    const chosen = bestOpts[Math.floor(Math.random()*bestOpts.length)];
+    const chosen = bestOpts[Math.floor(Math.random() * bestOpts.length)];
     const before = countConflictsFor(course, assignment[course].slot, assignment[course].room, assignment);
 
     steps.push({
@@ -1279,13 +1288,13 @@ export function schedulingMinConflicts(problem, maxIter = 200) {
   return steps;
 }
 
-export function schedulingBranchBound(problem) {
+export function schedulingBranchBound(problem: SchedulingProblem): Step[] {
   const { courses, rooms, slots, conflicts } = problem;
   const conflictsMap = buildConflictsMap(conflicts);
-  const steps = [];
-  const assignment = {};
+  const steps: Step[] = [];
+  const assignment: Record<string, { slot: string; room: string }> = {};
 
-  const domain = [];
+  const domain: { slot: string; room: string }[] = [];
   for (const slot of slots) for (const room of rooms) domain.push({ slot, room });
 
   steps.push({
@@ -1293,7 +1302,7 @@ export function schedulingBranchBound(problem) {
     desc: 'Branch & Bound Scheduling: ưu tiên môn nhiều ràng buộc nhất',
   });
 
-  function branch(idx) {
+  function branch(idx: number): boolean {
     if (idx === courses.length) return true;
     const course = courses[idx];
     const remaining = courses.length - idx;
@@ -1306,7 +1315,7 @@ export function schedulingBranchBound(problem) {
 
     for (const { slot, room } of domain) {
       const conflict = schedulingConflict(course, slot, assignment, conflictsMap);
-      const roomBusy = Object.values(assignment).some(a => a.slot===slot && a.room===room);
+      const roomBusy = Object.values(assignment).some(a => a.slot === slot && a.room === room);
 
       if (!conflict && !roomBusy) {
         assignment[course] = { slot, room };
@@ -1315,7 +1324,7 @@ export function schedulingBranchBound(problem) {
           assignment: { ...assignment },
           desc: `Gán ${course}: ${slot} tại ${room}`,
         });
-        if (branch(idx+1)) return true;
+        if (branch(idx + 1)) return true;
         delete assignment[course];
         steps.push({
           type: 'backtrack', currentVar: course,
@@ -1341,3 +1350,11 @@ export function schedulingBranchBound(problem) {
   });
   return steps;
 }
+
+// Re-export config items for backward compatibility
+export {
+  MAP_COLORING_PROBLEM,
+  MAP_NODE_POSITIONS,
+  SUDOKU_EASY,
+  SCHEDULING_PROBLEM
+};

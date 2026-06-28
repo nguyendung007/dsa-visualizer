@@ -1,7 +1,8 @@
-// ─── Tree Traversal (Inorder, Preorder, Postorder, Level-order) ──────────────
-export function inorder(root) {
-  const steps = [], result = [];
-  function dfs(node) {
+// traversal.ts
+export function inorder(root: any): any[] {
+  const steps: any[] = [];
+  const result: any[] = [];
+  function dfs(node: any) {
     if (!node) return;
     steps.push({ type: 'go_left', node: node.val, desc: `→ Đi trái từ ${node.val}` });
     dfs(node.left);
@@ -16,9 +17,10 @@ export function inorder(root) {
   return steps;
 }
 
-export function preorder(root) {
-  const steps = [], result = [];
-  function dfs(node) {
+export function preorder(root: any): any[] {
+  const steps: any[] = [];
+  const result: any[] = [];
+  function dfs(node: any) {
     if (!node) return;
     result.push(node.val);
     steps.push({ type: 'visit', node: node.val, result: [...result], desc: `THĂM ${node.val}` });
@@ -33,9 +35,10 @@ export function preorder(root) {
   return steps;
 }
 
-export function postorder(root) {
-  const steps = [], result = [];
-  function dfs(node) {
+export function postorder(root: any): any[] {
+  const steps: any[] = [];
+  const result: any[] = [];
+  function dfs(node: any) {
     if (!node) return;
     steps.push({ type: 'go_left', node: node.val, desc: `→ Đi trái từ ${node.val}` });
     dfs(node.left);
@@ -50,22 +53,29 @@ export function postorder(root) {
   return steps;
 }
 
-export function levelOrder(root) {
-  const steps = [], result = [];
+export function levelOrder(root: any): any[] {
+  const steps: any[] = [];
+  const result: any[] = [];
   if (!root) return steps;
-  const queue = [root];
+  const queue: any[] = [root];
   let level = 0;
   while (queue.length) {
     const len = queue.length;
-    const levelVals = [];
-    steps.push({ type: 'level_start', level, queue: queue.map(n=>n.val), desc: `Bắt đầu tầng ${level}` });
+    const levelVals: any[] = [];
+    steps.push({ type: 'level_start', level, queue: queue.map(n => n.val), desc: `Bắt đầu tầng ${level}` });
     for (let i = 0; i < len; i++) {
       const node = queue.shift();
       levelVals.push(node.val);
       result.push(node.val);
       steps.push({ type: 'visit', node: node.val, level, result: [...result], desc: `THĂM ${node.val} (tầng ${level})` });
-      if (node.left) { queue.push(node.left); steps.push({ type: 'enqueue', node: node.left.val, parent: node.val, desc: `Enqueue ${node.left.val}` }); }
-      if (node.right) { queue.push(node.right); steps.push({ type: 'enqueue', node: node.right.val, parent: node.val, desc: `Enqueue ${node.right.val}` }); }
+      if (node.left) {
+        queue.push(node.left);
+        steps.push({ type: 'enqueue', node: node.left.val, parent: node.val, desc: `Enqueue ${node.left.val}` });
+      }
+      if (node.right) {
+        queue.push(node.right);
+        steps.push({ type: 'enqueue', node: node.right.val, parent: node.val, desc: `Enqueue ${node.right.val}` });
+      }
     }
     steps.push({ type: 'level_done', level, levelVals, desc: `Tầng ${level}: [${levelVals.join(', ')}]` });
     level++;
@@ -74,18 +84,16 @@ export function levelOrder(root) {
   return steps;
 }
 
-// ─── Expression Tree Traversal (Infix / Prefix / Postfix) ────────────────────
-export function parseExpression(expr) {
-  // Build expression tree from infix expression
-  const ops = { '+': 1, '-': 1, '*': 2, '/': 2 };
+export function parseExpression(expr: string): any {
+  const ops: Record<string, number> = { '+': 1, '-': 1, '*': 2, '/': 2 };
   const tokens = expr.match(/(\d+(?:\.\d+)?|[+\-*/()])/g) || [];
 
-  function buildNode(val, left = null, right = null) {
+  function buildNode(val: string, left: any = null, right: any = null): any {
     return { val, left, right };
   }
 
   let pos = 0;
-  function parseExpr(minPrec = 0) {
+  function parseExpr(minPrec: number = 0): any {
     let left = parsePrimary();
     while (pos < tokens.length && ops[tokens[pos]] >= minPrec) {
       const op = tokens[pos++];
@@ -95,39 +103,49 @@ export function parseExpression(expr) {
     return left;
   }
 
-  function parsePrimary() {
+  function parsePrimary(): any {
     const tok = tokens[pos++];
     if (tok === '(') {
       const node = parseExpr(0);
-      pos++; // consume ')'
+      pos++;
       return node;
     }
     return buildNode(tok);
   }
 
-  try { return parseExpr(0); } catch { return null; }
+  try {
+    return parseExpr(0);
+  } catch {
+    return null;
+  }
 }
 
-export function exprInfix(root, steps = []) {
-  const parts = [];
-  function dfs(node) {
+export function exprInfix(root: any, steps: any[] = []): any[] {
+  const parts: string[] = [];
+  function dfs(node: any) {
     if (!node) return;
-    const isOp = ['+','-','*','/'].includes(node.val);
-    if (isOp) { parts.push('('); steps.push({ type: 'open_paren', desc: `(` }); }
+    const isOp = ['+', '-', '*', '/'].includes(node.val);
+    if (isOp) {
+      parts.push('(');
+      steps.push({ type: 'open_paren', desc: '(' });
+    }
     dfs(node.left);
     parts.push(node.val);
     steps.push({ type: 'visit', node: node.val, expr: [...parts], desc: `→ "${node.val}"` });
     dfs(node.right);
-    if (isOp) { parts.push(')'); steps.push({ type: 'close_paren', desc: `)` }); }
+    if (isOp) {
+      parts.push(')');
+      steps.push({ type: 'close_paren', desc: ')' });
+    }
   }
   dfs(root);
   steps.push({ type: 'done', expr: [...parts], result: parts.join(' '), desc: `Infix: ${parts.join(' ')}` });
   return steps;
 }
 
-export function exprPrefix(root, steps = []) {
-  const parts = [];
-  function dfs(node) {
+export function exprPrefix(root: any, steps: any[] = []): any[] {
+  const parts: string[] = [];
+  function dfs(node: any) {
     if (!node) return;
     parts.push(node.val);
     steps.push({ type: 'visit', node: node.val, expr: [...parts], desc: `→ "${node.val}"` });
@@ -139,9 +157,9 @@ export function exprPrefix(root, steps = []) {
   return steps;
 }
 
-export function exprPostfix(root, steps = []) {
-  const parts = [];
-  function dfs(node) {
+export function exprPostfix(root: any, steps: any[] = []): any[] {
+  const parts: string[] = [];
+  function dfs(node: any) {
     if (!node) return;
     dfs(node.left);
     dfs(node.right);
@@ -153,7 +171,7 @@ export function exprPostfix(root, steps = []) {
   return steps;
 }
 
-export function evalExpr(root) {
+export function evalExpr(root: any): number {
   if (!root) return 0;
   const l = evalExpr(root.left);
   const r = evalExpr(root.right);

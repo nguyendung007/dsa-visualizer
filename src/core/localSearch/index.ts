@@ -1,21 +1,66 @@
+// index.ts
 // ─── Local Search Algorithm Index ────────────────────────────────────────────
 // Bản đồ nhiệt: grid 2D mảng số thực [0,1] thể hiện "độ cao" (fitness)
 // Mục tiêu: tìm ô có giá trị CAO NHẤT (maximization)
 // Mỗi thuật toán trả về mảng steps để AnimationEngine phát
 
-function key(r, c) { return `${r},${c}`; }
-function parseKey(k) { const [r, c] = k.split(',').map(Number); return { r, c }; }
+export interface Node {
+  r: number;
+  c: number;
+}
+
+export interface NeighborInfo {
+  node: Node;
+  value: number;
+  key: string;
+}
+
+export interface Step {
+  type: string;
+  node?: Node;
+  value?: number;
+  visited?: Set<string>;
+  current?: string;
+  desc?: string;
+  neighbors?: NeighborInfo[];
+  from?: Node;
+  to?: Node;
+  fromVal?: number;
+  toVal?: number;
+  T?: number;
+  iter?: number;
+  candidate?: Node;
+  curVal?: number;
+  candidateVal?: number;
+  deltaE?: number;
+  prob?: number;
+  accepted?: boolean;
+  path?: string[];
+  bestNode?: Node;
+  bestVal?: number;
+  population?: Array<Node & { fitness: number }>;
+  generation?: number;
+  generations?: number;
+  genBest?: Node;
+  genBestVal?: number;
+  avgFitness?: number;
+  bestEver?: Node;
+  bestEverVal?: number;
+}
+
+function key(r: number, c: number): string { return `${r},${c}`; }
+function parseKey(k: string): { r: number; c: number } { const [r, c] = k.split(',').map(Number); return { r, c }; }
 
 // 4 láng giềng (không diagonal)
-function getNeighbors4(r, c, rows, cols) {
+function getNeighbors4(r: number, c: number, rows: number, cols: number): Node[] {
   return [[-1,0],[1,0],[0,-1],[0,1]]
     .map(([dr, dc]) => ({ r: r+dr, c: c+dc }))
     .filter(n => n.r >= 0 && n.r < rows && n.c >= 0 && n.c < cols);
 }
 
 // 8 láng giềng (có diagonal)
-function getNeighbors8(r, c, rows, cols) {
-  const result = [];
+function getNeighbors8(r: number, c: number, rows: number, cols: number): Node[] {
+  const result: Node[] = [];
   for (let dr = -1; dr <= 1; dr++) for (let dc = -1; dc <= 1; dc++) {
     if (dr === 0 && dc === 0) continue;
     const nr = r+dr, nc = c+dc;
@@ -25,12 +70,12 @@ function getNeighbors8(r, c, rows, cols) {
 }
 
 // ─── Sinh bản đồ nhiệt ngẫu nhiên (Perlin-like noise bằng interpolation) ─────
-export function generateHeatmap(rows, cols, seed = Math.random()) {
-  const grid = Array.from({ length: rows }, () => Array(cols).fill(0));
+export function generateHeatmap(rows: number, cols: number, seed: number = Math.random()): number[][] {
+  const grid: number[][] = Array.from({ length: rows }, () => Array(cols).fill(0));
 
   // Tạo các "peak" ngẫu nhiên rồi smooth bằng Gaussian blur
   const numPeaks = Math.floor(3 + seed * 7);
-  const peaks = [];
+  const peaks: Array<{ r: number; c: number; strength: number; sigma: number }> = [];
   let rng = seed;
   const rand = () => { rng = (rng * 9301 + 49297) % 233280; return rng / 233280; };
 
@@ -70,10 +115,10 @@ export function generateHeatmap(rows, cols, seed = Math.random()) {
 
 // ─── Hill Climbing ────────────────────────────────────────────────────────────
 // Steepest Ascent: chọn láng giềng tốt nhất, leo lên cho đến khi không còn cải thiện
-export function hillClimbing(heatmap, rows, cols, startR, startC) {
-  const steps = [];
+export function hillClimbing(heatmap: number[][], rows: number, cols: number, startR: number, startC: number): Step[] {
+  const steps: Step[] = [];
   let cur = { r: startR, c: startC };
-  const visited = new Set();
+  const visited = new Set<string>();
   visited.add(key(cur.r, cur.c));
 
   steps.push({
@@ -87,7 +132,7 @@ export function hillClimbing(heatmap, rows, cols, startR, startC) {
   let iter = 0;
   while (iter++ < rows * cols) {
     const neighbors = getNeighbors8(cur.r, cur.c, rows, cols);
-    let bestNb = null, bestVal = heatmap[cur.r][cur.c];
+    let bestNb: Node | null = null, bestVal = heatmap[cur.r][cur.c];
 
     // Đánh giá tất cả láng giềng
     const nbInfo = neighbors.map(nb => ({
@@ -148,24 +193,37 @@ export function hillClimbing(heatmap, rows, cols, startR, startC) {
 
 // ─── Simulated Annealing ──────────────────────────────────────────────────────
 // Chấp nhận nước đi xấu hơn theo xác suất e^(ΔE/T), T giảm dần theo lịch làm lạnh
-export function simulatedAnnealing(heatmap, rows, cols, startR, startC, {
-  T0 = 1.0,
-  alpha = 0.95,
-  minT = 0.001,
-  maxIter = 500,
-  seed = 0.42,
-} = {}) {
-  const steps = [];
+export function simulatedAnnealing(
+  heatmap: number[][],
+  rows: number,
+  cols: number,
+  startR: number,
+  startC: number,
+  {
+    T0 = 1.0,
+    alpha = 0.95,
+    minT = 0.001,
+    maxIter = 500,
+    seed = 0.42,
+  }: {
+    T0?: number;
+    alpha?: number;
+    minT?: number;
+    maxIter?: number;
+    seed?: number;
+  } = {}
+): Step[] {
+  const steps: Step[] = [];
   let rng = seed;
   const rand = () => { rng = (rng * 9301 + 49297) % 233280; return rng / 233280; };
-  const randInt = (n) => Math.floor(rand() * n);
+  const randInt = (n: number) => Math.floor(rand() * n);
 
   let cur = { r: startR, c: startC };
   let T = T0;
   let bestNode = cur;
   let bestVal = heatmap[cur.r][cur.c];
-  const visited = new Set([key(cur.r, cur.c)]);
-  const path = [key(cur.r, cur.c)]; // trail của hành trình
+  const visited = new Set<string>([key(cur.r, cur.c)]);
+  const path: string[] = [key(cur.r, cur.c)]; // trail của hành trình
 
   steps.push({
     type: 'init', node: cur, T,
@@ -235,23 +293,33 @@ export function simulatedAnnealing(heatmap, rows, cols, startR, startC, {
 // ─── Genetic Algorithm ────────────────────────────────────────────────────────
 // Dân số là tập hợp các vị trí (r,c). Fitness = heatmap[r][c].
 // Mỗi thế hệ: Selection (tournament) → Crossover → Mutation
-export function geneticAlgorithm(heatmap, rows, cols, {
-  popSize = 20,
-  generations = 40,
-  mutationRate = 0.15,
-  seed = 0.7,
-} = {}) {
-  const steps = [];
+export function geneticAlgorithm(
+  heatmap: number[][],
+  rows: number,
+  cols: number,
+  {
+    popSize = 20,
+    generations = 40,
+    mutationRate = 0.15,
+    seed = 0.7,
+  }: {
+    popSize?: number;
+    generations?: number;
+    mutationRate?: number;
+    seed?: number;
+  } = {}
+): Step[] {
+  const steps: Step[] = [];
   let rng = seed;
   const rand = () => { rng = (rng * 9301 + 49297) % 233280; return rng / 233280; };
-  const randInt = (n) => Math.floor(rand() * n);
+  const randInt = (n: number) => Math.floor(rand() * n);
 
   // Khởi tạo dân số ngẫu nhiên
-  let population = Array.from({ length: popSize }, () => ({
+  let population: Node[] = Array.from({ length: popSize }, () => ({
     r: randInt(rows), c: randInt(cols),
   }));
 
-  const fitness = (ind) => heatmap[ind.r][ind.c];
+  const fitness = (ind: Node) => heatmap[ind.r][ind.c];
   let bestEver = { ...population[0] };
   let bestEverVal = fitness(bestEver);
 
@@ -271,13 +339,13 @@ export function geneticAlgorithm(heatmap, rows, cols, {
     };
 
     // ── Crossover (BLX - blend crossover cho grid 2D) ──
-    const crossover = (p1, p2) => ({
+    const crossover = (p1: Node, p2: Node) => ({
       r: Math.round((p1.r + p2.r) / 2 + (rand() - 0.5) * 2) | 0,
       c: Math.round((p1.c + p2.c) / 2 + (rand() - 0.5) * 2) | 0,
     });
 
     // ── Mutation: random neighbor ──
-    const mutate = (ind) => {
+    const mutate = (ind: Node) => {
       if (rand() < mutationRate) {
         const nb = getNeighbors8(ind.r, ind.c, rows, cols);
         return nb[randInt(nb.length)];
@@ -286,7 +354,7 @@ export function geneticAlgorithm(heatmap, rows, cols, {
     };
 
     // Clamp về grid
-    const clamp = (ind) => ({
+    const clamp = (ind: Node) => ({
       r: Math.max(0, Math.min(rows - 1, ind.r)),
       c: Math.max(0, Math.min(cols - 1, ind.c)),
     });
@@ -295,7 +363,7 @@ export function geneticAlgorithm(heatmap, rows, cols, {
     const sorted = [...population].sort((a, b) => fitness(b) - fitness(a));
     const elite = sorted[0];
 
-    const newPop = [elite];
+    const newPop: Node[] = [elite];
     for (let i = 1; i < popSize; i++) {
       const p1 = select(), p2 = select();
       let child = crossover(p1, p2);

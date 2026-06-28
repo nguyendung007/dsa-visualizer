@@ -1,9 +1,24 @@
+// index.ts
+import {
+  LLNode,
+  LLBuildResult,
+  LLSnapshot,
+  LLOperationStep,
+  LLInsertResult,
+  LinkedListType,
+  LLInsertHeadParams,
+  LLInsertTailParams,
+  LLInsertAtParams,
+  LLDeleteParams,
+  LLSearchParams,
+  LLReverseParams
+} from './config';
+
 // ─── Linked List Core ─────────────────────────────────────────────────────────
 
-export function llBuild(arr, type = 'singly') {
-  // Returns {head, nodes[{val,next,prev}]}
+export function llBuild(arr: any[], type: LinkedListType = 'singly'): LLBuildResult {
   if (!arr.length) return { head: null, nodes: [] };
-  const nodes = arr.map((v, i) => ({ id: i, val: v, next: null, prev: null }));
+  const nodes: LLNode[] = arr.map((v, i) => ({ id: i, val: v, next: null, prev: null }));
   for (let i = 0; i < nodes.length - 1; i++) nodes[i].next = i + 1;
   if (type === 'doubly') {
     for (let i = 1; i < nodes.length; i++) nodes[i].prev = i - 1;
@@ -14,14 +29,14 @@ export function llBuild(arr, type = 'singly') {
   return { head: 0, nodes };
 }
 
-function snapshot(nodes, type) {
+function snapshot(nodes: LLNode[], type: LinkedListType): LLSnapshot {
   return { nodes: nodes.map(n => ({ ...n })), type };
 }
 
-export function llInsertHead(nodes, val, type) {
-  const steps = [];
+export function llInsertHead(nodes: LLNode[], val: any, type: LinkedListType): LLInsertResult {
+  const steps: LLOperationStep[] = [];
   const a = nodes.map(n => ({ ...n }));
-  const newNode = { id: a.length, val, next: a.length > 0 ? 0 : null, prev: null };
+  const newNode: LLNode = { id: a.length, val, next: a.length > 0 ? 0 : null, prev: null };
   steps.push({ ...snapshot(a, type), op: 'new_node', highlight: newNode.id, desc: `Tạo node mới val=${val}` });
 
   if (a.length > 0) {
@@ -33,7 +48,7 @@ export function llInsertHead(nodes, val, type) {
   if (type === 'circular' && a.length > 0) {
     a[a.length - 1] = { ...a[a.length - 1], next: a.length };
   }
-  const finalNodes = [{ id: 0, val, next: a.length > 0 ? 1 : null, prev: null }, ...a.map((n, i) => ({
+  const finalNodes: LLNode[] = [{ id: 0, val, next: a.length > 0 ? 1 : null, prev: null }, ...a.map((n, i) => ({
     ...n, id: i + 1,
     next: n.next !== null ? n.next + 1 : (type === 'circular' && i === a.length - 1 ? 0 : null),
     prev: type === 'doubly' ? (i === 0 ? 0 : n.prev !== null ? n.prev + 1 : null) : null,
@@ -42,11 +57,11 @@ export function llInsertHead(nodes, val, type) {
   return { nodes: finalNodes, steps };
 }
 
-export function llInsertTail(nodes, val, type) {
-  const steps = [];
+export function llInsertTail(nodes: LLNode[], val: any, type: LinkedListType): LLInsertResult {
+  const steps: LLOperationStep[] = [];
   const a = nodes.map(n => ({ ...n }));
   const newId = a.length;
-  const newNode = { id: newId, val, next: type === 'circular' ? 0 : null, prev: type === 'doubly' && a.length > 0 ? a.length - 1 : null };
+  const newNode: LLNode = { id: newId, val, next: type === 'circular' ? 0 : null, prev: type === 'doubly' && a.length > 0 ? a.length - 1 : null };
 
   steps.push({ ...snapshot(a, type), op: 'traverse', desc: `Duyệt đến cuối danh sách để chèn ${val}` });
   if (a.length > 0) {
@@ -58,8 +73,8 @@ export function llInsertTail(nodes, val, type) {
   return { nodes: finalNodes, steps };
 }
 
-export function llInsertAt(nodes, val, pos, type) {
-  const steps = [];
+export function llInsertAt(nodes: LLNode[], val: any, pos: number, type: LinkedListType): LLInsertResult {
+  const steps: LLOperationStep[] = [];
   const a = nodes.map(n => ({ ...n }));
   if (pos <= 0) return llInsertHead(a, val, type);
   if (pos >= a.length) return llInsertTail(a, val, type);
@@ -68,11 +83,11 @@ export function llInsertAt(nodes, val, pos, type) {
   let cur = 0;
   for (let i = 0; i < pos - 1; i++) {
     steps.push({ ...snapshot(a, type), op: 'traverse', highlight: cur, desc: `Duyệt: tại node[${cur}]=${a[cur].val}` });
-    cur = a[cur].next;
+    cur = a[cur].next!;
   }
   const newId = a.length;
   const nextId = a[cur].next;
-  const newNode = { id: newId, val, next: nextId, prev: type === 'doubly' ? cur : null };
+  const newNode: LLNode = { id: newId, val, next: nextId, prev: type === 'doubly' ? cur : null };
   a[cur] = { ...a[cur], next: newId };
   if (type === 'doubly' && nextId !== null) a[nextId] = { ...a[nextId], prev: newId };
   const finalNodes = [...a, newNode];
@@ -80,12 +95,12 @@ export function llInsertAt(nodes, val, pos, type) {
   return { nodes: finalNodes, steps };
 }
 
-export function llDelete(nodes, val, type, pos = null) {
-  const steps = [];
+export function llDelete(nodes: LLNode[], val: any, type: LinkedListType, pos: number | null = null): LLInsertResult {
+  const steps: LLOperationStep[] = [];
   const a = nodes.map(n => ({ ...n }));
 
   let cur = pos !== null ? pos : 0;
-  let prev = null;
+  let prev: number | null = null;
 
   // Nếu xóa tại vị trí cụ thể
   if (pos !== null) {
@@ -113,7 +128,7 @@ export function llDelete(nodes, val, type, pos = null) {
       // Circular: dừng khi đã đi vòng về head (tránh lặp vô tận)
       if (type === 'circular' && nextCur === 0 && cur !== 0) break;
       prev = cur;
-      cur = nextCur;
+      cur = nextCur!;
     }
     if (cur === null || a[cur].val !== val) {
       steps.push({ ...snapshot(a, type), op: 'not_found', desc: `✗ Không tìm thấy val=${val}` });
@@ -156,8 +171,8 @@ export function llDelete(nodes, val, type, pos = null) {
   return { nodes: finalNodes, steps };
 }
 
-export function llSearch(nodes, val, type, startPos = 0) {
-  const steps = [];
+export function llSearch(nodes: LLNode[], val: any, type: LinkedListType, startPos: number = 0): LLOperationStep[] {
+  const steps: LLOperationStep[] = [];
   steps.push({ nodes: nodes.map(n => ({ ...n })), type, op: 'init', desc: `Tìm kiếm val=${val} từ vị trí [${startPos}]` });
   let cur = startPos, visited = 0;
   while (cur !== null && visited < nodes.length + 1) {
@@ -168,37 +183,93 @@ export function llSearch(nodes, val, type, startPos = 0) {
     }
     const next = nodes[cur]?.next;
     if (type === 'circular' && next === 0 && cur !== 0) break;
-    cur = next; visited++;
+    cur = next!; 
+    visited++;
   }
   steps.push({ nodes: nodes.map(n => ({ ...n })), type, op: 'not_found', desc: `✗ Không tìm thấy ${val}` });
   return steps;
 }
 
-export function llReverse(nodes, type) {
-  const steps = [];
+export function llReverse(nodes: LLNode[], type: LinkedListType): LLInsertResult {
+  const steps: LLOperationStep[] = [];
   const a = nodes.map(n => ({ ...n }));
   steps.push({ ...snapshot(a, type), op: 'init', desc: 'Đảo ngược danh sách liên kết' });
 
   if (type === 'singly') {
-    let prev = null, cur = 0;
-    const arr = [];
+    let prev: number | null = null;
+    let cur: number | null = 0;
+    const arr: number[] = [];
+    
     while (cur !== null) {
       arr.push(cur);
-      const next = a[cur].next;
-      steps.push({ ...snapshot(a, type), op: 'reverse_ptr', highlight: cur, desc: `Node ${a[cur].val}: next=${next} → prev=${prev}` });
-      a[cur] = { ...a[cur], next: prev };
-      prev = cur; cur = next;
-      steps.push({ ...snapshot(a, type), op: 'move', highlight: prev, desc: `Chuyển: prev=${prev !== null ? a[prev]?.val : 'null'}` });
+      
+      // Tạo biến node hiện tại và ép kiểu để TypeScript biết chắc chắn nó tồn tại
+      const idx = cur as number;
+      const currentNode = a[idx];
+      
+      if (!currentNode) break; // Cầu chì an toàn cho TypeScript
+
+      const next = currentNode.next;
+      steps.push({ 
+        ...snapshot(a, type), 
+        op: 'reverse_ptr', 
+        highlight: cur, 
+        desc: `Node ${currentNode.val}: next=${next} → prev=${prev}` 
+      });
+      
+      // Cập nhật mối nối con trỏ
+      currentNode.next = prev;
+      prev = cur;
+      cur = next;
+      
+      // Lấy giá trị của node prev một cách an toàn cho desc
+      const prevNodeVal = prev !== null && a[prev as number] ? a[prev as number]!.val : 'null';
+      
+      steps.push({ 
+        ...snapshot(a, type), 
+        op: 'move', 
+        highlight: prev !== null ? prev : undefined, 
+        desc: `Chuyển: prev=${prevNodeVal}` 
+      });
     }
-    const reversed = arr.reverse();
-    const finalNodes = reversed.map((oldIdx, newIdx) => ({
-      ...a[oldIdx],
-      id: newIdx,
-      next: newIdx < reversed.length - 1 ? newIdx + 1 : (type === 'circular' ? 0 : null),
-      prev: type === 'doubly' && newIdx > 0 ? newIdx - 1 : null,
-    }));
-    steps.push({ ...snapshot(finalNodes, type), op: 'done', head: 0, desc: '✓ Đảo ngược hoàn thành' });
+    
+    // Tạo bản sao mảng để reverse an toàn
+    const reversed = [...arr].reverse();
+    const finalNodes: LLNode[] = reversed.map((oldIdx, newIdx) => {
+      // Đảm bảo node gốc không bị undefined dưới con mắt của TypeScript
+      const originalNode = a[oldIdx] || { val: null };
+      
+      return {
+        ...originalNode,
+        id: newIdx,
+        next: newIdx < reversed.length - 1 ? newIdx + 1 : null,
+        prev: null
+      };
+    });
+    
+    steps.push({ 
+      ...snapshot(finalNodes, type), 
+      op: 'done', 
+      head: 0, 
+      desc: '✓ Đảo ngược hoàn thành' 
+    });
     return { nodes: finalNodes, steps };
   }
+  
+  steps.push({ 
+    ...snapshot(a, type), 
+    op: 'not_supported', 
+    desc: `⚠ Loại danh sách "${type}" chưa hỗ trợ đảo ngược` 
+  });
   return { nodes: a, steps };
 }
+
+export default { 
+  llBuild, 
+  llInsertHead, 
+  llInsertTail, 
+  llInsertAt, 
+  llDelete, 
+  llSearch, 
+  llReverse 
+};

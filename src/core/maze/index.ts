@@ -1,10 +1,10 @@
-// ─── Maze Algorithm Index ────────────────────────────────────────────────────
-// Tất cả thuật toán nhận vào: maze (2D array), rows, cols, start {r,c}, goal {r,c}
-// Trả về mảng steps để AnimationEngine phát
+// index.ts
+import { Position, Step, MazeAlgorithm } from './config';
 
-function getNeighbors(r, c, maze, rows, cols) {
-  const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
-  const result = [];
+// ─── Helper functions ────────────────────────────────────────────────────
+function getNeighbors(r: number, c: number, maze: number[][], rows: number, cols: number): Position[] {
+  const dirs: [number, number][] = [[-1,0],[1,0],[0,-1],[0,1]];
+  const result: Position[] = [];
   for (const [dr, dc] of dirs) {
     const nr = r + dr, nc = c + dc;
     if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && maze[nr][nc] !== 1) {
@@ -14,12 +14,18 @@ function getNeighbors(r, c, maze, rows, cols) {
   return result;
 }
 
-function key(r, c) { return `${r},${c}`; }
-function parseKey(k) { const [r,c] = k.split(',').map(Number); return {r,c}; }
+function key(r: number, c: number): string {
+  return `${r},${c}`;
+}
 
-function reconstructPath(cameFrom, start, goal) {
-  const path = [];
-  let cur = key(goal.r, goal.c);
+function parseKey(k: string): Position {
+  const [r,c] = k.split(',').map(Number);
+  return {r, c};
+}
+
+function reconstructPath(cameFrom: { [key: string]: string }, start: Position, goal: Position): Position[] {
+  const path: Position[] = [];
+  let cur: string | undefined = key(goal.r, goal.c);
   while (cur) {
     path.unshift(parseKey(cur));
     cur = cameFrom[cur];
@@ -28,32 +34,37 @@ function reconstructPath(cameFrom, start, goal) {
 }
 
 // ─── BFS ────────────────────────────────────────────────────────────────────
-export function mazeBFS(maze, rows, cols, start, goal) {
-  const steps = [];
-  const visited = new Set();
-  const cameFrom = {};
-  const queue = [start];
+export function mazeBFS(maze: number[][], rows: number, cols: number, start: Position, goal: Position): Step[] {
+  const steps: Step[] = [];
+  const visited = new Set<string>();
+  const cameFrom: { [key: string]: string } = {};
+  const queue: Position[] = [start];
   visited.add(key(start.r, start.c));
 
   steps.push({
-    type: 'init', node: start,
-    visited: new Set(visited), queue: [key(start.r, start.c)], frontier: new Set([key(start.r, start.c)])
+    type: 'init',
+    node: start,
+    visited: new Set(visited),
+    queue: [key(start.r, start.c)],
+    frontier: new Set([key(start.r, start.c)])
   });
 
   while (queue.length) {
-    const cur = queue.shift();
+    const cur = queue.shift()!;
     const curKey = key(cur.r, cur.c);
 
     if (cur.r === goal.r && cur.c === goal.c) {
       const path = reconstructPath(cameFrom, start, goal);
-      steps.push({ type: 'goal_found', node: cur, path, visited: new Set(visited), queue: queue.map(n => key(n.r, n.c)), frontier: new Set() });
-      steps.push({ type: 'done', path, visited: new Set(visited), queue: [], frontier: new Set() });
+      steps.push({ type: 'goal_found', node: cur, path: path.map(p => key(p.r, p.c)), visited: new Set(visited), queue: queue.map(n => key(n.r, n.c)), frontier: new Set() });
+      steps.push({ type: 'done', path: path.map(p => key(p.r, p.c)), visited: new Set(visited), queue: [], frontier: new Set() });
       return steps;
     }
 
     steps.push({
-      type: 'process', node: cur,
-      visited: new Set(visited), queue: queue.map(n => key(n.r, n.c)),
+      type: 'process',
+      node: cur,
+      visited: new Set(visited),
+      queue: queue.map(n => key(n.r, n.c)),
       frontier: new Set(queue.map(n => key(n.r, n.c)))
     });
 
@@ -64,8 +75,11 @@ export function mazeBFS(maze, rows, cols, start, goal) {
         cameFrom[nbKey] = curKey;
         queue.push(nb);
         steps.push({
-          type: 'discover', from: cur, to: nb,
-          visited: new Set(visited), queue: queue.map(n => key(n.r, n.c)),
+          type: 'discover',
+          from: cur,
+          to: nb,
+          visited: new Set(visited),
+          queue: queue.map(n => key(n.r, n.c)),
           frontier: new Set(queue.map(n => key(n.r, n.c)))
         });
       }
@@ -78,34 +92,39 @@ export function mazeBFS(maze, rows, cols, start, goal) {
 }
 
 // ─── DFS ────────────────────────────────────────────────────────────────────
-export function mazeDFS(maze, rows, cols, start, goal) {
-  const steps = [];
-  const visited = new Set();
-  const cameFrom = {};
-  const stack = [start];
+export function mazeDFS(maze: number[][], rows: number, cols: number, start: Position, goal: Position): Step[] {
+  const steps: Step[] = [];
+  const visited = new Set<string>();
+  const cameFrom: { [key: string]: string } = {};
+  const stack: Position[] = [start];
 
   steps.push({
-    type: 'init', node: start,
-    visited: new Set(visited), stack: [key(start.r, start.c)], frontier: new Set([key(start.r, start.c)])
+    type: 'init',
+    node: start,
+    visited: new Set(visited),
+    stack: [key(start.r, start.c)],
+    frontier: new Set([key(start.r, start.c)])
   });
 
   while (stack.length) {
-    const cur = stack.pop();
+    const cur = stack.pop()!;
     const curKey = key(cur.r, cur.c);
 
     if (visited.has(curKey)) continue;
     visited.add(curKey);
 
     steps.push({
-      type: 'visit', node: cur,
-      visited: new Set(visited), stack: stack.map(n => key(n.r, n.c)),
+      type: 'visit',
+      node: cur,
+      visited: new Set(visited),
+      stack: stack.map(n => key(n.r, n.c)),
       frontier: new Set(stack.map(n => key(n.r, n.c)))
     });
 
     if (cur.r === goal.r && cur.c === goal.c) {
       const path = reconstructPath(cameFrom, start, goal);
-      steps.push({ type: 'goal_found', node: cur, path, visited: new Set(visited), stack: [], frontier: new Set() });
-      steps.push({ type: 'done', path, visited: new Set(visited), stack: [], frontier: new Set() });
+      steps.push({ type: 'goal_found', node: cur, path: path.map(p => key(p.r, p.c)), visited: new Set(visited), stack: [], frontier: new Set() });
+      steps.push({ type: 'done', path: path.map(p => key(p.r, p.c)), visited: new Set(visited), stack: [], frontier: new Set() });
       return steps;
     }
 
@@ -115,8 +134,11 @@ export function mazeDFS(maze, rows, cols, start, goal) {
         cameFrom[nbKey] = curKey;
         stack.push(nb);
         steps.push({
-          type: 'push', from: cur, to: nb,
-          visited: new Set(visited), stack: stack.map(n => key(n.r, n.c)),
+          type: 'push',
+          from: cur,
+          to: nb,
+          visited: new Set(visited),
+          stack: stack.map(n => key(n.r, n.c)),
           frontier: new Set(stack.map(n => key(n.r, n.c)))
         });
       }
@@ -129,14 +151,14 @@ export function mazeDFS(maze, rows, cols, start, goal) {
 }
 
 // ─── Dijkstra ────────────────────────────────────────────────────────────────
-export function mazeDijkstra(maze, rows, cols, start, goal) {
-  const steps = [];
-  const dist = {};
-  const cameFrom = {};
-  const visited = new Set();
+export function mazeDijkstra(maze: number[][], rows: number, cols: number, start: Position, goal: Position): Step[] {
+  const steps: Step[] = [];
+  const dist: { [key: string]: number } = {};
+  const cameFrom: { [key: string]: string } = {};
+  const visited = new Set<string>();
 
   // Trọng số: ô trắng = 1, ô "khó" (giá trị 2) = 3, còn lại = 1
-  function edgeWeight(r, c) {
+  function edgeWeight(r: number, c: number): number {
     return maze[r][c] === 2 ? 3 : 1;
   }
 
@@ -150,32 +172,38 @@ export function mazeDijkstra(maze, rows, cols, start, goal) {
   dist[startKey] = 0;
 
   // Priority queue dạng mảng [cost, node]
-  let pq = [[0, start]];
+  let pq: [number, Position][] = [[0, start]];
 
   steps.push({
-    type: 'init', node: start, dist: {...dist},
-    visited: new Set(visited), pq: [[0, key(start.r, start.c)]],
+    type: 'init',
+    node: start,
+    dist: {...dist},
+    visited: new Set(visited),
+    pq: [[0, key(start.r, start.c)]],
     frontier: new Set([startKey])
   });
 
   while (pq.length) {
     pq.sort((a, b) => a[0] - b[0]);
-    const [curDist, cur] = pq.shift();
+    const [curDist, cur] = pq.shift()!;
     const curKey = key(cur.r, cur.c);
 
     if (visited.has(curKey)) continue;
     visited.add(curKey);
 
     steps.push({
-      type: 'visit', node: cur, dist: {...dist},
-      visited: new Set(visited), pq: pq.map(([d,n]) => [d, key(n.r, n.c)]),
+      type: 'visit',
+      node: cur,
+      dist: {...dist},
+      visited: new Set(visited),
+      pq: pq.map(([d,n]) => [d, key(n.r, n.c)]),
       frontier: new Set(pq.map(([,n]) => key(n.r, n.c)))
     });
 
     if (cur.r === goal.r && cur.c === goal.c) {
       const path = reconstructPath(cameFrom, start, goal);
-      steps.push({ type: 'goal_found', node: cur, path, dist: {...dist}, visited: new Set(visited), pq: [], frontier: new Set() });
-      steps.push({ type: 'done', path, dist: {...dist}, visited: new Set(visited), pq: [], frontier: new Set() });
+      steps.push({ type: 'goal_found', node: cur, path: path.map(p => key(p.r, p.c)), dist: {...dist}, visited: new Set(visited), pq: [], frontier: new Set() });
+      steps.push({ type: 'done', path: path.map(p => key(p.r, p.c)), dist: {...dist}, visited: new Set(visited), pq: [], frontier: new Set() });
       return steps;
     }
 
@@ -184,9 +212,13 @@ export function mazeDijkstra(maze, rows, cols, start, goal) {
       const alt = dist[curKey] + edgeWeight(nb.r, nb.c);
 
       steps.push({
-        type: 'relax', from: cur, to: nb,
-        current: dist[nbKey], candidate: alt,
-        dist: {...dist}, visited: new Set(visited),
+        type: 'relax',
+        from: cur,
+        to: nb,
+        current: dist[nbKey],
+        candidate: alt,
+        dist: {...dist},
+        visited: new Set(visited),
         pq: pq.map(([d,n]) => [d, key(n.r, n.c)]),
         frontier: new Set(pq.map(([,n]) => key(n.r, n.c)))
       });
@@ -196,8 +228,12 @@ export function mazeDijkstra(maze, rows, cols, start, goal) {
         cameFrom[nbKey] = curKey;
         pq.push([alt, nb]);
         steps.push({
-          type: 'update', node: nb, newDist: alt, dist: {...dist},
-          visited: new Set(visited), pq: pq.map(([d,n]) => [d, key(n.r, n.c)]),
+          type: 'update',
+          node: nb,
+          newDist: alt,
+          dist: {...dist},
+          visited: new Set(visited),
+          pq: pq.map(([d,n]) => [d, key(n.r, n.c)]),
           frontier: new Set(pq.map(([,n]) => key(n.r, n.c)))
         });
       }
@@ -210,21 +246,21 @@ export function mazeDijkstra(maze, rows, cols, start, goal) {
 }
 
 // ─── A* ──────────────────────────────────────────────────────────────────────
-export function mazeAStar(maze, rows, cols, start, goal, heuristicType = 'manhattan') {
-  const steps = [];
+export function mazeAStar(maze: number[][], rows: number, cols: number, start: Position, goal: Position, heuristicType: string = 'manhattan'): Step[] {
+  const steps: Step[] = [];
 
-  function heuristic(r, c) {
+  function heuristic(r: number, c: number): number {
     const dr = Math.abs(r - goal.r);
     const dc = Math.abs(c - goal.c);
     if (heuristicType === 'euclidean') return Math.sqrt(dr*dr + dc*dc);
     return dr + dc; // manhattan
   }
 
-  const gScore = {};
-  const fScore = {};
-  const cameFrom = {};
-  const openSet = new Set();
-  const closedSet = new Set();
+  const gScore: { [key: string]: number } = {};
+  const fScore: { [key: string]: number } = {};
+  const cameFrom: { [key: string]: string } = {};
+  const openSet = new Set<string>();
+  const closedSet = new Set<string>();
 
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
@@ -239,63 +275,85 @@ export function mazeAStar(maze, rows, cols, start, goal, heuristicType = 'manhat
   openSet.add(startKey);
 
   steps.push({
-    type: 'init', node: start, goal,
-    openSet: new Set(openSet), closedSet: new Set(closedSet),
-    gScore: {...gScore}, fScore: {...fScore},
+    type: 'init',
+    node: start,
+    goal,
+    openSet: new Set(openSet),
+    closedSet: new Set(closedSet),
+    gScore: {...gScore},
+    fScore: {...fScore},
     frontier: new Set(openSet)
   });
 
   while (openSet.size > 0) {
     // Tìm node fScore nhỏ nhất trong openSet
-    let current = null, minF = Infinity;
+    let current: string | null = null;
+    let minF = Infinity;
     for (const k of openSet) {
-      if (fScore[k] < minF) { minF = fScore[k]; current = k; }
+      if (fScore[k] < minF) {
+        minF = fScore[k];
+        current = k;
+      }
     }
 
-    const curPos = parseKey(current);
+    const curPos = parseKey(current!);
 
     steps.push({
-      type: 'process', node: curPos,
-      openSet: new Set(openSet), closedSet: new Set(closedSet),
-      gScore: {...gScore}, fScore: {...fScore},
+      type: 'process',
+      node: curPos,
+      openSet: new Set(openSet),
+      closedSet: new Set(closedSet),
+      gScore: {...gScore},
+      fScore: {...fScore},
       frontier: new Set(openSet)
     });
 
     if (curPos.r === goal.r && curPos.c === goal.c) {
       const path = reconstructPath(cameFrom, start, goal);
-      steps.push({ type: 'goal_found', node: curPos, path, openSet: new Set(openSet), closedSet: new Set(closedSet), gScore: {...gScore}, fScore: {...fScore}, frontier: new Set() });
-      steps.push({ type: 'done', path, cost: gScore[current], openSet: new Set(), closedSet: new Set(closedSet), gScore: {...gScore}, fScore: {...fScore}, frontier: new Set() });
+      steps.push({ type: 'goal_found', node: curPos, path: path.map(p => key(p.r, p.c)), openSet: new Set(openSet), closedSet: new Set(closedSet), gScore: {...gScore}, fScore: {...fScore}, frontier: new Set() });
+      steps.push({ type: 'done', path: path.map(p => key(p.r, p.c)), cost: gScore[current!], openSet: new Set(), closedSet: new Set(closedSet), gScore: {...gScore}, fScore: {...fScore}, frontier: new Set() });
       return steps;
     }
 
-    openSet.delete(current);
-    closedSet.add(current);
+    openSet.delete(current!);
+    closedSet.add(current!);
 
     for (const nb of getNeighbors(curPos.r, curPos.c, maze, rows, cols)) {
       const nbKey = key(nb.r, nb.c);
       if (closedSet.has(nbKey)) continue;
 
-      const tentativeG = gScore[current] + 1;
+      const tentativeG = gScore[current!] + 1;
 
       steps.push({
-        type: 'relax', from: curPos, to: nb, weight: 1,
-        tentativeG, currentG: gScore[nbKey],
-        openSet: new Set(openSet), closedSet: new Set(closedSet),
-        gScore: {...gScore}, fScore: {...fScore},
+        type: 'relax',
+        from: curPos,
+        to: nb,
+        weight: 1,
+        tentativeG,
+        currentG: gScore[nbKey],
+        openSet: new Set(openSet),
+        closedSet: new Set(closedSet),
+        gScore: {...gScore},
+        fScore: {...fScore},
         frontier: new Set(openSet)
       });
 
       if (tentativeG < gScore[nbKey]) {
-        cameFrom[nbKey] = current;
+        cameFrom[nbKey] = current!;
         gScore[nbKey] = tentativeG;
         fScore[nbKey] = tentativeG + heuristic(nb.r, nb.c);
         openSet.add(nbKey);
 
         steps.push({
-          type: 'update', node: nb, from: curPos,
-          gScore: gScore[nbKey], fScore: fScore[nbKey],
-          openSet: new Set(openSet), closedSet: new Set(closedSet),
-          gScoreAll: {...gScore}, fScoreAll: {...fScore},
+          type: 'update',
+          node: nb,
+          from: curPos,
+          gScore: { ...gScore },
+          fScore: { ...fScore },
+          openSet: new Set(openSet),
+          closedSet: new Set(closedSet),
+          gScoreAll: {...gScore},
+          fScoreAll: {...fScore},
           frontier: new Set(openSet)
         });
       }
@@ -309,21 +367,22 @@ export function mazeAStar(maze, rows, cols, start, goal, heuristicType = 'manhat
 
 // ─── Maze Generator (Recursive Backtracker) ──────────────────────────────────
 // Trả về 2D array: 0 = đường đi, 1 = tường
-export function generateMaze(rows, cols) {
+export function generateMaze(rows: number, cols: number): number[][] {
   // rows và cols phải lẻ để maze đẹp
   const R = rows % 2 === 0 ? rows + 1 : rows;
   const C = cols % 2 === 0 ? cols + 1 : cols;
 
   // Khởi tạo toàn tường
-  const maze = Array.from({ length: R }, () => Array(C).fill(1));
+  const maze: number[][] = Array.from({ length: R }, () => Array(C).fill(1));
 
-  const visited = new Set();
+  const visited = new Set<string>();
 
-  function carve(r, c) {
+  function carve(r: number, c: number): void {
     visited.add(key(r, c));
     maze[r][c] = 0;
 
-    const dirs = [[-2,0],[2,0],[0,-2],[0,2]].sort(() => Math.random() - 0.5);
+    const dirs: [number, number][] = [[-2, 0], [2, 0], [0, -2], [0, 2]];
+dirs.sort(() => Math.random() - 0.5);
     for (const [dr, dc] of dirs) {
       const nr = r + dr, nc = c + dc;
       if (nr > 0 && nr < R - 1 && nc > 0 && nc < C - 1 && !visited.has(key(nr, nc))) {
@@ -344,10 +403,10 @@ export function generateMaze(rows, cols) {
 }
 
 // ─── Beam Search ────────────────────────────────────────────────────────────────
-export function mazeBeamSearch(maze, rows, cols, start, goal, beamWidth = 3, heuristicType = 'manhattan') {
-  const steps = [];
+export function mazeBeamSearch(maze: number[][], rows: number, cols: number, start: Position, goal: Position, beamWidth: number = 3, heuristicType: string = 'manhattan'): Step[] {
+  const steps: Step[] = [];
 
-  function heuristic(r, c) {
+  function heuristic(r: number, c: number): number {
     const dr = Math.abs(r - goal.r);
     const dc = Math.abs(c - goal.c);
     if (heuristicType === 'euclidean') return Math.sqrt(dr*dr + dc*dc);
@@ -355,14 +414,14 @@ export function mazeBeamSearch(maze, rows, cols, start, goal, beamWidth = 3, heu
   }
 
   // Khởi tạo beam với đường đi ban đầu
-  let beam = [{ 
+  let beam: { path: Position[], cost: number, f: number }[] = [{ 
     path: [{ r: start.r, c: start.c }], 
     cost: 0, 
     f: heuristic(start.r, start.c) 
   }];
 
-  const visited = new Set();
-  const cameFrom = {};
+  const visited = new Set<string>();
+  const cameFrom: { [key: string]: string } = {};
 
   steps.push({
     type: 'init',
@@ -377,8 +436,8 @@ export function mazeBeamSearch(maze, rows, cols, start, goal, beamWidth = 3, heu
   const maxIterations = rows * cols;
 
   while (beam.length > 0 && iteration < maxIterations) {
-    const newBeam = [];
-    const currentFrontier = new Set();
+    const newBeam: { path: Position[], cost: number, f: number }[] = [];
+    const currentFrontier = new Set<string>();
 
     // Duyệt từng đường đi trong beam
     for (const { path, cost } of beam) {
@@ -506,10 +565,10 @@ export function mazeBeamSearch(maze, rows, cols, start, goal, beamWidth = 3, heu
 }
 
 // ─── Tabu Search ────────────────────────────────────────────────────────────────
-export function mazeTabuSearch(maze, rows, cols, start, goal, maxIterations = 100, tabuSize = 10, heuristicType = 'manhattan') {
-  const steps = [];
+export function mazeTabuSearch(maze: number[][], rows: number, cols: number, start: Position, goal: Position, maxIterations: number = 100, tabuSize: number = 10, heuristicType: string = 'manhattan'): Step[] {
+  const steps: Step[] = [];
 
-  function heuristic(r, c) {
+  function heuristic(r: number, c: number): number {
     const dr = Math.abs(r - goal.r);
     const dc = Math.abs(c - goal.c);
     if (heuristicType === 'euclidean') return Math.sqrt(dr*dr + dc*dc);
@@ -517,10 +576,10 @@ export function mazeTabuSearch(maze, rows, cols, start, goal, maxIterations = 10
   }
 
   // Hàm tạo đường đi ngẫu nhiên từ start đến goal
-  function generateRandomPath() {
-    const path = [{ r: start.r, c: start.c }];
+  function generateRandomPath(): Position[] {
+    const path: Position[] = [{ r: start.r, c: start.c }];
     let current = { r: start.r, c: start.c };
-    const visitedSet = new Set([key(current.r, current.c)]);
+    const visitedSet = new Set<string>([key(current.r, current.c)]);
     
     while ((current.r !== goal.r || current.c !== goal.c) && path.length < rows * cols) {
       const neighbors = getNeighbors(current.r, current.c, maze, rows, cols);
@@ -539,13 +598,13 @@ export function mazeTabuSearch(maze, rows, cols, start, goal, maxIterations = 10
   }
 
   // Hàm tính chi phí đường đi
-  function calculateCost(path) {
+  function calculateCost(path: Position[]): number {
     return path.length - 1; // Mỗi bước cost = 1
   }
 
   // Hàm tạo các giải pháp lân cận (swap 2 vị trí)
-  function getNeighborSolutions(path) {
-    const neighbors = [];
+  function getNeighborSolutions(path: Position[]): Position[][] {
+    const neighbors: Position[][] = [];
     // Chỉ swap các vị trí không phải start và goal
     for (let i = 1; i < path.length - 2; i++) {
       for (let j = i + 1; j < path.length - 1; j++) {
@@ -578,10 +637,10 @@ export function mazeTabuSearch(maze, rows, cols, start, goal, maxIterations = 10
   let bestPath = [...currentPath];
   let bestCost = currentCost;
 
-  const tabuList = [];
+  const tabuList: string[] = [];
   tabuList.push(currentPath.map(p => key(p.r, p.c)).join('|'));
 
-  const visitedSet = new Set();
+  const visitedSet = new Set<string>();
   currentPath.forEach(p => visitedSet.add(key(p.r, p.c)));
 
   steps.push({
@@ -610,7 +669,7 @@ export function mazeTabuSearch(maze, rows, cols, start, goal, maxIterations = 10
       p => !tabuList.includes(p.map(n => key(n.r, n.c)).join('|'))
     );
 
-    let bestNeighbor = null;
+    let bestNeighbor: Position[] | null = null;
     let bestNeighborCost = Infinity;
 
     if (candidateNeighbors.length === 0) {

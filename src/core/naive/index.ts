@@ -1,14 +1,16 @@
 // ─── Naive Bayes Index ────────────────────────────────────────────────────
 
+import { DataRow, SampleData, PredictionResult, Step, LikelihoodMatrix, LikelihoodDetails, ClassResult } from './config';
+
 // Sample dataset: mua máy tính (giống Decision Tree để so sánh)
-export function generateDataset(size = 14) {
+export function generateDataset(size: number = 14): DataRow[] {
   const ages = ['<=30', '31-40', '>40'];
   const incomes = ['high', 'medium', 'low'];
   const students = ['yes', 'no'];
   const creditRatings = ['fair', 'excellent'];
   
   // Tạo dữ liệu có phân phối hợp lý
-  const data = [];
+  const data: DataRow[] = [];
   for (let i = 0; i < size; i++) {
     // Tạo dữ liệu có xu hướng (không hoàn toàn ngẫu nhiên)
     const age = ages[Math.floor(Math.random() * ages.length)];
@@ -17,7 +19,7 @@ export function generateDataset(size = 14) {
     const credit = creditRatings[Math.floor(Math.random() * creditRatings.length)];
     
     // Quyết định mua máy tính dựa trên một số quy tắc đơn giản
-    let buy = 'no';
+    let buy: string = 'no';
     if (student === 'yes' && (income === 'medium' || income === 'high')) {
       buy = 'yes';
     } else if (credit === 'excellent' && age !== '>40') {
@@ -41,15 +43,15 @@ export function generateDataset(size = 14) {
 }
 
 // Hàm tính xác suất prior
-function calculatePrior(data, targetAttr = 'buy_computer') {
-  const counts = {};
+function calculatePrior(data: DataRow[], targetAttr: string = 'buy_computer'): Record<string, number> {
+  const counts: Record<string, number> = {};
   data.forEach(row => {
-    const val = row[targetAttr];
+    const val = row[targetAttr as keyof DataRow] as string;
     counts[val] = (counts[val] || 0) + 1;
   });
   
   const total = data.length;
-  const prior = {};
+  const prior: Record<string, number> = {};
   for (const key in counts) {
     prior[key] = counts[key] / total;
   }
@@ -57,21 +59,27 @@ function calculatePrior(data, targetAttr = 'buy_computer') {
 }
 
 // Hàm tính likelihood P(feature_value | class)
-function calculateLikelihood(data, feature, featureValue, classValue, targetAttr = 'buy_computer') {
+function calculateLikelihood(
+  data: DataRow[], 
+  feature: string, 
+  featureValue: string, 
+  classValue: string, 
+  targetAttr: string = 'buy_computer'
+): number {
   // Đếm số mẫu thuộc class
-  const classCount = data.filter(row => row[targetAttr] === classValue).length;
+  const classCount = data.filter(row => row[targetAttr as keyof DataRow] === classValue).length;
   if (classCount === 0) return 0;
   
   // Đếm số mẫu có feature = featureValue và thuộc class
   const featureClassCount = data.filter(
-    row => row[targetAttr] === classValue && row[feature] === featureValue
+    row => row[targetAttr as keyof DataRow] === classValue && row[feature as keyof DataRow] === featureValue
   ).length;
   
   return featureClassCount / classCount;
 }
 
 // Hàm tính xác suất hậu nghiệm P(class | features)
-function calculatePosterior(prior, likelihoods) {
+function calculatePosterior(prior: number, likelihoods: number[]): number {
   let posterior = prior;
   for (const l of likelihoods) {
     posterior *= l;
@@ -80,22 +88,32 @@ function calculatePosterior(prior, likelihoods) {
 }
 
 // Hàm dự đoán cho 1 sample
-export function predictNaive(data, sample, targetAttr = 'buy_computer') {
-  const classes = [...new Set(data.map(row => row[targetAttr]))];
+export function predictNaive(
+  data: DataRow[], 
+  sample: SampleData, 
+  targetAttr: string = 'buy_computer'
+): PredictionResult {
+  const classes = [...new Set(data.map(row => row[targetAttr as keyof DataRow] as string))];
   const features = Object.keys(sample).filter(key => key !== targetAttr);
   
-  const results = {};
+  const results: Record<string, ClassResult> = {};
   
   for (const cls of classes) {
     // Tính prior
     const prior = calculatePrior(data, targetAttr)[cls] || 0;
     
     // Tính likelihood cho từng feature
-    const likelihoods = [];
+    const likelihoods: number[] = [];
+    const details: LikelihoodDetails[] = [];
     for (const feature of features) {
-      const value = sample[feature];
+      const value = sample[feature as keyof SampleData] as string;
       const likelihood = calculateLikelihood(data, feature, value, cls, targetAttr);
       likelihoods.push(likelihood);
+      details.push({
+        feature,
+        value,
+        likelihood
+      });
     }
     
     // Tính posterior
@@ -104,17 +122,12 @@ export function predictNaive(data, sample, targetAttr = 'buy_computer') {
       prior,
       likelihoods,
       posterior,
-      // Lưu chi tiết để hiển thị
-      details: features.map((f, i) => ({
-        feature: f,
-        value: sample[f],
-        likelihood: likelihoods[i]
-      }))
+      details
     };
   }
   
   // Tìm class có posterior lớn nhất
-  let predicted = null;
+  let predicted: string | null = null;
   let maxPosterior = -Infinity;
   for (const cls in results) {
     if (results[cls].posterior > maxPosterior) {
@@ -131,10 +144,10 @@ export function predictNaive(data, sample, targetAttr = 'buy_computer') {
 }
 
 // Hàm chính: Naive Bayes với từng bước
-export function naiveBayes(dataset, targetAttr = 'buy_computer') {
-  const steps = [];
+export function naiveBayes(dataset: DataRow[], targetAttr: string = 'buy_computer'): Step[] {
+  const steps: Step[] = [];
   const features = ['age', 'income', 'student', 'credit_rating'];
-  const classes = [...new Set(dataset.map(row => row[targetAttr]))];
+  const classes = [...new Set(dataset.map(row => row[targetAttr as keyof DataRow] as string))];
   
   // Step 0: Init
   steps.push({
@@ -148,9 +161,9 @@ export function naiveBayes(dataset, targetAttr = 'buy_computer') {
   });
   
   // Step 1: Hiển thị phân phối target
-  const targetCounts = {};
+  const targetCounts: Record<string, number> = {};
   dataset.forEach(row => {
-    const val = row[targetAttr];
+    const val = row[targetAttr as keyof DataRow] as string;
     targetCounts[val] = (targetCounts[val] || 0) + 1;
   });
   
@@ -169,10 +182,10 @@ export function naiveBayes(dataset, targetAttr = 'buy_computer') {
   });
   
   // Step 3: Tính Likelihood cho từng feature và class
-  const likelihoodMatrix = {};
+  const likelihoodMatrix: LikelihoodMatrix = {};
   for (const feature of features) {
     likelihoodMatrix[feature] = {};
-    const uniqueValues = [...new Set(dataset.map(row => row[feature]))];
+    const uniqueValues = [...new Set(dataset.map(row => row[feature as keyof DataRow] as string))];
     for (const value of uniqueValues) {
       likelihoodMatrix[feature][value] = {};
       for (const cls of classes) {
@@ -189,15 +202,16 @@ export function naiveBayes(dataset, targetAttr = 'buy_computer') {
   });
   
   // Step 4: Chọn sample để dự đoán (lấy sample đầu tiên làm ví dụ)
-  const sample = dataset[Math.floor(Math.random() * Math.min(dataset.length, 5))];
-  const sampleData = { ...sample };
-  delete sampleData[targetAttr];
-  delete sampleData.id;
+  const sampleIndex = Math.floor(Math.random() * Math.min(dataset.length, 5));
+  const sample = dataset[sampleIndex];
+  const sampleData: SampleData = { ...sample };
+  delete (sampleData as any)[targetAttr];
+  delete (sampleData as any).id;
   
   steps.push({
     type: 'predict_sample',
     sample: sampleData,
-    actualClass: sample[targetAttr],
+    actualClass: sample[targetAttr as keyof DataRow] as string,
     desc: `🎯 Dự đoán cho sample: ${Object.entries(sampleData).map(([k,v]) => `${k}=${v}`).join(', ')}`
   });
   
@@ -226,10 +240,10 @@ export function naiveBayes(dataset, targetAttr = 'buy_computer') {
   steps.push({
     type: 'prediction_result',
     predicted: prediction.predicted,
-    actual: sample[targetAttr],
+    actual: sample[targetAttr as keyof DataRow] as string,
     allResults: prediction.results,
-    isCorrect: prediction.predicted === sample[targetAttr],
-    desc: `✅ Dự đoán: "${prediction.predicted}" (${prediction.predicted === sample[targetAttr] ? '✓ Đúng' : '✗ Sai'})`
+    isCorrect: prediction.predicted === sample[targetAttr as keyof DataRow],
+    desc: `✅ Dự đoán: "${prediction.predicted}" (${prediction.predicted === sample[targetAttr as keyof DataRow] ? '✓ Đúng' : '✗ Sai'})`
   });
   
   // Step 7: Done
@@ -242,6 +256,10 @@ export function naiveBayes(dataset, targetAttr = 'buy_computer') {
 }
 
 // Hàm dự đoán cho một sample bất kỳ (có thể gọi từ UI)
-export function predictSample(dataset, sample, targetAttr = 'buy_computer') {
+export function predictSample(
+  dataset: DataRow[], 
+  sample: SampleData, 
+  targetAttr: string = 'buy_computer'
+): PredictionResult {
   return predictNaive(dataset, sample, targetAttr);
 }

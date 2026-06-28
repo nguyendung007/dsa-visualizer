@@ -1,27 +1,37 @@
 // ─── Adversarial Search Index ──────────────────────────────────────────────────
 // Core logic cho các thuật toán tìm kiếm đối kháng
 
-// ─── Constants ──────────────────────────────────────────────────────────────────
-export const EMPTY = 0;
-export const PLAYER_X = 1; // Người chơi
-export const PLAYER_O = 2; // AI
-
-export const WIN_SCORE = 1000000;
-export const INFINITY = Number.MAX_SAFE_INTEGER;
+import {
+  EMPTY,
+  PLAYER_X,
+  PLAYER_O,
+  WIN_SCORE,
+  INFINITY,
+  type Player,
+  type Board,
+  type Move,
+  type WinResult,
+  type MinimaxStep,
+  type MinimaxResult,
+  type AIResult,
+  type ComparisonResult,
+  type GameStateResponse,
+  type GameStateData
+} from './config.js';
 
 // ─── Board Utilities ──────────────────────────────────────────────────────────
 
 /**
  * Tạo bàn cờ mới
  */
-export function createBoard(size = 9) {
+export function createBoard(size: number = 9): Board {
   return Array.from({ length: size }, () => Array(size).fill(EMPTY));
 }
 
 /**
  * Kiểm tra nước đi hợp lệ
  */
-export function isValidMove(board, row, col) {
+export function isValidMove(board: Board, row: number, col: number): boolean {
   const size = board.length;
   return row >= 0 && row < size && col >= 0 && col < size && board[row][col] === EMPTY;
 }
@@ -29,9 +39,9 @@ export function isValidMove(board, row, col) {
 /**
  * Lấy danh sách các nước đi hợp lệ
  */
-export function getValidMoves(board) {
+export function getValidMoves(board: Board): Move[] {
   const size = board.length;
-  const moves = [];
+  const moves: Move[] = [];
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
       if (board[r][c] === EMPTY) moves.push({ row: r, col: c });
@@ -43,14 +53,14 @@ export function getValidMoves(board) {
 /**
  * Copy bàn cờ
  */
-export function copyBoard(board) {
+export function copyBoard(board: Board): Board {
   return board.map(row => [...row]);
 }
 
 /**
  * Đặt quân cờ
  */
-export function makeMove(board, row, col, player) {
+export function makeMove(board: Board, row: number, col: number, player: Player): Board {
   const newBoard = copyBoard(board);
   newBoard[row][col] = player;
   return newBoard;
@@ -62,7 +72,7 @@ export function makeMove(board, row, col, player) {
  * Kiểm tra thắng trên bàn cờ
  * Trả về { winner: PLAYER_X | PLAYER_O | null, winCells: [...] }
  */
-export function checkWin(board, row, col, player) {
+export function checkWin(board: Board, row: number, col: number, player: Player): WinResult {
   if (!player) return { winner: null, winCells: [] };
   
   const size = board.length;
@@ -89,7 +99,7 @@ export function checkWin(board, row, col, player) {
   ];
 
   for (const [dr, dc] of directions) {
-    let cells = [{ row, col }];
+    let cells: Move[] = [{ row, col }];
     
     // Check hướng dương
     for (let step = 1; step < 5; step++) {
@@ -118,7 +128,7 @@ export function checkWin(board, row, col, player) {
 /**
  * Kiểm tra bàn cờ đã đầy chưa
  */
-export function isBoardFull(board) {
+export function isBoardFull(board: Board): boolean {
   return getValidMoves(board).length === 0;
 }
 
@@ -127,7 +137,7 @@ export function isBoardFull(board) {
 /**
  * Đếm số lượng quân cờ liên tiếp trong một hướng
  */
-function countInDirection(board, row, col, dr, dc, player) {
+function countInDirection(board: Board, row: number, col: number, dr: number, dc: number, player: Player): number {
   const size = board.length;
   let count = 0;
   let r = row + dr;
@@ -144,7 +154,7 @@ function countInDirection(board, row, col, dr, dc, player) {
 /**
  * Đánh giá một vị trí cụ thể
  */
-function evaluatePosition(board, row, col, player) {
+function evaluatePosition(board: Board, row: number, col: number, player: Player): number {
   const directions = [[0,1], [1,0], [1,1], [1,-1]];
   let score = 0;
   
@@ -173,7 +183,7 @@ function evaluatePosition(board, row, col, player) {
  * Hàm đánh giá toàn bộ bàn cờ
  * Trả về điểm số từ góc nhìn của PLAYER_X (dương = X có lợi, âm = O có lợi)
  */
-export function evaluateBoard(board, player = PLAYER_X) {
+export function evaluateBoard(board: Board, player: Player = PLAYER_X): number {
   const size = board.length;
   const opponent = player === PLAYER_X ? PLAYER_O : PLAYER_X;
   let score = 0;
@@ -197,14 +207,21 @@ export function evaluateBoard(board, player = PLAYER_X) {
 /**
  * Tạo ID cho node trong cây tìm kiếm
  */
-function nodeId(row, col, depth) {
+function nodeId(row: number, col: number, depth: number): string {
   return `${row},${col}-d${depth}`;
 }
 
 /**
  * Minimax thuần túy (không cắt tỉa)
  */
-export function minimax(board, depth, isMaximizing, player, maxDepth, steps = []) {
+export function minimax(
+  board: Board,
+  depth: number,
+  isMaximizing: boolean,
+  player: Player,
+  maxDepth: number,
+  steps: MinimaxStep[] = []
+): MinimaxResult {
   const opponent = player === PLAYER_X ? PLAYER_O : PLAYER_X;
   const currentPlayer = isMaximizing ? player : opponent;
   
@@ -326,7 +343,16 @@ export function minimax(board, depth, isMaximizing, player, maxDepth, steps = []
 /**
  * Alpha-Beta Pruning
  */
-export function alphaBeta(board, depth, alpha, beta, isMaximizing, player, maxDepth, steps = []) {
+export function alphaBeta(
+  board: Board,
+  depth: number,
+  alpha: number,
+  beta: number,
+  isMaximizing: boolean,
+  player: Player,
+  maxDepth: number,
+  steps: MinimaxStep[] = []
+): MinimaxResult {
   const opponent = player === PLAYER_X ? PLAYER_O : PLAYER_X;
   const currentPlayer = isMaximizing ? player : opponent;
   
@@ -478,11 +504,18 @@ export function alphaBeta(board, depth, alpha, beta, isMaximizing, player, maxDe
 /**
  * Tạo steps cho animation từ Minimax hoặc Alpha-Beta
  */
-export function generateAISteps(board, algorithm = 'alphaBeta', depth = 3, player = PLAYER_O) {
+
+
+export function generateAISteps(
+  board: Board,
+  algorithm: string = 'alphaBeta',
+  depth: number = 3,
+  player: Player = PLAYER_O
+): AIResult {
   const isMaximizing = true;
-  const steps = [];
+  const steps: MinimaxStep[] = [];
   
-  let result;
+  let result: MinimaxResult;
   if (algorithm === 'minimax') {
     result = minimax(board, depth, isMaximizing, player, depth, steps);
   } else {
@@ -490,13 +523,19 @@ export function generateAISteps(board, algorithm = 'alphaBeta', depth = 3, playe
     result = alphaBeta(board, depth, -Infinity, Infinity, isMaximizing, player, depth, steps);
   }
   
+  // Đảm bảo result.move tồn tại
+  if (!result.move) {
+    throw new Error('Không tìm thấy nước đi hợp lệ');
+  }
+  
   // Thêm step kết luận
   steps.push({
     type: 'ai_decision',
+    depth: depth,
     move: result.move,
     score: result.score,
     nodesExplored: result.nodesExplored,
-    prunedBranches: result.prunedBranches || 0,
+    prunedBranches: result.prunedBranches ?? 0,
     message: `🎯 AI chọn (${result.move.row},${result.move.col}) với điểm ${result.score}`
   });
   
@@ -505,35 +544,35 @@ export function generateAISteps(board, algorithm = 'alphaBeta', depth = 3, playe
     move: result.move,
     score: result.score,
     nodesExplored: result.nodesExplored,
-    prunedBranches: result.prunedBranches || 0
+    prunedBranches: result.prunedBranches ?? 0
   };
 }
 
 /**
  * Tạo steps cho AI vs AI (so sánh)
  */
-export function compareAlgorithms(board, depth = 3, player = PLAYER_X) {
+export function compareAlgorithms(board: Board, depth: number = 3, player: Player = PLAYER_X): ComparisonResult {
   const isMaximizing = player === PLAYER_X;
   
   // Chạy Minimax
-  const miniSteps = [];
+  const miniSteps: MinimaxStep[] = [];
   const miniResult = minimax(board, depth, isMaximizing, player, depth, miniSteps);
   
   // Chạy Alpha-Beta
-  const abSteps = [];
+  const abSteps: MinimaxStep[] = [];
   const abResult = alphaBeta(board, depth, -Infinity, Infinity, isMaximizing, player, depth, abSteps);
   
   return {
     minimax: {
       steps: miniSteps,
-      move: miniResult.move,
+      move: miniResult.move!,
       score: miniResult.score,
       nodesExplored: miniResult.nodesExplored,
       prunedBranches: 0
     },
     alphaBeta: {
       steps: abSteps,
-      move: abResult.move,
+      move: abResult.move!,
       score: abResult.score,
       nodesExplored: abResult.nodesExplored,
       prunedBranches: abResult.prunedBranches || 0
@@ -542,7 +581,7 @@ export function compareAlgorithms(board, depth = 3, player = PLAYER_X) {
     comparison: {
       nodesSaved: miniResult.nodesExplored - (abResult.nodesExplored || 0),
       percentageSaved: ((miniResult.nodesExplored - (abResult.nodesExplored || 0)) / miniResult.nodesExplored * 100).toFixed(2),
-      sameMove: miniResult.move.row === abResult.move.row && miniResult.move.col === abResult.move.col
+      sameMove: miniResult.move!.row === abResult.move!.row && miniResult.move!.col === abResult.move!.col
     }
   };
 }
@@ -552,8 +591,18 @@ export function compareAlgorithms(board, depth = 3, player = PLAYER_X) {
 /**
  * Quản lý trạng thái game
  */
+
+
 export class GameState {
-  constructor(size = 9) {
+  size: number;
+  board: Board;
+  currentPlayer: Player;
+  moveHistory: Move[];
+  gameOver: boolean;
+  winner: Player | null;
+  winCells: Move[];
+
+  constructor(size: number = 9) {
     this.size = size;
     this.board = createBoard(size);
     this.currentPlayer = PLAYER_X;
@@ -566,7 +615,7 @@ export class GameState {
   /**
    * Thực hiện nước đi
    */
-  makeMove(row, col) {
+  makeMove(row: number, col: number): GameStateResponse {
     if (this.gameOver) return { success: false, message: 'Game đã kết thúc' };
     if (!isValidMove(this.board, row, col)) {
       return { success: false, message: 'Nước đi không hợp lệ' };
@@ -605,7 +654,7 @@ export class GameState {
   /**
    * Reset game
    */
-  reset() {
+  reset(): void {
     this.board = createBoard(this.size);
     this.currentPlayer = PLAYER_X;
     this.moveHistory = [];
@@ -617,7 +666,7 @@ export class GameState {
   /**
    * Lấy trạng thái hiện tại
    */
-  getState() {
+  getState(): GameStateData {
     return {
       board: this.board,
       currentPlayer: this.currentPlayer,
@@ -632,7 +681,7 @@ export class GameState {
   /**
    * Copy state từ GameState khác
    */
-  static copyFrom(gameState) {
+  static copyFrom(gameState: GameState): GameState {
     const newGame = new GameState(gameState.size);
     newGame.board = gameState.board.map(row => [...row]);
     newGame.currentPlayer = gameState.currentPlayer;
@@ -643,3 +692,12 @@ export class GameState {
     return newGame;
   }
 }
+
+// Export lại tất cả từ config để tương thích
+export {
+  EMPTY,
+  PLAYER_X,
+  PLAYER_O,
+  WIN_SCORE,
+  INFINITY
+};
