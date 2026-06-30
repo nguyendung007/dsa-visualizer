@@ -1,14 +1,7 @@
-import { NavLink, useNavigate, useLocation, useOutlet } from 'react-router-dom';
+import { NavLink, useNavigate, Outlet } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext.jsx';
-import { useProgress } from '../../context/ProgressContext.jsx';
-import GlobalUIEffects from '../components/GlobalUIEffects.jsx';
-import SplitScreenTransition from '../components/SplitScreenTransition.jsx';
-import Toast from '../components/Toast.jsx';
-import '../styles/global.css';
 import './MainLayout.css';
 
-// ─── CONFIG ──────────────────────────────────────────────────────────────────
 const CONFIG = {
   brand: { icon: '∆', title: 'DSA Visualizer', badge: 'UET-IAI', tagline: 'Made with ❤️ for learning' },
   defaults: {
@@ -28,6 +21,7 @@ const NAV = [
   { path: '/maze',        icon: '🗺️',  label: 'Maze',              desc: 'Các thuật toán tìm kiếm trong mê cung' },
   { path: '/adversarial', icon: '⚔️',  label: 'Adversarial',       desc: 'Các thuật toán tìm kiếm đối kháng' },
   { path: '/knowledge',   icon: '🧠',  label: 'Knowledge',         desc: 'Các mô hình tri thức cơ bản' },
+  { path: '/dp', icon: '🧩', label: 'Dynamic Programming', desc: 'Các thuật toán quy hoạch động' },
   { path: '/localsearch', icon: '🔍',  label: 'LocalSearch',       desc: 'Các thuật toán tìm kiếm cục bộ' },
   { path: '/decision',    icon: '🌿',  label: 'Decision Tree',     desc: 'ID3 - Xây dựng cây quyết định' },
   { path: '/naive',       icon: '📐',  label: 'Naive Bayes',       desc: 'Phân loại xác suất với định lý Bayes' },
@@ -36,26 +30,16 @@ const NAV = [
   { path: '/unionfind',   icon: '🔀',  label: 'Union-Find',        desc: 'Quick Find·Quick Union·Weighted·Path Compression' },
   { path: '/strings',     icon: '🔤',  label: 'String Algorithms', desc: 'TST·LSD/MSD·3-Way·Suffix Array·KMP·BM·RK' },
   { path: '/problems',    icon: '🎯',  label: 'Problems',          desc: 'Two Sum: Brute Force·Two Pointer·Hash Map' },
+  { path: '/ai',    icon: '@',  label: 'AI-API',          desc: 'Hỏi đáp với model AI free' },
   { path: '/csp',         icon: '[o]', label: 'Csp',               desc: 'Các bài toán có ràng buộc CSP' },
-  { path: '/complexity',  icon: '📈',  label: 'Complexity',        desc: 'Big-O lý thuyết + bảng tra cứu tất cả thuật toán' },
+  { path: '/complexity',  icon: '📈',  label: 'Informations',      desc: 'Big-O lý thuyết + bảng tra cứu tất cả thuật toán' },
   { path: '/settings',    icon: '⚙️',  label: 'Settings',          desc: 'Font · Màu nền' },
 ];
-// ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * MainLayout — orchestrator duy nhất đọc context + localStorage.
- * Không có logic UI nào trong chính nó; chỉ distribute data xuống component con.
- */
-export default function MainLayout() {
-  const { user, logout }   = useAuth();
-  const { toast }          = useProgress();
-  const navigate           = useNavigate();
-  const location           = useLocation();
-  const currentOutlet      = useOutlet();
 
+export default function MainLayout({ user, logout, toast }) {
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
-
-  // ── App-level settings (đọc localStorage một chỗ duy nhất) ─────────────
   const [bgImg, setBgImg] = useState(() =>
     localStorage.getItem(CONFIG.storageKeys.bgImage) || ''
   );
@@ -73,22 +57,19 @@ export default function MainLayout() {
     return () => window.removeEventListener(CONFIG.events.bgImageChanged, onBgImageChanged);
   }, []);
 
-  const handleLogout = () => { logout(); navigate('/login'); };
+  const handleLogout = () => { 
+    logout(); 
+    navigate('/login'); 
+  };
 
   return (
     <>
-      {/* Hiệu ứng toàn cục — không cần biết context hay storage */}
-      <GlobalUIEffects />
-
-      {/* Toast — nhận dữ liệu từ context qua đây, không tự import context */}
-      {toast.message && <Toast message={toast.message} type={toast.type} />}
-
       <div
         className={`layout ${collapsed ? 'collapsed' : ''}`}
         style={{
-          backgroundImage:    bgImg ? `url(${bgImg})` : 'none',
-          backgroundSize:     'cover',
-          backgroundPosition: 'center',
+          backgroundImage:      bgImg ? `url(${bgImg})` : 'none',
+          backgroundSize:       'cover',
+          backgroundPosition:   'center',
           backgroundAttachment: 'fixed',
         }}
       >
@@ -146,8 +127,7 @@ export default function MainLayout() {
         </button>
 
         <main className="content">
-          {/* location + outlet được truyền xuống — SplitScreenTransition không tự đọc router */}
-          <SplitScreenTransition location={location} outlet={currentOutlet} />
+          <Outlet />
         </main>
       </div>
     </>
