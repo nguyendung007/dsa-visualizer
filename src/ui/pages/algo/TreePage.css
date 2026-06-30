@@ -1,22 +1,22 @@
-/* ============================================
-   TEST1 PAGE - Đồng bộ với TreePage pattern
-   ============================================ */
+/* ============================================================
+   TREE PAGE STYLES
+   Tổ chức lại code CSS cho TreePage - clean, cân đối, đẹp hơn
+   ============================================================ */
 
-/* ---------- Layout ---------- */
+/* ----- 1. LAYOUT CHÍNH ----- */
 .tree-workspace {
   display: flex;
   flex: 1;
-  height: calc(100vh - 200px);   /* đồng bộ với TreePage.css */
+  height: calc(100vh - 200px);
   overflow: hidden;
   gap: 0;
 }
 
-/* FIX: dùng tree-main (khớp JSX) thay vì tree-panel */
 .tree-main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   height: 100%;
   min-height: 0;
   padding: 0 24px 12px;
@@ -25,19 +25,20 @@
 }
 
 .tree-sidebar {
-  width: 240px;
+  width: 260px;
   flex-shrink: 0;
-  padding: 12px 16px;
+  padding: 14px 18px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
+  background: rgba(13, 17, 23, 0.5);
 }
 
-/* ---------- Scrollbar ---------- */
+/* ----- 2. CUSTOM SCROLLBAR ----- */
 .tree-main::-webkit-scrollbar,
 .tree-sidebar::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 
 .tree-main::-webkit-scrollbar-track,
@@ -50,6 +51,7 @@
 .tree-sidebar::-webkit-scrollbar-thumb {
   background: #1e2d3d;
   border-radius: 4px;
+  transition: background 0.2s;
 }
 
 .tree-main::-webkit-scrollbar-thumb:hover,
@@ -63,42 +65,49 @@
   scrollbar-color: #1e2d3d #0d1117;
 }
 
-/* ---------- Step description ---------- */
+/* ----- 3. STEP DESCRIPTION ----- */
 .step-desc {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   flex-shrink: 0;
-  min-height: 40px;
-  padding: 8px 0;
+  min-height: 36px;
+  padding: 6px 0;
 }
 
 .step-badge {
-  padding: 2px 10px;
+  padding: 3px 12px;
   font-size: 11px;
   font-weight: 600;
   color: #58a6ff;
   white-space: nowrap;
-  background: #1e2d3d;
+  background: rgba(88, 166, 255, 0.08);
+  border: 1px solid rgba(88, 166, 255, 0.15);
   border-radius: 12px;
 }
 
 .step-text {
   flex: 1;
   font-size: 13px;
-  color: #8b9eb5;
+  font-weight: 500;
+  color: #c9d8e8;
 }
 
-/* ---------- Tree container (bọc SVG như các page khác) ---------- */
+/* ----- 4. TREE CONTAINER & SVG ----- */
 .tree-container {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  padding: 12px;
+  padding: 14px;
   background: #0a0e1a;
   border: 1px solid #1e2d3d;
-  border-radius: 8px;
+  border-radius: 10px;
+  transition: border-color 0.2s;
+}
+
+.tree-container:hover {
+  border-color: #2d4a6a;
 }
 
 .tree-title {
@@ -107,9 +116,10 @@
   font-weight: 700;
   color: #4a6b8a;
   flex-shrink: 0;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
-/* FIX: wrapper định kích thước cho SVG — giống tree-svg-wrap trong TreePage.css */
 .tree-svg-wrap {
   position: relative;
   flex: 1;
@@ -118,9 +128,9 @@
   background: #0d1117;
   border-radius: 8px;
   overflow: hidden;
+  border: 1px solid #161f2f;
 }
 
-/* FIX: SVG fill toàn bộ wrapper */
 .tree-svg {
   position: absolute;
   top: 0;
@@ -129,32 +139,51 @@
   height: 100%;
 }
 
-/* ---------- Legend ---------- */
+/* ----- 5. LEGEND ----- */
 .tree-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 16px;
+  gap: 12px 20px;
   flex-shrink: 0;
   padding: 8px 0 4px;
   font-size: 11px;
+  font-weight: 500;
   color: #8b9eb5;
-  border-top: 1px solid #1e2d3d;
+  border-top: 1px solid rgba(30, 45, 61, 0.5);
   margin-top: 4px;
 }
 
-/* ---------- AVL info box ---------- */
+.tree-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tree-legend span::before {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* Custom colors for legend items - dùng inline style trong JSX nên không cần CSS ở đây */
+
+/* ----- 6. AVL INFO BOX ----- */
 .avl-info-box {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 16px;
+  gap: 10px 18px;
   flex-shrink: 0;
-  padding: 6px 12px;
+  padding: 8px 14px;
   margin-top: 4px;
   font-size: 12px;
-  color: #8b9eb5;
-  background: rgba(249, 115, 22, 0.08);
-  border: 1px solid rgba(249, 115, 22, 0.2);
+  font-weight: 500;
+  color: #c9d8e8;
+  background: rgba(249, 115, 22, 0.06);
+  border: 1px solid rgba(249, 115, 22, 0.15);
   border-radius: 6px;
 }
 
@@ -162,7 +191,15 @@
   font-weight: 700;
 }
 
-/* ---------- Sidebar sections ---------- */
+.avl-info-box b.bf-ok {
+  color: #10b981;
+}
+
+.avl-info-box b.bf-bad {
+  color: #ef4444;
+}
+
+/* ----- 7. SIDEBAR SECTIONS ----- */
 .ctrl-section {
   display: flex;
   flex-direction: column;
@@ -174,11 +211,13 @@
   font-weight: 700;
   text-transform: uppercase;
   color: #4a6b8a;
-  letter-spacing: 1px;
-  margin-bottom: 2px;
+  letter-spacing: 0.8px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid rgba(30, 45, 61, 0.3);
+  padding-bottom: 4px;
 }
 
-/* ---------- Input pair ---------- */
+/* ----- 8. INPUT PAIR ----- */
 .input-pair {
   display: flex;
   gap: 6px;
@@ -190,89 +229,155 @@
   min-width: 0;
 }
 
-/* ---------- Inputs ---------- */
+/* ----- 9. INPUT STYLES ----- */
 .arr-input {
-  padding: 5px 8px;
-  font-size: 12px;
+  padding: 8px 12px;
+  font-size: 14px;
   color: #e2e8f0;
   background: #0d1117;
   border: 1px solid #1e2d3d;
-  border-radius: 4px;
+  border-radius: 6px;
   outline: none;
-  font-family: monospace;
+  font-family: 'Fira Code', Consolas, monospace;
   width: 100%;
-  min-width: 50px;
-  transition: border-color 0.15s;
+  min-width: 60px;
+  transition: all 0.2s ease;
 }
 
 .arr-input:focus {
   border-color: #58a6ff;
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
 }
 
 .arr-input::placeholder {
   color: #4a6b8a;
-  font-size: 11px;
+  font-size: 12px;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
-/* ---------- Buttons ---------- */
-.btn-generate {
-  padding: 6px 14px;
+.arr-input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.arr-input[type="number"]::-webkit-outer-spin-button,
+.arr-input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* ----- 10. BUTTONS ----- */
+.btn-generate,
+.btn-random,
+.btn-danger {
+  padding: 8px 16px;
   font-size: 12px;
   font-weight: 600;
-  color: #fff;
-  cursor: pointer;
-  background: #58a6ff;
-  border: none;
-  border-radius: 4px;
-  transition: all 0.15s;
+  border-radius: 6px;
+  transition: all 0.2s ease;
   white-space: nowrap;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+
+.btn-generate {
+  color: #fff;
+  background: #58a6ff;
+  border: 1px solid #58a6ff;
 }
 
 .btn-generate:hover {
   background: #4a8fd4;
-  transform: scale(1.02);
+  border-color: #4a8fd4;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(88, 166, 255, 0.2);
+}
+
+.btn-generate:active {
+  transform: translateY(0);
+  box-shadow: none;
 }
 
 .btn-random {
-  padding: 6px 14px;
-  font-size: 12px;
-  font-weight: 600;
   color: #10b981;
-  cursor: pointer;
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-  border-radius: 4px;
-  transition: all 0.15s;
-  white-space: nowrap;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
 .btn-random:hover {
-  background: rgba(16, 185, 129, 0.2);
-  transform: scale(1.02);
+  background: rgba(16, 185, 129, 0.15);
+  border-color: #10b981;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+.btn-random:active {
+  transform: translateY(0);
 }
 
 .btn-danger {
-  padding: 6px 14px;
-  font-size: 12px;
-  font-weight: 600;
   color: #ef4444;
-  cursor: pointer;
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 4px;
-  transition: all 0.15s;
-  white-space: nowrap;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
 }
 
 .btn-danger:hover {
-  background: rgba(239, 68, 68, 0.2);
-  transform: scale(1.02);
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #ef4444;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
 }
 
-/* ---------- Log panel ---------- */
+.btn-danger:active {
+  transform: translateY(0);
+}
+
+/* Button full width variant */
+.btn-full {
+  width: 100%;
+  justify-content: center;
+}
+
+/* ----- 11. FLOOR/CEIL RESULTS ----- */
+.floor-ceil-result {
+  padding: 5px 12px;
+  font-size: 12px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.floor-result {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.12);
+}
+
+.ceil-result {
+  color: #58a6ff;
+  background: rgba(88, 166, 255, 0.06);
+  border: 1px solid rgba(88, 166, 255, 0.12);
+}
+
+/* Helper text */
+.helper-text {
+  font-size: 10px;
+  color: #4a6b8a;
+  line-height: 1.6;
+  padding: 4px 0;
+}
+
+.helper-text code {
+  color: #8b9eb5;
+  background: rgba(30, 45, 61, 0.3);
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+}
+
+/* ----- 12. LOG PANEL ----- */
 .log-panel {
   max-height: 160px;
-  padding: 6px 8px;
+  padding: 6px 10px;
   overflow-y: auto;
   background: #0d1117;
   border: 1px solid #1e2d3d;
@@ -281,94 +386,131 @@
   font-family: 'Fira Code', Consolas, monospace;
 }
 
-.log-panel::-webkit-scrollbar { width: 4px; }
-.log-panel::-webkit-scrollbar-track { background: #0d1117; }
-.log-panel::-webkit-scrollbar-thumb { background: #1e2d3d; border-radius: 2px; }
-.log-panel::-webkit-scrollbar-thumb:hover { background: #2d4a6a; }
+.log-panel::-webkit-scrollbar {
+  width: 4px;
+}
+
+.log-panel::-webkit-scrollbar-track {
+  background: #0d1117;
+}
+
+.log-panel::-webkit-scrollbar-thumb {
+  background: #1e2d3d;
+  border-radius: 2px;
+}
+
+.log-panel::-webkit-scrollbar-thumb:hover {
+  background: #2d4a6a;
+}
 
 .log-empty {
   font-size: 11px;
   font-style: italic;
   color: #1e3a5f;
   text-align: center;
-  padding: 12px 0;
+  padding: 14px 0;
 }
 
 .log-entry {
-  padding: 3px 4px;
+  padding: 4px 6px;
   color: #8b9eb5;
-  border-bottom: 1px solid rgba(30, 45, 61, 0.3);
+  border-bottom: 1px solid rgba(30, 45, 61, 0.2);
+  transition: opacity 0.2s;
 }
 
 .log-entry:last-child {
   border-bottom: none;
 }
 
-/* ---------- Floor/Ceil results ---------- */
-.floor-ceil-result {
-  padding: 4px 10px;
-  font-size: 12px;
-  border-radius: 4px;
+.log-entry .log-time {
+  color: #4a6b8a;
+  font-size: 9px;
+  margin-right: 6px;
 }
 
-.floor-result {
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.1);
-}
-
-.ceil-result {
-  color: #58a6ff;
-  background: rgba(88, 166, 255, 0.1);
-}
-
-/* ---------- Algo tabs ---------- */
+/* ----- 13. ALGORITHM TABS ----- */
 .algo-tabs {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   flex-shrink: 0;
-  padding: 8px 16px;
+  padding: 10px 24px;
   background: #0a0e1a;
   border-bottom: 1px solid #1e2d3d;
 }
 
 .algo-tab {
-  padding: 6px 16px;
+  padding: 7px 18px;
   font-size: 12px;
+  font-weight: 500;
   color: #4a6b8a;
   cursor: pointer;
-  background: #0a0e1a;
+  background: transparent;
   border: 1px solid #1e2d3d;
-  border-radius: 4px;
-  transition: all 0.15s;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  font-family: inherit;
 }
 
 .algo-tab:hover {
   color: #8b9eb5;
   border-color: var(--tab-color, #58a6ff);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .algo-tab.active {
   font-weight: 600;
   color: var(--tab-color, #58a6ff);
-  background: color-mix(in srgb, var(--tab-color, #58a6ff) 8%, #0a0e1a);
+  background: color-mix(in srgb, var(--tab-color, #58a6ff) 8%, transparent);
   border-color: var(--tab-color, #58a6ff);
+  box-shadow: 0 0 20px rgba(var(--tab-color, 88, 166, 255), 0.05);
 }
 
-/* ---------- Responsive ---------- */
+/* ----- 14. AVL ROTATION INFO ----- */
+.rotation-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px 12px;
+  font-size: 11px;
+  color: #4a6b8a;
+  line-height: 1.8;
+  padding: 4px 0;
+}
+
+.rotation-info .rot-type {
+  font-weight: 600;
+  color: #f97316;
+}
+
+.rotation-info .rot-desc {
+  color: #8b9eb5;
+}
+
+/* ----- 15. RESPONSIVE ----- */
+@media (max-width: 1024px) {
+  .tree-sidebar {
+    width: 230px;
+    padding: 12px 14px;
+  }
+}
+
 @media (max-width: 900px) {
   .tree-workspace {
     flex-direction: column;
     height: auto;
+    min-height: calc(100vh - 200px);
   }
 
   .tree-main {
     border-right: none;
     border-bottom: 1px solid #1e2d3d;
+    padding: 0 16px 12px;
+    min-height: 500px;
   }
 
   .tree-sidebar {
     width: 100%;
-    padding: 12px;
+    padding: 14px 16px;
+    background: transparent;
   }
 
   .input-pair {
@@ -376,6 +518,121 @@
   }
 
   .input-pair .arr-input {
-    min-width: 80px;
+    min-width: 120px;
+  }
+
+  .tree-svg-wrap {
+    min-height: 200px;
   }
 }
+
+@media (max-width: 600px) {
+  .tree-main {
+    padding: 0 12px 10px;
+  }
+
+  .tree-sidebar {
+    padding: 10px 12px;
+    gap: 12px;
+  }
+
+  .step-desc {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .tree-legend {
+    gap: 6px 12px;
+    font-size: 10px;
+  }
+
+  .tree-legend span::before {
+    width: 10px;
+    height: 10px;
+  }
+
+  .algo-tabs {
+    padding: 8px 12px;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .algo-tab {
+    padding: 5px 12px;
+    font-size: 11px;
+  }
+
+  .tree-container {
+    padding: 10px;
+  }
+
+  .tree-svg-wrap {
+    min-height: 160px;
+  }
+
+  .arr-input {
+    padding: 6px 10px;
+    font-size: 13px;
+    min-width: 50px;
+  }
+
+  .btn-generate,
+  .btn-random,
+  .btn-danger {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+
+  .ctrl-section h3 {
+    font-size: 9px;
+  }
+
+  .log-panel {
+    max-height: 120px;
+  }
+}
+
+/* ----- 16. UTILITY & MISC ----- */
+/* Transition helper */
+.tree-transition {
+  transition: all 0.2s ease;
+}
+
+/* Focus visible for accessibility */
+.arr-input:focus-visible,
+button:focus-visible {
+  outline: 2px solid #58a6ff;
+  outline-offset: 2px;
+}
+
+/* Dark mode scrollbar for Firefox */
+.tree-main,
+.tree-sidebar,
+.log-panel {
+  scrollbar-color: #1e2d3d #0d1117;
+}
+
+/* Prevent text selection on buttons */
+.btn-generate,
+.btn-random,
+.btn-danger,
+.algo-tab {
+  user-select: none;
+}
+
+/* Cân đối input và button trong TreePage */
+.input-pair .arr-input {
+  flex: 1 1 auto;
+  min-width: 80px;
+}
+
+.input-pair button {
+  flex: 0 0 72px;    /* Nút chiếm đúng 72px, không co giãn */
+  padding: 8px 0;    /* Padding ngang = 0, nội dung căn giữa */
+  text-align: center;
+}
+
+/* ============================================================
+   END OF TREE PAGE STYLES
+   ============================================================ */

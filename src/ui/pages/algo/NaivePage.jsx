@@ -57,7 +57,6 @@ export default function NaivePage() {
     saveProgress('naive', 'Naive Bayes');
   }
 
-  // Step description
   function stepDesc(s) {
     if (!s) return 'Nhấn ▶ để chạy Naive Bayes';
     if (s.type === 'init') return `Khởi tạo: ${s.totalSamples} mẫu, ${s.features?.length} features, ${s.classes?.length} classes`;
@@ -71,7 +70,6 @@ export default function NaivePage() {
     return s.desc || '';
   }
 
-  // Render Prior Chart
   function renderPriorChart(prior) {
     if (!prior) return null;
     const entries = Object.entries(prior);
@@ -101,7 +99,6 @@ export default function NaivePage() {
     );
   }
 
-  // Render Likelihood Matrix
   function renderLikelihoodMatrix(likelihoodMatrix) {
     if (!likelihoodMatrix) return null;
     
@@ -160,7 +157,6 @@ export default function NaivePage() {
     );
   }
 
-  // Render Prediction Details
   function renderPredictionDetails(s) {
     if (!s || s.type !== 'calculate_class') return null;
     
@@ -187,7 +183,6 @@ export default function NaivePage() {
     );
   }
 
-  // Render Prediction Result
   function renderPredictionResult(s) {
     if (!s || s.type !== 'prediction_result') return null;
     

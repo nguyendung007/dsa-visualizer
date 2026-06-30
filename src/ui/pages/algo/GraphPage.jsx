@@ -33,7 +33,6 @@ function buildAdjList(nodes, edges) {
   return g;
 }
 
-// Hàm heuristic cho A* (dựa trên tọa độ node)
 function getHeuristicForAStar(goal, nodes, type) {
   const coordMap = {};
   nodes.forEach(n => {
@@ -47,7 +46,7 @@ function getHeuristicForAStar(goal, nodes, type) {
     
     if (type === 'euclidean') {
       return Math.sqrt(dx*dx + dy*dy);
-    } else { // manhattan
+    } else { 
       return dx + dy;
     }
   };
@@ -145,18 +144,18 @@ export default function GraphPage() {
     } else if (algo === 'topoKahn') {
       s = topoSortKahn(adj, nodeIds);
     } else if (algo === 'aStar') {
-      // Tạo heuristic dựa trên tọa độ các node
+
       const heuristic = getHeuristicForAStar(goal, graph.nodes, heuristicType);
       s = aStar(adj, start, goal, heuristic);
-    } else if (algo === 'bestFirst') {  // Thêm case này
+    } else if (algo === 'bestFirst') {
     const heuristic = getHeuristicForAStar(goal, graph.nodes, heuristicType);
     s = bestFirstSearch(adj, start, goal, heuristic);
   }   else if (algo === 'beam') {
     const heuristic = getHeuristicForAStar(goal, graph.nodes, heuristicType);
-    s = beamSearch(adj, start, goal, 3, heuristic); // beamWidth = 3
+    s = beamSearch(adj, start, goal, 3, heuristic); 
   } else if (algo === 'tabu') {
     const heuristic = getHeuristicForAStar(goal, graph.nodes, heuristicType);
-    s = tabuSearch(adj, start, goal, 50, 10, heuristic); // maxIterations=50, tabuSize=10
+    s = tabuSearch(adj, start, goal, 50, 10, heuristic); 
   }
      else {
       s = ALGOS[algo].fn(adj, start);
@@ -178,7 +177,6 @@ export default function GraphPage() {
   function nodeColor(id) {
   if (!curStep) return '#1d4ed8';
   
-  // Màu cho Best-First Search (tương tự A*)
   if (algo === 'bestFirst') {
     if (curStep.type === 'goal_found' && curStep.path?.includes(id)) return '#10b981';
     if (curStep.type === 'done' && curStep.path?.includes(id)) return '#10b981';
@@ -188,7 +186,6 @@ export default function GraphPage() {
     return '#1e3a5f';
   }
     
-    // Màu cho A*
     if (algo === 'aStar') {
       if (curStep.type === 'goal_found' && curStep.path?.includes(id)) return '#10b981';
       if (curStep.type === 'done' && curStep.path?.includes(id)) return '#10b981';
@@ -247,7 +244,6 @@ export default function GraphPage() {
     return '#1e2d3d';
   }
     
-    // Màu cho A*
     if (algo === 'aStar') {
       if (curStep.type === 'goal_found' && curStep.path) {
         for (let i = 0; i < curStep.path.length - 1; i++) {
@@ -313,7 +309,6 @@ export default function GraphPage() {
     return s.desc || '';
   }
     
-    // Mô tả cho A*
     if (algo === 'aStar') {
       if (s.type === 'init') return `Khởi tạo: bắt đầu từ ${s.start} → ${s.goal}`;
       if (s.type === 'process') return `Xử lý nút ${s.node} (g=${s.gScore?.[s.node]}, f=${s.fScore?.[s.node]})`;
@@ -389,8 +384,7 @@ export default function GraphPage() {
 
           <svg ref={svgRef} width="100%" viewBox={`0 0 ${svgW} ${svgH}`} className="graph-svg"
             onClick={handleSVGClick} onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}
-            style={{ cursor: addMode === 'node' ? 'crosshair' : 'default' }}>
+            onMouseUp={handleMouseUp} onMouseLeave={handleMouseUp}>
             {graph.edges.map((e, i) => {
               const fn = graph.nodes.find(n => n.id === e.from);
               const tn = graph.nodes.find(n => n.id === e.to);
@@ -416,7 +410,7 @@ export default function GraphPage() {
     }
     handleMouseDown(e, n.id);
   }}
-  style={{ cursor: addMode === 'edge' ? 'pointer' : 'grab' }}>
+  className="graph-node-group">
                 <circle cx={n.x} cy={n.y} r={20} fill={nodeColor(n.id)} stroke="#ffffff"
                   strokeWidth={pending === n.id ? 3 : 2} />
                 <text x={n.x} y={n.y} textAnchor="middle" dominantBaseline="central"
@@ -486,12 +480,12 @@ export default function GraphPage() {
                   <div className="ds-title">A* — g-score &amp; f-score</div>
                   <div className="ds-dist-row">
                     {curStep?.gScore && Object.entries(curStep.gScore).map(([k, v]) => (
-                      <div key={k} className="ds-dist-cell" style={{
+                      <div key={k} className="ds-dist-cell astar-cell" style={{
                         borderColor: curStep.closedSet?.includes?.(k) ? '#f43f5e' : 
                                      curStep.openSet?.includes?.(k) ? '#f59e0b' : '#1e3a5f'
                       }}>
                         <span className="ds-dist-node">{k}</span>
-                        <span className="ds-dist-val" style={{ fontSize: 10 }}>
+                        <span className="ds-dist-val astar-val">
                           g={v === Infinity ? '∞' : v}
                           {curStep.fScore && <>, f={curStep.fScore[k] === Infinity ? '∞' : curStep.fScore[k]}</>}
                         </span>
@@ -501,23 +495,23 @@ export default function GraphPage() {
                 </div>
               )}
               {showBestFirst && (
-      <div className="ds-box">
-        <div className="ds-title">Best-First — Heuristic (h-score)</div>
-        <div className="ds-dist-row">
-          {curStep?.fScore && Object.entries(curStep.fScore).map(([k, v]) => (
-            <div key={k} className="ds-dist-cell" style={{
-              borderColor: curStep.closedSet?.includes?.(k) ? '#f43f5e' : 
-                           curStep.openSet?.includes?.(k) ? '#f59e0b' : '#1e3a5f'
-            }}>
-              <span className="ds-dist-node">{k}</span>
-              <span className="ds-dist-val">
-                h={v === Infinity ? '∞' : v}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-    )}
+                <div className="ds-box">
+                  <div className="ds-title">Best-First — Heuristic (h-score)</div>
+                  <div className="ds-dist-row">
+                    {curStep?.fScore && Object.entries(curStep.fScore).map(([k, v]) => (
+                      <div key={k} className="ds-dist-cell bestfirst-cell" style={{
+                        borderColor: curStep.closedSet?.includes?.(k) ? '#f43f5e' : 
+                                     curStep.openSet?.includes?.(k) ? '#f59e0b' : '#1e3a5f'
+                      }}>
+                        <span className="ds-dist-node">{k}</span>
+                        <span className="ds-dist-val">
+                          h={v === Infinity ? '∞' : v}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -525,11 +519,11 @@ export default function GraphPage() {
             <div className="graph-ds-panel">
               <div className="ds-box">
                 <div className="ds-title">Strongly Connected Components</div>
-                <div className="ds-queue-row" style={{ flexWrap: 'wrap', gap: 6 }}>
+                <div className="ds-queue-row scc-row">
                   {curStep.sccs.map((scc, i) => (
-                    <div key={i} className="ds-cell"
-                      style={{ borderColor: ['#f43f5e','#f97316','#a78bfa','#10b981','#58a6ff'][i%5], flexDirection: 'row', gap: 4 }}>
-                      <span style={{ fontSize: 9, color: '#4a6b8a' }}>SCC{i+1}:</span>
+                    <div key={i} className="ds-cell scc-cell"
+                      style={{ borderColor: ['#f43f5e','#f97316','#a78bfa','#10b981','#58a6ff'][i%5] }}>
+                      <span className="scc-label">SCC{i+1}:</span>
                       <span>{'{' + scc.join(',') + '}'}</span>
                     </div>
                   ))}
@@ -541,14 +535,14 @@ export default function GraphPage() {
           {showTopo && curStep?.order && curStep.order.length > 0 && (
             <div className="graph-ds-panel">
               <div className="ds-box">
-                <div className="ds-title">
-                  Thứ tự topo {curStep.hasCycle ? <span style={{ color: '#ef4444' }}>⚠ Có chu trình!</span> : ''}
+                <div className="ds-title topo-title">
+                  Thứ tự topo {curStep.hasCycle ? <span className="topo-cycle">⚠ Có chu trình!</span> : ''}
                 </div>
-                <div className="ds-queue-row">
+                <div className="ds-queue-row topo-row">
                   {curStep.order.map((v, i) => (
-                    <div key={i} className="ds-cell"
+                    <div key={i} className="ds-cell topo-cell"
                       style={{ borderColor: i === curStep.order.length - 1 ? '#8b5cf6' : '#1e3a5f' }}>
-                      {v}{i < curStep.order.length - 1 && <span style={{ color: '#4a6b8a', fontSize: 9 }}>→</span>}
+                      {v}{i < curStep.order.length - 1 && <span className="topo-arrow">→</span>}
                     </div>
                   ))}
                 </div>
@@ -564,7 +558,7 @@ export default function GraphPage() {
             }
             {algo === 'aStar' && curStep?.gScore && (
               Object.entries(curStep.gScore).map(([k, v]) => (
-                <span key={k} className="dist-cell" style={{
+                <span key={k} className="dist-cell astar-dist-cell" style={{
                   color: curStep.closedSet?.includes?.(k) ? '#f43f5e' : 
                          curStep.openSet?.includes?.(k) ? '#f59e0b' : '#8b9eb5'
                 }}>
@@ -574,7 +568,7 @@ export default function GraphPage() {
               ))
             )}
             {(algo === 'kruskal' || algo === 'prim') && curStep?.mst && (
-              <span className="dist-cell">
+              <span className="dist-cell mst-cell">
                 MST: {curStep.mst.length} cạnh
                 {curStep.mst.length > 0 && ` | tổng = ${curStep.mst.reduce((s, e) => s + e.weight, 0)}`}
               </span>
@@ -599,15 +593,15 @@ export default function GraphPage() {
                 }}>Reset</button>
             </div>
             {addMode === 'edge' && (
-              <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'center' }}>
-                <span style={{ fontSize: 11, color: '#4a6b8a' }}>Trọng số:</span>
+              <div className="graph-edge-weight">
+                <label>Trọng số:</label>
                 <input type="number" value={newEdgeWeight} min="1"
                   onChange={e => setNewEdgeWeight(parseInt(e.target.value) || 1)}
-                  className="arr-input" style={{ width: 60 }} />
+                  className="arr-input" />
               </div>
             )}
             {addMode === 'edge' && (
-              <div style={{ fontSize: 11, color: '#f59e0b', marginTop: 6 }}>
+              <div className="graph-edge-hint">
                 {pending ? `Chọn nút đến (đang từ ${pending})` : 'Click vào nút bắt đầu cạnh'}
               </div>
             )}
@@ -616,35 +610,35 @@ export default function GraphPage() {
           <div className="ctrl-section">
             <h3>Chạy thuật toán</h3>
             {ALGOS[algo].needsStart && (
-              <div style={{ marginBottom: 8 }}>
-                <span style={{ fontSize: 11, color: '#4a6b8a' }}>Nút bắt đầu:</span>
+              <div className="graph-start-select">
+                <label>Nút bắt đầu:</label>
                 <select value={start} onChange={e => setStart(e.target.value)}
-                  className="arr-input" style={{ width: '100%', marginTop: 4 }}>
+                  className="arr-input">
                   {graph.nodes.map(n => <option key={n.id} value={n.id}>{n.id}</option>)}
                 </select>
               </div>
             )}
             {algo === 'aStar' && (
-  <>
-    <div style={{ marginBottom: 8 }}>
-      <span style={{ fontSize: 11, color: '#4a6b8a' }}>Nút đích:</span>
-      <select value={goal} onChange={e => setGoal(e.target.value)}
-        className="arr-input" style={{ width: '100%', marginTop: 4 }}>
-        {graph.nodes.map(n => <option key={n.id} value={n.id}>{n.id}</option>)}
-      </select>
-    </div>
-    <div style={{ marginBottom: 8 }}>
-      <span style={{ fontSize: 11, color: '#4a6b8a' }}>Hàm Heuristic:</span>
-      <select value={heuristicType} onChange={e => setHeuristicType(e.target.value)}
-        className="arr-input" style={{ width: '100%', marginTop: 4 }}>
-        <option value="euclidean">Euclidean </option>
-        <option value="manhattan">Manhattan </option>
-      </select>
-    </div>
-  </>
-)}
+              <>
+                <div className="graph-start-select">
+                  <label>Nút đích:</label>
+                  <select value={goal} onChange={e => setGoal(e.target.value)}
+                    className="arr-input">
+                    {graph.nodes.map(n => <option key={n.id} value={n.id}>{n.id}</option>)}
+                  </select>
+                </div>
+                <div className="heuristic-selector">
+                  <label>Hàm Heuristic:</label>
+                  <select value={heuristicType} onChange={e => setHeuristicType(e.target.value)}
+                    className="arr-input">
+                    <option value="euclidean">Euclidean</option>
+                    <option value="manhattan">Manhattan</option>
+                  </select>
+                </div>
+              </>
+            )}
             
-            <button className="btn-generate" style={{ width: '100%' }} onClick={runAlgo}>
+            <button className="btn-generate w-full" onClick={runAlgo}>
               ▶ Chạy {ALGOS[algo].name}
             </button>
           </div>
@@ -652,7 +646,7 @@ export default function GraphPage() {
           {algo === 'aStar' && (
             <div className="ctrl-section">
               <h3>A* (A-star)</h3>
-              <div style={{ fontSize: 11, color: '#4a6b8a', lineHeight: 1.7 }}>
+              <div className="graph-algo-desc">
                 Kết hợp <b style={{ color: '#f472b6' }}>Dijkstra</b> và <b style={{ color: '#f472b6' }}>Heuristic</b>.<br />
                 Dùng hàm ước lượng để ưu tiên đường đi đến đích.<br />
                 <b style={{ color: '#10b981' }}>Đường màu xanh</b> là đường đi tối ưu.<br />
@@ -662,45 +656,45 @@ export default function GraphPage() {
           )}
 
           {algo === 'bestFirst' && (
-  <div className="ctrl-section">
-    <h3>Best-First Search</h3>
-    <div style={{ fontSize: 11, color: '#4a6b8a', lineHeight: 1.7 }}>
-      Thuật toán <b style={{ color: '#34d399' }}>tham lam</b> chỉ dùng heuristic.<br />
-      Ưu tiên mở rộng nút có <b style={{ color: '#34d399' }}>h-score</b> nhỏ nhất.<br />
-      Không đảm bảo tối ưu nhưng <b style={{ color: '#34d399' }}>nhanh hơn</b> A*.<br />
-      <b style={{ color: '#10b981' }}>Xanh lá</b> = đường đi tìm được.<br />
-      <b style={{ color: '#f59e0b' }}>Vàng</b> = trong Open Set, <b style={{ color: '#f43f5e' }}>Đỏ</b> = đã xử lý.
-    </div>
-  </div>
-)}
-{algo === 'beam' && (
-  <div className="ctrl-section">
-    <h3>Beam Search</h3>
-    <div style={{ fontSize: 11, color: '#4a6b8a', lineHeight: 1.7 }}>
-      Biến thể của <b style={{ color: '#fbbf24' }}>Best-First Search</b> với giới hạn Beam.<br />
-      Chỉ giữ lại <b style={{ color: '#fbbf24' }}>K</b> node tốt nhất mỗi bước.<br />
-      <b style={{ color: '#fbbf24' }}>Beam Width = 3</b> (mặc định).<br />
-      Cân bằng giữa <b style={{ color: '#fbbf24' }}>tìm kiếm rộng</b> và <b style={{ color: '#fbbf24' }}>độ sâu</b>.
-    </div>
-  </div>
-)}
+            <div className="ctrl-section">
+              <h3>Best-First Search</h3>
+              <div className="graph-algo-desc">
+                Thuật toán <b style={{ color: '#34d399' }}>tham lam</b> chỉ dùng heuristic.<br />
+                Ưu tiên mở rộng nút có <b style={{ color: '#34d399' }}>h-score</b> nhỏ nhất.<br />
+                Không đảm bảo tối ưu nhưng <b style={{ color: '#34d399' }}>nhanh hơn</b> A*.<br />
+                <b style={{ color: '#10b981' }}>Xanh lá</b> = đường đi tìm được.<br />
+                <b style={{ color: '#f59e0b' }}>Vàng</b> = trong Open Set, <b style={{ color: '#f43f5e' }}>Đỏ</b> = đã xử lý.
+              </div>
+            </div>
+          )}
+          {algo === 'beam' && (
+            <div className="ctrl-section">
+              <h3>Beam Search</h3>
+              <div className="graph-algo-desc">
+                Biến thể của <b style={{ color: '#fbbf24' }}>Best-First Search</b> với giới hạn Beam.<br />
+                Chỉ giữ lại <b style={{ color: '#fbbf24' }}>K</b> node tốt nhất mỗi bước.<br />
+                <b style={{ color: '#fbbf24' }}>Beam Width = 3</b> (mặc định).<br />
+                Cân bằng giữa <b style={{ color: '#fbbf24' }}>tìm kiếm rộng</b> và <b style={{ color: '#fbbf24' }}>độ sâu</b>.
+              </div>
+            </div>
+          )}
 
-{algo === 'tabu' && (
-  <div className="ctrl-section">
-    <h3>Tabu Search</h3>
-    <div style={{ fontSize: 11, color: '#4a6b8a', lineHeight: 1.7 }}>
-      Thuật toán <b style={{ color: '#f87171' }}>meta-heuristic</b> tối ưu.<br />
-      Dùng <b style={{ color: '#f87171' }}>danh sách Tabu</b> để tránh lặp lại.<br />
-      <b style={{ color: '#f87171' }}>K=50</b> iterations, <b style={{ color: '#f87171' }}>T=10</b> kích thước tabu.<br />
-      Có khả năng <b style={{ color: '#f87171' }}>thoát khỏi local optimum</b>.
-    </div>
-  </div>
-)}
+          {algo === 'tabu' && (
+            <div className="ctrl-section">
+              <h3>Tabu Search</h3>
+              <div className="graph-algo-desc">
+                Thuật toán <b style={{ color: '#f87171' }}>meta-heuristic</b> tối ưu.<br />
+                Dùng <b style={{ color: '#f87171' }}>danh sách Tabu</b> để tránh lặp lại.<br />
+                <b style={{ color: '#f87171' }}>K=50</b> iterations, <b style={{ color: '#f87171' }}>T=10</b> kích thước tabu.<br />
+                Có khả năng <b style={{ color: '#f87171' }}>thoát khỏi local optimum</b>.
+              </div>
+            </div>
+          )}
 
           {algo === 'bellmanFord' && (
             <div className="ctrl-section">
               <h3>Bellman-Ford</h3>
-              <div style={{ fontSize: 11, color: '#4a6b8a', lineHeight: 1.7 }}>
+              <div className="graph-algo-desc">
                 Chạy <b style={{ color: '#a78bfa' }}>|V|-1</b> vòng lặp, thư giãn tất cả cạnh.<br />
                 Phát hiện <b style={{ color: '#ef4444' }}>chu trình âm</b> ở vòng thứ |V|.<br />
                 Hỗ trợ cạnh có trọng số âm (khác Dijkstra).
@@ -710,7 +704,7 @@ export default function GraphPage() {
           {algo === 'prim' && (
             <div className="ctrl-section">
               <h3>Prim's Algorithm</h3>
-              <div style={{ fontSize: 11, color: '#4a6b8a', lineHeight: 1.7 }}>
+              <div className="graph-algo-desc">
                 Bắt đầu từ 1 nút, tham lam chọn cạnh nhỏ nhất nối vào MST.<br />
                 Dùng <b style={{ color: '#10b981' }}>Priority Queue</b>. O(E log V).
               </div>
@@ -719,7 +713,7 @@ export default function GraphPage() {
           {algo === 'kosaraju' && (
             <div className="ctrl-section">
               <h3>Kosaraju-Sharir (SCC)</h3>
-              <div style={{ fontSize: 11, color: '#4a6b8a', lineHeight: 1.7 }}>
+              <div className="graph-algo-desc">
                 <b style={{ color: '#f43f5e' }}>Pha 1:</b> DFS đồ thị gốc, ghi thứ tự finish.<br />
                 <b style={{ color: '#f43f5e' }}>Pha 2:</b> DFS đồ thị đảo ngược theo thứ tự finish giảm.<br />
                 Mỗi lần DFS pha 2 = 1 SCC. O(V+E).
@@ -729,7 +723,7 @@ export default function GraphPage() {
           {(algo === 'topoDFS' || algo === 'topoKahn') && (
             <div className="ctrl-section">
               <h3>Topological Sort</h3>
-              <div style={{ fontSize: 11, color: '#4a6b8a', lineHeight: 1.7 }}>
+              <div className="graph-algo-desc">
                 {algo === 'topoDFS'
                   ? <><b style={{ color: '#8b5cf6' }}>DFS-based:</b> Đẩy vào stack khi kết thúc DFS, đọc ngược lại.</>
                   : <><b style={{ color: '#06b6d4' }}>Kahn:</b> Dùng in-degree, bắt đầu từ nút bậc vào = 0.</>}
@@ -740,7 +734,7 @@ export default function GraphPage() {
 
           <div className="ctrl-section">
             <h3>Thông tin</h3>
-            <div style={{ fontSize: 12, color: '#8b9eb5', lineHeight: 1.8 }}>
+            <div className="graph-info-row">
               <div>Số nút: {graph.nodes.length}</div>
               <div>Số cạnh: {graph.edges.length}</div>
               {curStep?.visited && <div>Đã thăm: {curStep.visited.size} nút</div>}

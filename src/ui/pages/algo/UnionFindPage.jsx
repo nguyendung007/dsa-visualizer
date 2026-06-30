@@ -1,6 +1,3 @@
-// Fix: thêm useProgress, saveProgress trong onDone
-// Fix: thêm nút Find(p) riêng để demo pcFind() / path compression
-// Fix: QU/WQU runFind push step-by-step từng node trong path thay vì 1 step duy nhất
 import { useState, useRef } from 'react';
 import { createUF, qfFind, qfUnion, quUnion, wquUnion, pcUnion, pcFind } from '../../../core/unionfind/index.ts';
 import { AnimationEngine } from '../../../shell/animation/AnimationEngine.js';
@@ -83,7 +80,6 @@ export default function UnionFindPage() {
     } else if (algo === 'pc') {
       root = pcFind(ufCopy, pi, s);
     } else {
-      // FIX: QU/WQU — push step-by-step từng node đi lên parent thay vì 1 step
       root = pi;
       const path = [pi];
       while (ufCopy.parent[root] !== root) {
@@ -99,7 +95,7 @@ export default function UnionFindPage() {
         root = next;
         path.push(root);
       }
-      // Step cuối: đã đến root
+  
       s.push({
         type: 'find_path',
         path,
@@ -111,7 +107,7 @@ export default function UnionFindPage() {
 
     setHistory(h => [`Find(${pi}) = ${root}`, ...h.slice(0, 11)]);
     setFindP('');
-    // pc thay đổi parent → apply; qu/wqu không thay đổi → không apply
+
     runAnimate(s, ufCopy, `${ALGOS[algo].name} - Find(${pi})`, algo === 'pc');
   }
 
@@ -148,7 +144,6 @@ export default function UnionFindPage() {
     groups[root].forEach(node => groupMap[node] = groupColors[i % groupColors.length]);
   });
 
-  // FIX: highlight cả find_step (node hiện tại + next) lẫn find_path (toàn path)
   const highlightNodes = new Set([
     curStep?.p, curStep?.q, curStep?.rp, curStep?.rq, curStep?.node, curStep?.child, curStep?.root,
     curStep?.cur, curStep?.next,

@@ -1,7 +1,5 @@
-// Fix: thêm useProgress, saveProgress trong onDone của runOps()
-// Fix: hash table dùng eng.play() trực tiếp từ engine vừa tạo (return engine) thay vì setTimeout(0)
 import { useState, useRef } from 'react';
-import { stackOps, queueOps, priorityQueueOps, hashTableOps } from '../../../core/dataStructures/index.js';
+import { stackOps, queueOps, priorityQueueOps, hashTableOps } from '../../../core/dataStructures/index.ts';
 import { AnimationEngine } from '../../../shell/animation/AnimationEngine.js';
 import Controls from '../../components/Controls.jsx';
 import { useProgress } from '../../../context/ProgressContext.jsx';
@@ -35,8 +33,6 @@ export default function StructuresPage() {
 
   const { saveProgress } = useProgress();
 
-  // FIX: runOps trả về engine vừa tạo, để gọi .play() trực tiếp ở nơi cần (tránh setTimeout race)
-  // FIX: thêm saveProgress trong onDone
   function runOps(opList, opLabel) {
     engineRef.current?.pause();
     let s;
@@ -65,14 +61,12 @@ export default function StructuresPage() {
       if (!keyVal && !inputVal) return;
       newOps = [...ops, { type: 'insert', key: keyVal || inputVal, val: inputVal || keyVal }];
     } else if (tab === 'pq') {
-      // extractMin và peek không cần input
       if (type === 'insert') {
         const val = inputVal;
         if (!val) return;
         const priority = parseInt(priorityVal) || parseInt(inputVal) || 0;
         newOps = [...ops, { type, val, priority }];
       } else {
-        // extractMin, peek
         newOps = [...ops, { type }];
       }
     } else {
@@ -81,7 +75,6 @@ export default function StructuresPage() {
       newOps = [...ops, { type, val }];
     }
     setOps(newOps);
-    // FIX: lấy engine trả về từ runOps, chỉ play nếu cần — bỏ setTimeout(0)
     const eng = runOps(newOps, type.toUpperCase());
     if (['push', 'pop', 'enqueue', 'dequeue', 'insert', 'extractMin', 'peek'].includes(type)) {
       setPlaying(true);
@@ -158,7 +151,6 @@ export default function StructuresPage() {
     return '';
   }
 
-  // Heap tree layout helper
   function heapLayout(heap) {
     if (!heap.length) return { nodes: [], edges: [] };
     const nodes = [], edges = [];

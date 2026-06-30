@@ -17,7 +17,6 @@ const TAB_COLORS = {
   semantic: '#f59e0b'
 };
 
-// Hàm khởi tạo dữ liệu mặc định cho từng tab
 function defaultFrameData() {
   return {
     frames: [],
@@ -85,7 +84,6 @@ export default function KnowledgePage() {
   const engineRef = useRef(null);
   const { saveProgress } = useProgress();
 
-  // ─── RUN OPERATIONS ──────────────────────────────────────────────────────────
   function runOps(opList, opLabel, graphNodes, graphEdges, semanticNetwork) {
     engineRef.current?.pause();
     let s;
@@ -179,7 +177,7 @@ export default function KnowledgePage() {
       slot: fillSlotName,
       value: fillSlotValue
     }];
-    // Cập nhật instances trong frames
+
     const updatedFrames = frameData.frames.map(f => {
       if (f.name === fillSlotFrame) {
         const instances = { ...f.instances };
@@ -416,7 +414,6 @@ export default function KnowledgePage() {
     setQueryConcept('');
   }
 
-  // ─── UI HELPERS ──────────────────────────────────────────────────────────────
   function stepDesc(s) {
     if (!s) {
       if (tab === 'frame') return 'Tạo Frame, thêm Slot, hoặc điền Instance';
@@ -457,7 +454,6 @@ export default function KnowledgePage() {
     return semanticData;
   }
 
-  // ─── RENDER ──────────────────────────────────────────────────────────────────
   return (
     <div className="page">
       <div className="page-header">
@@ -476,7 +472,7 @@ export default function KnowledgePage() {
               setStepIdx(0); 
               setPlaying(false);
               engineRef.current?.pause();
-              // Reset all input fields when switching tabs
+
               setNewFrameName('');
               setNewFrameParent('');
               setNewSlotName('');

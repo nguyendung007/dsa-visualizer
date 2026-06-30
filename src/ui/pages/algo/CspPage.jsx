@@ -17,7 +17,6 @@ import {
 } from '../../../core/csp/index.ts';
 import './CspPage.css';
 
-// ─── Config ───────────────────────────────────────────────────
 const PROBLEMS = {
   mapColoring: { name: 'Tô màu bản đồ', icon: '🗺️', color: '#10b981' },
   nQueens:     { name: 'N-Queens',       icon: '♛',  color: '#f59e0b' },
@@ -35,7 +34,7 @@ const ALGOS = {
 const COLOR_MAP = { R: '#ef4444', G: '#22c55e', B: '#3b82f6' };
 const COLOR_NAMES = { R: 'Đỏ', G: 'Xanh lá', B: 'Xanh dương' };
 
-// ─── Solver dispatcher ────────────────────────────────────────
+
 function runSolver(problem, algo, nQueensN, sudokuBoard) {
   if (problem === 'mapColoring') {
     if (algo === 'backtracking') return mapColoringBacktracking(MAP_COLORING_PROBLEM);
@@ -64,9 +63,6 @@ function runSolver(problem, algo, nQueensN, sudokuBoard) {
   return [];
 }
 
-// ─── Render helpers ───────────────────────────────────────────
-
-// Map Coloring SVG
 function MapColoringCanvas({ step }) {
   const prob = MAP_COLORING_PROBLEM;
   const pos  = MAP_NODE_POSITIONS;
@@ -120,7 +116,6 @@ function MapColoringCanvas({ step }) {
     }
   }
 
-  // Hiển thị domain đã thu hẹp cho AC-3
   const showDomains = stepType === 'domain_reduced' || stepType === 'arc_check' || stepType === 'done';
 
   return (
@@ -166,7 +161,6 @@ function MapColoringCanvas({ step }) {
   );
 }
 
-// N-Queens Grid
 function NQueensCanvas({ step, n }) {
   const placement = step?.placement || new Array(n).fill(undefined);
   const domains = step?.domains || {};
@@ -183,7 +177,6 @@ function NQueensCanvas({ step, n }) {
   const offsetX = (380 - boardSize) / 2;
   const offsetY = (340 - boardSize) / 2;
 
-  // Kiểm tra xem có đang hiển thị domain không
   const showDomains = stepType === 'domain_reduced' || stepType === 'arc_check' || stepType === 'done';
 
   function cellFill(row, col) {
@@ -199,19 +192,17 @@ function NQueensCanvas({ step, n }) {
       if (stepType === 'conflict') return '#ef444455';
       return '#f59e0b55';
     }
-    // Highlight attack lines of current placement
     if (placement[row] !== undefined && row === currentRow) {
       return isLight ? '#f59e0b22' : '#f59e0b11';
     }
     return base;
   }
 
-  // Kiểm tra xem cột có bị loại bỏ khỏi domain không
   function isColumnRemoved(row, col) {
     const key = `Q${row}`;
     const domain = domains[key];
     if (!domain) return false;
-    // Nếu domain đã thu hẹp và cột không có trong domain
+
     return domain.length > 0 && domain.length < n && !domain.includes(col);
   }
 
@@ -312,7 +303,6 @@ function NQueensCanvas({ step, n }) {
   );
 }
 
-// Sudoku Grid
 function SudokuCanvas({ step, initBoard }) {
   const board = step?.board || initBoard;
   const domains = step?.domains || {};
@@ -331,7 +321,7 @@ function SudokuCanvas({ step, initBoard }) {
       if (stepType === 'assign' || stepType === 'solution') return '#10b98133';
       return '#f59e0b33';
     }
-    // Hiển thị domain đã thu hẹp
+
     if (domains[key] && domains[key].length === 0) return '#7f1d1d33';
     if (domains[key] && domains[key].length < 9 && domains[key].length > 0) return '#7c3aed11';
     return 'transparent';
@@ -350,14 +340,13 @@ function SudokuCanvas({ step, initBoard }) {
     return '#e2e8f0';
   }
 
-  // Hiển thị domain bên dưới ô
   function renderDomain(r, c) {
     const key = `${r},${c}`;
     const domain = domains[key];
     if (!domain) return null;
     if (domain.length === 9) return null; // Domain đầy đủ, không cần hiển thị
     if (domain.length === 0) {
-      // Domain rỗng
+
       const x = PAD + c * CELL + CELL / 2;
       const y = PAD + r * CELL + CELL - 4;
       return (
@@ -368,7 +357,6 @@ function SudokuCanvas({ step, initBoard }) {
         </text>
       );
     }
-    // Domain đã thu hẹp
     const x = PAD + c * CELL + CELL / 2;
     const y = PAD + r * CELL + CELL - 4;
     return (
@@ -422,7 +410,6 @@ function SudokuCanvas({ step, initBoard }) {
   );
 }
 
-// Scheduling Table
 function SchedulingCanvas({ step, problem }) {
   const { courses, rooms, slots } = problem;
   const assignment = step?.assignment || {};
@@ -435,7 +422,6 @@ function SchedulingCanvas({ step, problem }) {
   const W = HEAD_W + slots.length * SLOT_W;
   const H = HEAD_H + rooms.length * ROOM_H + 20;
 
-  // Build grid với thông tin đầy đủ
   const grid = {};
   for (const slot of slots) {
     grid[slot] = {};
@@ -447,14 +433,12 @@ function SchedulingCanvas({ step, problem }) {
     }
   }
 
-  // Điền assignment
   for (const [course, { slot, room }] of Object.entries(assignment)) {
     if (grid[slot] && grid[slot][room]) {
       grid[slot][room].courses.push(course);
     }
   }
 
-  // Đánh dấu xung đột dựa trên conflictVars từ step
   for (const slot of slots) {
     for (const room of rooms) {
       const cs = grid[slot][room].courses;
@@ -462,7 +446,6 @@ function SchedulingCanvas({ step, problem }) {
     }
   }
 
-  // Kiểm tra domain đã thu hẹp
   function hasReducedDomain(course) {
     const domain = domains[course];
     if (!domain) return false;
@@ -489,7 +472,6 @@ function SchedulingCanvas({ step, problem }) {
     
     if (courses.length > 1) return '#7f1d1d22';
     
-    // Kiểm tra domain của các môn chưa xếp
     for (const course of courses) {
       if (!assignment[course]) {
         const domain = domains[course];
@@ -509,7 +491,6 @@ function SchedulingCanvas({ step, problem }) {
     return '#34d399';
   }
 
-  // Lấy các môn chưa xếp và domain của chúng
   const unscheduled = courses.filter(c => !assignment[c]);
 
   return (
@@ -565,7 +546,7 @@ function SchedulingCanvas({ step, problem }) {
 
       {/* Danh sách môn chưa xếp với domain */}
       <div className="csp-unscheduled">
-        <div style={{ fontSize: 10, color: '#4a6b8a', marginBottom: 4 }}>
+        <div className="csp-unscheduled-title">
           Môn chưa xếp:
         </div>
         {unscheduled.map(c => {
@@ -582,7 +563,7 @@ function SchedulingCanvas({ step, problem }) {
                 </span>
               )}
               {domain && domain.length === 0 && (
-                <span className="csp-course-domain" style={{ color: '#ef4444' }}>
+                <span className="csp-course-domain csp-course-domain-empty">
                   [∅]
                 </span>
               )}
@@ -594,7 +575,6 @@ function SchedulingCanvas({ step, problem }) {
   );
 }
 
-// ─── Info Sidebar ─────────────────────────────────────────────
 function CspInfoPanel({ step, problem, algo, nQueensN }) {
   if (!step) return (
     <div className="csp-info-panel">
@@ -612,7 +592,6 @@ function CspInfoPanel({ step, problem, algo, nQueensN }) {
   if (problem === 'sudoku')      totalVars = 81;
   if (problem === 'scheduling')  totalVars = SCHEDULING_PROBLEM.courses.length;
 
-  // Kiểm tra domain đã thu hẹp
   const domains = step.domains || step.schedDomains || {};
   const hasDomains = Object.keys(domains).length > 0;
 
@@ -692,7 +671,7 @@ function CspInfoPanel({ step, problem, algo, nQueensN }) {
       {/* Assignment hiện tại */}
       {problem === 'mapColoring' && assigned > 0 && (
         <div className="csp-assignment-list">
-          <div className="ds-title" style={{ marginTop: 8 }}>Assignment</div>
+          <div className="ds-title csp-assignment-title">Assignment</div>
           {Object.entries(assignment).map(([v, c]) => (
             <div key={v} className="csp-assign-row">
               <span className="csp-assign-var">{v}</span>
@@ -706,11 +685,11 @@ function CspInfoPanel({ step, problem, algo, nQueensN }) {
 
       {problem === 'scheduling' && assigned > 0 && (
         <div className="csp-assignment-list">
-          <div className="ds-title" style={{ marginTop: 8 }}>Lịch đã xếp</div>
+          <div className="ds-title csp-assignment-title">Lịch đã xếp</div>
           {Object.entries(assignment).map(([c, { slot, room }]) => (
             <div key={c} className="csp-assign-row">
               <span className="csp-assign-var">{c}</span>
-              <span className="csp-assign-val" style={{ fontSize: 10 }}>{slot} / {room}</span>
+              <span className="csp-assign-val csp-assign-schedule">{slot} / {room}</span>
             </div>
           ))}
         </div>
@@ -727,7 +706,6 @@ function CspInfoPanel({ step, problem, algo, nQueensN }) {
   );
 }
 
-// ─── Algo Description ─────────────────────────────────────────
 function AlgoDesc({ algo }) {
   const descs = {
     backtracking: <>
@@ -757,14 +735,14 @@ function AlgoDesc({ algo }) {
   };
   return (
     <div className="ctrl-section">
-      <div style={{ fontSize: 11, color: '#4a6b8a', lineHeight: 1.8 }}>
+      <div className="csp-algo-desc">
         {descs[algo]}
       </div>
     </div>
   );
 }
 
-// ─── Chú thích màu ───────────────────────────────────────────
+
 function Legend({ problem }) {
   const items = [
     { color: '#f59e0b', label: 'Đang xét' },
@@ -786,7 +764,7 @@ function Legend({ problem }) {
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────
+
 export default function CspPage() {
   const [problem, setProblem]   = useState('mapColoring');
   const [algo, setAlgo]         = useState('backtracking');
@@ -862,13 +840,13 @@ export default function CspPage() {
           {problem === 'nQueens' && (
             <div className="ctrl-section">
               <h3>Tham số</h3>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontSize: 11, color: '#4a6b8a' }}>N =</span>
+              <div className="csp-param-control">
+                <span className="csp-param-label">N =</span>
                 <input type="number" min="4" max="10" value={nQueensN}
                   onChange={e => { setNQueensN(Math.min(10, Math.max(4, parseInt(e.target.value)||6))); resetAll(); }}
-                  className="arr-input" style={{ width: 60 }} />
+                  className="arr-input" />
               </div>
-              <div style={{ fontSize: 10, color: '#4a6b8a', marginTop: 4 }}>
+              <div className="csp-param-hint">
                 Khuyến nghị N ≤ 8 để xem rõ animation
               </div>
             </div>
@@ -876,10 +854,10 @@ export default function CspPage() {
 
           <div className="ctrl-section">
             <h3>Chạy</h3>
-            <button className="btn-generate" style={{ width: '100%' }} onClick={runAlgo}>
+            <button className="btn-generate csp-btn-full" onClick={runAlgo}>
               ▶ Chạy 
             </button>
-            <button className="mode-btn danger" style={{ width: '100%', marginTop: 6 }} onClick={resetAll}>
+            <button className="mode-btn danger csp-btn-full" onClick={resetAll}>
               ↺ Reset
             </button>
           </div>
@@ -914,7 +892,7 @@ export default function CspPage() {
 
           <div className="ctrl-section">
             <h3>Thông tin</h3>
-            <div style={{ fontSize: 12, color: '#8b9eb5', lineHeight: 1.8 }}>
+            <div className="csp-info-details">
               <div>Bài toán: <b style={{ color: PROBLEMS[problem].color }}>{PROBLEMS[problem].name}</b></div>
               <div>Thuật toán: <b style={{ color: ALGOS[algo].color }}>{ALGOS[algo].name}</b></div>
               <div>Tổng bước: {steps.length}</div>

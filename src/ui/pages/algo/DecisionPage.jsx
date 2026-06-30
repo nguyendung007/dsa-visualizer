@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { decisionTreeID3, generateDataset, predict } from '../../../core/decision/index.js';
+import { decisionTreeID3, generateDataset, predict } from '../../../core/decision/index.ts';
 import { AnimationEngine } from '../../../shell/animation/AnimationEngine.js';
 import Controls from '../../components/Controls.jsx';
 import { useProgress } from '../../../context/ProgressContext.jsx';
@@ -22,7 +22,7 @@ export default function DecisionPage() {
   const engineRef = useRef(null);
   const { saveProgress } = useProgress();
 
-  // Reset trạng thái hoàn toàn khi đổi data hoặc thuật toán
+
   function resetState() {
     setSteps([]);
     setStepIdx(0);
@@ -48,7 +48,7 @@ export default function DecisionPage() {
     setSteps(s);
     setStepIdx(0);
     setCurStep(null);
-    setTree(null); // Không gán trước tree hoàn chỉnh ở đây nữa!
+    setTree(null); 
     
     const eng = new AnimationEngine({
       steps: s,
@@ -57,7 +57,6 @@ export default function DecisionPage() {
         setCurStep(step);
         setStepIdx(idx + 1);
         
-        // Cập nhật cây theo từng bước của animation để tạo hiệu ứng mọc cây
         if (step.tree) {
           setTree(step.tree);
         } else if (step.type === 'init') {
@@ -73,7 +72,6 @@ export default function DecisionPage() {
     saveProgress('decision', 'ID3');
   }
 
-  // Render Decision Tree với tọa độ tính toán động thông minh
   function renderTree(node, x = 500, y = 40, xOffset = 220) {
     if (!node) return null;
     
@@ -102,7 +100,6 @@ export default function DecisionPage() {
     const totalBranches = branches.length;
     
     branches.forEach(([value, child], i) => {
-      // Tính toán vị trí dàn đều các nhánh con không bị đè nhau
       const childX = x - (xOffset * (totalBranches - 1) / 2) + i * xOffset;
       const childY = y + 80;
       

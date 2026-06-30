@@ -5,9 +5,8 @@ import Controls from '../../components/Controls.jsx';
 import { useProgress } from '../../../context/ProgressContext.jsx';
 import './MazePage.css';
 
-// ─── Config ──────────────────────────────────────────────────────────────────
 const MAZE_ROWS = 21;
-const MAZE_COLS = 31;
+const MAZE_COLS = 48;
 
 const ALGOS = {
   bfs:      { name: 'BFS',      color: '#10b981', desc: 'Breadth-First Search — tìm đường ngắn nhất (số bước)' },
@@ -20,7 +19,6 @@ const ALGOS = {
 
 function key(r, c) { return `${r},${c}`; }
 
-// ─── Cell color logic ─────────────────────────────────────────────────────────
 function getCellState(r, c, maze, curStep, algo, start, goal, pathSet, heuristicType) {
   if (maze[r][c] === 1) return 'wall';
   const k = key(r, c);
@@ -65,7 +63,6 @@ const STATE_BRIGHT = {
   path:     '#34d399',
 };
 
-// ─── Step description ─────────────────────────────────────────────────────────
 function stepDesc(s, algo) {
   if (!s) return 'Nhấn ▶ để bắt đầu tìm đường';
   if (s.type === 'init')       return `Khởi tạo — bắt đầu từ ô (${s.node?.r},${s.node?.c})`;
@@ -87,7 +84,6 @@ function stepDesc(s, algo) {
   return '';
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
 export default function MazePage() {
   const [algo, setAlgo]           = useState('bfs');
   const [maze, setMaze]           = useState(() => generateMaze(MAZE_ROWS, MAZE_COLS));
@@ -99,7 +95,7 @@ export default function MazePage() {
   const [playing, setPlaying]     = useState(false);
   const [speed, setSpeed]         = useState(40);
   const [heuristicType, setHeuristicType] = useState('manhattan');
-  const [clickMode, setClickMode] = useState(null); // 'start' | 'goal' | null
+  const [clickMode, setClickMode] = useState(null); 
   const [pathSet, setPathSet]     = useState(null);
   const engineRef                 = useRef(null);
   const { saveProgress }          = useProgress();
@@ -107,7 +103,6 @@ export default function MazePage() {
   const rows = maze.length;
   const cols = maze[0].length;
 
-  // Cập nhật pathSet khi curStep thay đổi
   useEffect(() => {
     if (curStep?.path?.length > 0) {
       setPathSet(new Set(curStep.path.map(p => key(p.r, p.c))));
@@ -159,12 +154,10 @@ export default function MazePage() {
     }
   }
 
-  // Tính kích thước cell
-  const CELL = Math.min(Math.floor(560 / cols), Math.floor(340 / rows));
+  const CELL = Math.min(Math.floor(900 / cols), Math.floor(340 / rows));
   const svgW = cols * CELL;
   const svgH = rows * CELL;
 
-  // Stats
   const visitedCount = curStep?.visited?.size ?? curStep?.closedSet?.size ?? 0;
   const frontierCount = curStep?.frontier?.size ?? curStep?.openSet?.size ?? 0;
 

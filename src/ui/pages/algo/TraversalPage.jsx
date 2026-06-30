@@ -4,7 +4,7 @@ import { inorder, preorder, postorder, levelOrder, parseExpression, exprInfix, e
 import { AnimationEngine } from '../../../shell/animation/AnimationEngine.js';
 import Controls from '../../components/Controls.jsx';
 import { useProgress } from '../../../context/ProgressContext.jsx';
-import './TraversalPage.css';   // FIX 1: import đúng file CSS
+import './TraversalPage.css'; 
 
 const TRAVERSALS = {
   inorder:    { name: 'Inorder',     color: '#10b981', order: 'Trái → Gốc → Phải' },
@@ -21,7 +21,6 @@ const EXPR_MODES = {
 
 const W = 640, H = 300;
 
-// FIX 2: buildDefaultTree trả về cây mẫu thực sự thay vì null
 function cloneTree(node) {
   if (!node) return null;
   const n = new BSTNode(node.val);
@@ -32,7 +31,7 @@ function cloneTree(node) {
 }
 
 function buildDefaultTree() {
-  const values = [50, 30, 70, 20, 40, 60, 80];
+  const values = [];
   let root = null;
   for (const v of values) {
     root = bstInsert(root, v, []).root;
@@ -54,6 +53,11 @@ export default function TraversalPage() {
   const [playing, setPlaying]     = useState(false);
   const [speed, setSpeed]         = useState(500);
   const [resultArr, setResultArr] = useState([]);
+  
+  const [nodeSize, setNodeSize]           = useState(20);
+  const [edgeWidth, setEdgeWidth]         = useState(1.5);
+  const [fontSize, setFontSize]           = useState(12);
+  
   const engineRef = useRef(null);
   const { saveProgress } = useProgress();
 
@@ -100,7 +104,6 @@ export default function TraversalPage() {
     const v = parseInt(insertVal);
     if (isNaN(v)) return;
     setInsertVal('');
-    // FIX 3: dùng cloneTree thay vì JSON.parse — giữ đúng prototype BSTNode
     const res = bstInsert(cloneTree(root), v, []);
     setRoot(res.root);
     setSteps([]); setCurStep(null); setResultArr([]);
@@ -111,7 +114,6 @@ export default function TraversalPage() {
     setSteps([]); setCurStep(null); setResultArr([]);
   }
 
-  // Build layouts
   const treeLayout = treeToLayout(root, W);
   const exprLayout = exprRoot ? buildExprLayout(exprRoot, W) : { nodes: [], edges: [] };
   const displayLayout = mode === 'tree' ? treeLayout : exprLayout;
@@ -207,25 +209,27 @@ export default function TraversalPage() {
             <svg width="100%" viewBox={`0 0 ${W} ${H}`} className="trav-svg">
               {displayLayout.edges.map((e, i) => (
                 <line key={i}
-                  x1={e.from.x} y1={e.from.y + 10}
-                  x2={e.to.x}   y2={e.to.y   - 10}
-                  stroke="#1e3a5f" strokeWidth="1.5"
+                  x1={e.from.x} y1={e.from.y + (nodeSize || 20)}
+                  x2={e.to.x}   y2={e.to.y   - (nodeSize || 20)}
+                  stroke="#1e3a5f" strokeWidth={edgeWidth}
                 />
               ))}
               {displayLayout.nodes.map((n, i) => {
                 const col = nodeColor(n.val);
                 const isOp = mode === 'expr' && ['+', '-', '*', '/'].includes(String(n.val));
+                const radius = isOp ? (nodeSize || 20) * 0.9 : (nodeSize || 20);
+                const txtSize = isOp ? (fontSize || 12) * 1.25 : (fontSize || 12);
                 return (
                   <g key={i}>
                     <circle
-                      cx={n.x} cy={n.y} r={isOp ? 18 : 20}
+                      cx={n.x} cy={n.y} r={radius}
                       fill={col} stroke="#f2f4fa" strokeWidth="2"
                       style={{ transition: 'fill 0.3s' }}
                     />
                     <text
                       x={n.x} y={n.y}
                       textAnchor="middle" dominantBaseline="central"
-                      fill="white" fontSize={isOp ? 15 : 12}
+                      fill="white" fontSize={txtSize}
                       fontWeight="700" fontFamily="monospace"
                     >
                       {n.val}
@@ -322,6 +326,50 @@ export default function TraversalPage() {
                 </button>
               </div>
 
+              {/* ─── Visual Controls ─────────────────────────────────── */}
+              <div className="ctrl-section" style={{ borderTop: '1px solid #e2e8f0', paddingTop: 12 }}>
+                <h3>🎨 Hiển thị cây</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <label style={{ fontSize: 12, color: '#4a6b8a', minWidth: 70 }}>Kích cỡ node</label>
+                    <input
+                      type="range"
+                      min="12"
+                      max="35"
+                      value={nodeSize}
+                      onChange={e => setNodeSize(parseInt(e.target.value))}
+                      style={{ flex: 1, margin: '0 10px' }}
+                    />
+                    <span style={{ fontSize: 12, fontWeight: 'bold', minWidth: 30, textAlign: 'right' }}>{nodeSize}px</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <label style={{ fontSize: 12, color: '#4a6b8a', minWidth: 70 }}>Độ dày edge</label>
+                    <input
+                      type="range"
+                      min="1"
+                      max="6"
+                      step="0.5"
+                      value={edgeWidth}
+                      onChange={e => setEdgeWidth(parseFloat(e.target.value))}
+                      style={{ flex: 1, margin: '0 10px' }}
+                    />
+                    <span style={{ fontSize: 12, fontWeight: 'bold', minWidth: 30, textAlign: 'right' }}>{edgeWidth}px</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <label style={{ fontSize: 12, color: '#4a6b8a', minWidth: 70 }}>Cỡ chữ</label>
+                    <input
+                      type="range"
+                      min="8"
+                      max="20"
+                      value={fontSize}
+                      onChange={e => setFontSize(parseInt(e.target.value))}
+                      style={{ flex: 1, margin: '0 10px' }}
+                    />
+                    <span style={{ fontSize: 12, fontWeight: 'bold', minWidth: 30, textAlign: 'right' }}>{fontSize}px</span>
+                  </div>
+                </div>
+              </div>
+
               <div className="ctrl-section">
                 <h3>Duyệt cây</h3>
                 <button className="btn-generate" style={{ width: '100%' }} onClick={runTraversal}>
@@ -369,6 +417,50 @@ export default function TraversalPage() {
                 </div>
               </div>
 
+              {/* ─── Visual Controls for Expression ─────────────────── */}
+              <div className="ctrl-section" style={{ borderTop: '1px solid #e2e8f0', paddingTop: 12 }}>
+                <h3>🎨 Hiển thị biểu thức</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <label style={{ fontSize: 12, color: '#4a6b8a', minWidth: 70 }}>Kích cỡ node</label>
+                    <input
+                      type="range"
+                      min="12"
+                      max="35"
+                      value={nodeSize}
+                      onChange={e => setNodeSize(parseInt(e.target.value))}
+                      style={{ flex: 1, margin: '0 10px' }}
+                    />
+                    <span style={{ fontSize: 12, fontWeight: 'bold', minWidth: 30, textAlign: 'right' }}>{nodeSize}px</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <label style={{ fontSize: 12, color: '#4a6b8a', minWidth: 70 }}>Độ dày edge</label>
+                    <input
+                      type="range"
+                      min="1"
+                      max="6"
+                      step="0.5"
+                      value={edgeWidth}
+                      onChange={e => setEdgeWidth(parseFloat(e.target.value))}
+                      style={{ flex: 1, margin: '0 10px' }}
+                    />
+                    <span style={{ fontSize: 12, fontWeight: 'bold', minWidth: 30, textAlign: 'right' }}>{edgeWidth}px</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <label style={{ fontSize: 12, color: '#4a6b8a', minWidth: 70 }}>Cỡ chữ</label>
+                    <input
+                      type="range"
+                      min="8"
+                      max="20"
+                      value={fontSize}
+                      onChange={e => setFontSize(parseInt(e.target.value))}
+                      style={{ flex: 1, margin: '0 10px' }}
+                    />
+                    <span style={{ fontSize: 12, fontWeight: 'bold', minWidth: 30, textAlign: 'right' }}>{fontSize}px</span>
+                  </div>
+                </div>
+              </div>
+
               <div className="ctrl-section">
                 <h3>Giải thích</h3>
                 <div style={{ fontSize: 11, color: '#4a6b8a', lineHeight: 1.8 }}>
@@ -407,7 +499,6 @@ export default function TraversalPage() {
   );
 }
 
-// Build expression tree layout
 function buildExprLayout(root, W = 640) {
   if (!root) return { nodes: [], edges: [] };
   const nodes = [], edges = [];

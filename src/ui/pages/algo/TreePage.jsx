@@ -3,17 +3,20 @@ import { BSTNode, bstInsert, bstDelete, avlInsert, bstFloor, bstCeil, treeToLayo
 import { AnimationEngine } from '../../../shell/animation/AnimationEngine.js';
 import Controls from '../../components/Controls.jsx';
 import { useProgress } from '../../../context/ProgressContext.jsx';
-import './TreePage.css';   // FIX 1: import đúng file CSS của chính nó
+import './TreePage.css';   
 
-const W = 680, H = 380;  // FIX 2: width đồng bộ với treeToLayout(root, 680)
+const W = 680, H = 380; 
 
-// ─── Tree SVG Component ──────────────────────────────────────
-function TreeSVG({ layout, highlight, rotatingNodes, rotationPhase }) {
+function TreeSVG({ layout, highlight, rotatingNodes, rotationPhase, nodeSize, edgeWidth, fontSize }) {
+  const radius = nodeSize || 22;
+  const strokeW = edgeWidth || 2;
+  const textSize = fontSize || 12;
+  
   return (
     <svg width="100%" viewBox={`0 0 ${W} ${H}`} className="tree-svg">
       {layout.edges.map((e, i) => (
-        <line key={i} x1={e.from.x} y1={e.from.y + 10} x2={e.to.x} y2={e.to.y - 10}
-          stroke="#1e3a5f" strokeWidth="2" />
+        <line key={i} x1={e.from.x} y1={e.from.y + radius} x2={e.to.x} y2={e.to.y - radius}
+          stroke="#1e3a5f" strokeWidth={strokeW} />
       ))}
       {layout.nodes.map((n, i) => {
         const isRotating = rotatingNodes?.includes(n.val);
@@ -33,12 +36,12 @@ function TreeSVG({ layout, highlight, rotatingNodes, rotationPhase }) {
             animation: `${rotationPhase === 'pre' ? 'rotPre' : 'rotPost'} 0.4s ease`,
             transformOrigin: `${n.x}px ${n.y}px`, transformBox: 'fill-box'
           } : {}}>
-            <circle cx={n.x} cy={n.y} r={22} fill={col} stroke="#ffffff" strokeWidth="2.5"
+            <circle cx={n.x} cy={n.y} r={radius} fill={col} stroke="#ffffff" strokeWidth="2.5"
               style={{ transition: 'fill 0.3s, cx 0.4s, cy 0.4s' }} />
             <text x={n.x} y={n.y} textAnchor="middle" dominantBaseline="central"
-              fill="white" fontSize="12" fontWeight="700" fontFamily="monospace">{n.val}</text>
+              fill="white" fontSize={textSize} fontWeight="700" fontFamily="monospace">{n.val}</text>
             {n.h !== undefined && (
-              <text x={n.x + 22} y={n.y - 14} textAnchor="start" fill="#4a6b8a" fontSize="9" fontFamily="monospace">
+              <text x={n.x + radius + 2} y={n.y - radius + 2} textAnchor="start" fill="#4a6b8a" fontSize={Math.max(8, textSize - 3)} fontFamily="monospace">
                 h={n.h}
               </text>
             )}
@@ -54,13 +57,11 @@ function TreeSVG({ layout, highlight, rotatingNodes, rotationPhase }) {
   );
 }
 
-// ─── Algo Config ──────────────────────────────────────────────
 const ALGOS = {
   bst: { name: 'BST', color: '#58a6ff', desc: 'Binary Search Tree' },
   avl: { name: 'AVL Tree', color: '#f97316', desc: 'Self-balancing BST' },
 };
 
-// ─── Main Component ──────────────────────────────────────────
 export default function TreePage() {
   const [algo, setAlgo]                   = useState('bst');
   const [root, setRoot]                   = useState(null);
@@ -79,11 +80,14 @@ export default function TreePage() {
   const [rotatingNodes, setRotatingNodes] = useState([]);
   const [rotationPhase, setRotationPhase] = useState('');
   const [liveRoot, setLiveRoot]           = useState(null);
+  
+  const [nodeSize, setNodeSize]           = useState(22);
+  const [edgeWidth, setEdgeWidth]         = useState(2);
+  const [fontSize, setFontSize]           = useState(12);
 
   const engineRef = useRef(null);
   const { saveProgress } = useProgress();
 
-  // ── Helper: clone node tree (tránh mutation) ─────────────
   function cloneTree(node) {
     if (!node) return null;
     const n = new BSTNode(node.val);
@@ -93,7 +97,6 @@ export default function TreePage() {
     return n;
   }
 
-  // ── Helper: extract highlight từ step ────────────────────
   function getHighlight(step) {
     if (!step) return {};
     const h = {};
@@ -111,7 +114,6 @@ export default function TreePage() {
     return h;
   }
 
-  // ── Step description ──────────────────────────────────────
   function getStepDesc(s) {
     if (!s) return 'Thêm phần tử để xem cây';
     if (s.type === 'compare')       return `So sánh ${s.val} với nút ${s.comparing}: ${s.val < s.comparing ? 'đi trái ←' : 'đi phải →'}`;
@@ -131,12 +133,11 @@ export default function TreePage() {
     return s.desc || '';
   }
 
-  // ── Animation engine ──────────────────────────────────────
   function animate(newSteps, newRoot, actionName = '') {
     engineRef.current?.pause();
     setSteps(newSteps);
     setStepIdx(0);
-    setLiveRoot(cloneTree(root));  // FIX 3: dùng cloneTree thay vì JSON.parse
+    setLiveRoot(cloneTree(root));  
 
     const eng = new AnimationEngine({
       steps: newSteps,
@@ -169,7 +170,6 @@ export default function TreePage() {
     setPlaying(true);
   }
 
-  // ── Reset state ────────────────────────────────────────────
   function resetAll() {
     engineRef.current?.pause();
     setRoot(null);
@@ -185,14 +185,13 @@ export default function TreePage() {
     setRotationPhase('');
   }
 
-  // ── Handlers ──────────────────────────────────────────────
   function handleInsert() {
     const v = parseInt(insertVal);
     if (isNaN(v)) return;
     setInsertVal('');
     const s = [];
     const res = algo === 'avl'
-      ? avlInsert(cloneTree(root), v, s)   // FIX 4: clone trước khi truyền
+      ? avlInsert(cloneTree(root), v, s)  
       : bstInsert(cloneTree(root), v, s);
     setLog(prev => [`Chèn ${v} vào ${ALGOS[algo].name}`, ...prev.slice(0, 9)]);
     animate(s, res.root, `Insert ${v}`);
@@ -203,7 +202,7 @@ export default function TreePage() {
     if (isNaN(v) || !root) return;
     setDeleteVal('');
     const s = [];
-    const res = bstDelete(cloneTree(root), v, s);  // FIX 4: clone
+    const res = bstDelete(cloneTree(root), v, s);
     setLog(prev => [`Xóa ${v} khỏi BST`, ...prev.slice(0, 9)]);
     animate(s, res.root, `Delete ${v}`);
   }
@@ -212,7 +211,7 @@ export default function TreePage() {
     const v = parseInt(floorVal);
     if (isNaN(v) || !root) return;
     const s = [];
-    const res = bstFloor(cloneTree(root), v, s);   // FIX 4: clone
+    const res = bstFloor(cloneTree(root), v, s); 
     setFloorResult(res.floor);
     setLog(prev => [`Floor(${v}) = ${res.floor ?? 'không tồn tại'}`, ...prev.slice(0, 9)]);
     animate(s, root, `Floor ${v}`);
@@ -222,7 +221,7 @@ export default function TreePage() {
     const v = parseInt(ceilVal);
     if (isNaN(v) || !root) return;
     const s = [];
-    const res = bstCeil(cloneTree(root), v, s);    // FIX 4: clone
+    const res = bstCeil(cloneTree(root), v, s);   
     setCeilResult(res.ceil);
     setLog(prev => [`Ceil(${v}) = ${res.ceil ?? 'không tồn tại'}`, ...prev.slice(0, 9)]);
     animate(s, root, `Ceil ${v}`);
@@ -234,7 +233,6 @@ export default function TreePage() {
     let allSteps = [];
     for (const v of vals) {
       const s = [];
-      // FIX 5: clone r mỗi bước, không dùng null trực tiếp với avlInsert
       const res = algo === 'avl'
         ? avlInsert(cloneTree(r), v, s)
         : bstInsert(cloneTree(r), v, s);
@@ -245,8 +243,6 @@ export default function TreePage() {
     animate(allSteps, r, 'Bulk Insert');
   }
 
-  // ── Render ──────────────────────────────────────────────────
-  // FIX 6: truyền width W để treeToLayout tính đúng tọa độ
   const layout = treeToLayout(liveRoot ?? root, W);
   const hl = getHighlight(curStep);
 
@@ -301,6 +297,9 @@ export default function TreePage() {
                 highlight={hl}
                 rotatingNodes={rotatingNodes}
                 rotationPhase={rotationPhase}
+                nodeSize={nodeSize}
+                edgeWidth={edgeWidth}
+                fontSize={fontSize}
               />
             </div>
           </div>
@@ -345,6 +344,49 @@ export default function TreePage() {
             >
               ⚄ Tự động chèn mảng mẫu
             </button>
+          </div>
+
+          {/* ─── Visual Controls ─────────────────────────────────── */}
+          <div className="ctrl-section" style={{ borderTop: '1px solid #e2e8f0', paddingTop: 12 }}>
+            <h3>🎨 Hiển thị cây</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <label style={{ fontSize: 12, color: '#4a6b8a', minWidth: 70 }}>Kích cỡ node</label>
+                <input
+                  type="range"
+                  min="12"
+                  max="35"
+                  value={nodeSize}
+                  onChange={e => setNodeSize(parseInt(e.target.value))}
+                  style={{ flex: 1, margin: '0 10px' }}
+                />
+                <span style={{ fontSize: 12, fontWeight: 'bold', minWidth: 30, textAlign: 'right' }}>{nodeSize}px</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <label style={{ fontSize: 12, color: '#4a6b8a', minWidth: 70 }}>Độ dày edge</label>
+                <input
+                  type="range"
+                  min="1"
+                  max="6"
+                  value={edgeWidth}
+                  onChange={e => setEdgeWidth(parseInt(e.target.value))}
+                  style={{ flex: 1, margin: '0 10px' }}
+                />
+                <span style={{ fontSize: 12, fontWeight: 'bold', minWidth: 30, textAlign: 'right' }}>{edgeWidth}px</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <label style={{ fontSize: 12, color: '#4a6b8a', minWidth: 70 }}>Cỡ chữ</label>
+                <input
+                  type="range"
+                  min="8"
+                  max="20"
+                  value={fontSize}
+                  onChange={e => setFontSize(parseInt(e.target.value))}
+                  style={{ flex: 1, margin: '0 10px' }}
+                />
+                <span style={{ fontSize: 12, fontWeight: 'bold', minWidth: 30, textAlign: 'right' }}>{fontSize}px</span>
+              </div>
+            </div>
           </div>
 
           <div className="ctrl-section">

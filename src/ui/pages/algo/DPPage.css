@@ -1,0 +1,623 @@
+/* ============================================================
+   DYNAMIC PROGRAMMING PAGE STYLES
+   ============================================================ */
+
+/* ----- 1. WORKSPACE LAYOUT ----- */
+.dp-workspace {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  height: calc(100vh - 200px);
+}
+
+.dp-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 24px 12px;
+  border-right: 1px solid #1e2d3d;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.dp-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  padding: 14px 18px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: rgba(13, 17, 23, 0.4);
+}
+
+/* ----- 2. CUSTOM SCROLLBAR ----- */
+.dp-main::-webkit-scrollbar,
+.dp-sidebar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.dp-main::-webkit-scrollbar-track,
+.dp-sidebar::-webkit-scrollbar-track {
+  background: #0d1117;
+  border-radius: 4px;
+}
+
+.dp-main::-webkit-scrollbar-thumb,
+.dp-sidebar::-webkit-scrollbar-thumb {
+  background: #1e2d3d;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.dp-main::-webkit-scrollbar-thumb:hover,
+.dp-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #2d4a6a;
+}
+
+.dp-main,
+.dp-sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: #1e2d3d #0d1117;
+}
+
+/* ----- 3. STEP DESCRIPTION ----- */
+.step-desc {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 6px 0;
+}
+
+.step-badge {
+  padding: 3px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #58a6ff;
+  white-space: nowrap;
+  background: rgba(88, 166, 255, 0.08);
+  border: 1px solid rgba(88, 166, 255, 0.15);
+  border-radius: 12px;
+}
+
+.step-text {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: #c9d8e8;
+}
+
+/* ----- 4. DP TABLE ----- */
+.dp-table-wrap {
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 8px;
+  padding: 12px 16px;
+  flex-shrink: 0;
+  overflow-x: auto;
+}
+
+.dp-table-title {
+  font-size: 10px;
+  color: #4a6b8a;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(30, 45, 61, 0.3);
+  padding-bottom: 4px;
+}
+
+.dp-table-2d {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dp-row {
+  display: flex;
+  gap: 2px;
+}
+
+.dp-table-1d {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.dp-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 36px;
+  padding: 4px 8px;
+  background: #132135;
+  border: 1px solid #1e2d3d;
+  border-radius: 4px;
+  font-family: 'Fira Code', Consolas, monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: #8b9eb5;
+  transition: all 0.2s ease;
+}
+
+.dp-cell.highlight {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+  transform: scale(1.05);
+}
+
+.dp-cell-idx {
+  font-size: 8px;
+  color: #4a6b8a;
+  font-weight: 400;
+}
+
+.dp-cell-val {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+/* ----- 5. RESULT ----- */
+.dp-result {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 16px;
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.dp-result-label {
+  font-size: 11px;
+  color: #4a6b8a;
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.dp-result-value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #10b981;
+  font-family: 'Fira Code', Consolas, monospace;
+}
+
+.dp-result-value.coins {
+  color: #58a6ff;
+}
+
+.dp-result-value.items {
+  color: #f59e0b;
+  font-size: 13px;
+}
+
+.dp-result-value.lcs {
+  color: #a78bfa;
+}
+
+.dp-result-value.cuts {
+  color: #f97316;
+}
+
+/* ----- 6. LCS VISUALIZATION ----- */
+.lcs-viz {
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 8px;
+  padding: 12px 16px;
+  flex-shrink: 0;
+}
+
+.lcs-strings {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lcs-str {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.lcs-label {
+  font-size: 10px;
+  color: #4a6b8a;
+  font-weight: 700;
+  min-width: 30px;
+  text-transform: uppercase;
+}
+
+.lcs-char {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  background: #132135;
+  border: 1px solid #1e2d3d;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Fira Code', Consolas, monospace;
+  color: #8b9eb5;
+  transition: all 0.2s;
+}
+
+.lcs-char.active {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+  transform: scale(1.1);
+}
+
+.lcs-result {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #1e2d3d;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lcs-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #a78bfa;
+  font-family: 'Fira Code', Consolas, monospace;
+}
+
+/* ----- 7. KNAPSACK ITEMS ----- */
+.knap-items {
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 8px;
+  padding: 12px 16px;
+  flex-shrink: 0;
+}
+
+.knap-label {
+  font-size: 10px;
+  color: #4a6b8a;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.knap-item-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.knap-item {
+  padding: 4px 10px;
+  background: #132135;
+  border: 1px solid #1e2d3d;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: 'Fira Code', Consolas, monospace;
+  color: #8b9eb5;
+  transition: all 0.2s;
+}
+
+.knap-item.selected {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.08);
+  color: #f59e0b;
+}
+
+/* ----- 8. SIDEBAR CONTROLS ----- */
+.ctrl-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ctrl-section h3 {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #4a6b8a;
+  letter-spacing: 0.8px;
+  margin-bottom: 2px;
+  border-bottom: 1px solid rgba(30, 45, 61, 0.3);
+  padding-bottom: 4px;
+}
+
+/* ----- 9. INPUT STYLES ----- */
+.arr-input {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #e2e8f0;
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 6px;
+  outline: none;
+  font-family: 'Fira Code', Consolas, monospace;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.arr-input:focus {
+  border-color: #58a6ff;
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+}
+
+.arr-input::placeholder {
+  color: #4a6b8a;
+  font-size: 11px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.arr-input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.arr-input[type="number"]::-webkit-outer-spin-button,
+.arr-input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* ----- 10. DP PARAMS ----- */
+.dp-params {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dp-params label {
+  font-size: 11px;
+  color: #4a6b8a;
+  font-weight: 500;
+}
+
+.dp-param-group {
+  display: flex;
+  gap: 4px;
+}
+
+.dp-method-btn {
+  flex: 1;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #8b9eb5;
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.dp-method-btn:hover {
+  border-color: #4a6b8a;
+  color: #c9d8e8;
+}
+
+.dp-method-btn.active {
+  border-color: #58a6ff;
+  background: rgba(88, 166, 255, 0.08);
+  color: #58a6ff;
+}
+
+/* ----- 11. BUTTONS ----- */
+.btn-generate {
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  background: #58a6ff;
+  border: none;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.btn-generate:hover {
+  background: #4a8fd4;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(88, 166, 255, 0.2);
+}
+
+.btn-generate:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-random {
+  padding: 4px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #10b981;
+  cursor: pointer;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.btn-random:hover {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: #10b981;
+}
+
+/* ----- 12. EXAMPLES ----- */
+.dp-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.dp-examples .btn-random {
+  flex: 0 0 auto;
+}
+
+/* ----- 13. INFO ----- */
+.dp-info {
+  font-size: 11px;
+  color: #4a6b8a;
+  line-height: 1.7;
+}
+
+.dp-info p {
+  margin: 0;
+}
+
+.dp-complexity {
+  margin-top: 4px;
+  color: #58a6ff;
+  font-family: 'Fira Code', Consolas, monospace;
+}
+
+/* ----- 14. RESPONSIVE ----- */
+@media (max-width: 1024px) {
+  .dp-sidebar {
+    width: 230px;
+    padding: 12px 14px;
+  }
+}
+
+@media (max-width: 900px) {
+  .dp-workspace {
+    flex-direction: column;
+    height: auto;
+    min-height: calc(100vh - 200px);
+  }
+
+  .dp-main {
+    border-right: none;
+    border-bottom: 1px solid #1e2d3d;
+    padding: 0 16px 12px;
+    min-height: 400px;
+  }
+
+  .dp-sidebar {
+    width: 100%;
+    padding: 14px 16px;
+    background: transparent;
+  }
+
+  .dp-cell {
+    min-width: 30px;
+    padding: 3px 6px;
+    font-size: 11px;
+  }
+
+  .dp-cell-val {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .dp-main {
+    padding: 0 12px 10px;
+    min-height: 350px;
+  }
+
+  .dp-sidebar {
+    padding: 10px 12px;
+    gap: 12px;
+  }
+
+  .step-desc {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    min-height: 32px;
+  }
+
+  .step-badge {
+    font-size: 10px;
+    padding: 2px 10px;
+  }
+
+  .step-text {
+    font-size: 12px;
+  }
+
+  .arr-input {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .btn-generate {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+
+  .ctrl-section h3 {
+    font-size: 9px;
+  }
+
+  .dp-table-2d {
+    font-size: 10px;
+  }
+
+  .dp-cell {
+    min-width: 24px;
+    padding: 2px 4px;
+    font-size: 10px;
+  }
+
+  .dp-cell-idx {
+    font-size: 6px;
+  }
+
+  .dp-cell-val {
+    font-size: 10px;
+  }
+
+  .dp-result {
+    padding: 8px 12px;
+  }
+
+  .dp-result-value {
+    font-size: 13px;
+  }
+
+  .lcs-char {
+    min-width: 22px;
+    height: 22px;
+    font-size: 12px;
+  }
+
+  .dp-params {
+    gap: 4px;
+  }
+
+  .dp-params label {
+    font-size: 10px;
+  }
+
+  .dp-method-btn {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+}
+
+/* ----- 15. UTILITY ----- */
+.arr-input:focus-visible,
+button:focus-visible {
+  outline: 2px solid #58a6ff;
+  outline-offset: 2px;
+}
+
+.btn-generate,
+.btn-random,
+.dp-method-btn {
+  user-select: none;
+}

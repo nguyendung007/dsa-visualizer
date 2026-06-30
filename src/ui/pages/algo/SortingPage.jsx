@@ -54,7 +54,7 @@ export default function SortingPage() {
     return '#1e3a5f';
   }, []);
 
-  // FIX: thêm eng.play() + setPlaying(true)
+
   function run(arr) {
     engineRef.current?.pause();
     const s = allAlgos[algo].fn(arr);
@@ -77,8 +77,8 @@ export default function SortingPage() {
       },
     });
     engineRef.current = eng;
-    eng.play();         // FIX: gọi play() ngay
-    setPlaying(true);   // FIX: cập nhật state
+    eng.play();       
+    setPlaying(true);  
   }
 
   function handleGenerate() {
@@ -93,7 +93,7 @@ export default function SortingPage() {
 }
 
 function handleRandom() {
-  const arr = randomArr(); // randomArr() đã tạo số dương (5-85) nên không cần guard
+  const arr = randomArr(); 
   setInputVal('');
   setBaseArray(arr);
   run(arr);
@@ -130,31 +130,34 @@ function handleRandom() {
       </div>
 
       <div className="algo-tabs">
-        {Object.entries(allAlgos).map(([k, v]) => (
-          <button key={k} className={`algo-tab ${algo === k ? 'active' : ''}`}
-            style={{ '--tab-color': v.color }}
-            onClick={() => setAlgo(k)}>
-            {v.name}
-          </button>
-        ))}
-        <button className="algo-tab" style={{ borderStyle: 'dashed', color: '#58a6ff' }}
-  onClick={() => setShowModal(true)}>
-  ＋ Thêm
-</button>
+  {/* Nhóm các nút thuật toán và nút Thêm lại với nhau */}
+  <div className="algo-buttons-group">
+    {Object.entries(allAlgos).map(([k, v]) => (
+      <button key={k} className={`algo-tab ${algo === k ? 'active' : ''}`}
+        style={{ '--tab-color': v.color }}
+        onClick={() => setAlgo(k)}>
+        {v.name}
+      </button>
+    ))}
+    <button className="algo-tab btn-add-tab" onClick={() => setShowModal(true)}>
+      ＋ Thêm
+    </button>
+  </div>
 
-        <div className="scale-selector">
-          <span className="scale-label">📏 Scale: </span>
-          <div className="scale-buttons">
-            {['linear', 'log', 'sqrt', 'cbrt'].map(m => (
-              <button key={m} className={`scale-btn ${scaleMode === m ? 'active' : ''}`}
-                onClick={() => setScaleMode(m)}>
-                {m === 'sqrt' ? '√ Sqrt' : m === 'cbrt' ? '³√ Cbrt' : m.charAt(0).toUpperCase() + m.slice(1)}
-              </button>
-            ))}
-          </div>
-          <p>Có thể điều chỉnh các loại scale ở đây để dễ nhìn hơn</p>
-        </div>
-      </div>
+  {/* Cụm Scale Selector được chuẩn hóa */}
+  <div className="scale-selector" title="Có thể điều chỉnh các loại scale ở đây để dễ nhìn hơn">
+    <span className="scale-label">📏 Scale:</span>
+    <div className="scale-buttons">
+      {['linear', 'log', 'sqrt', 'cbrt'].map(m => (
+        <button key={m} className={`scale-btn ${scaleMode === m ? 'active' : ''}`}
+          onClick={() => setScaleMode(m)}>
+          {m === 'sqrt' ? '√ Sqrt' : m === 'cbrt' ? '³√ Cbrt' : m.charAt(0).toUpperCase() + m.slice(1)}
+        </button>
+      ))}
+    </div>
+    <span className="scale-hint-text">Có thể điều chỉnh các loại scale ở đây để dễ nhìn hơn</span>
+  </div>
+</div>
 
       {showModal && (
         <CustomAlgoModal

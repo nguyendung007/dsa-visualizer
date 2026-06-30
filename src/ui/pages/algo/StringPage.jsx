@@ -1,7 +1,3 @@
-// Fix: runSteps() tự gọi eng.play() + setPlaying(true) — bỏ các lệnh play() rải rác
-// Fix: thêm useProgress, saveProgress trong onDone
-// Fix: thêm nút Clear TST (setTstRoot(null) + setTstWords([]))
-// Fix: stepDesc thêm xử lý 'roll' step từ rolling hash Rabin-Karp
 import { useState, useRef } from 'react';
 import {
   tstInsert, tstSearch,
@@ -39,7 +35,6 @@ export default function StringPage() {
   const [suffixInput, setSuffixInput] = useState('mississippi');
   const [radixInput, setRadixInput] = useState('she sells sea shells at the shore');
 
-  // TST state
   const [tstRoot, setTstRoot]       = useState(null);
   const [tstWords, setTstWords]     = useState([]);
   const [tstInput, setTstInput]     = useState('');
@@ -107,7 +102,6 @@ export default function StringPage() {
     runSteps(s, `TST Search "${word}"`);
   }
 
-  // FIX: thêm nút Clear TST
   function handleTstClear() {
     setTstRoot(null);
     setTstWords([]);
@@ -130,7 +124,6 @@ export default function StringPage() {
     if (s.type === 'pattern_hash')  return `Hash pattern="${s.pattern}": ${s.hash} (base=${s.base})`;
     if (s.type === 'window')        return `Cửa sổ tại pos=${s.pos}, hash=${s.hash} ${s.match ? '→ khớp hash!' : '→ không khớp'}`;
     if (s.type === 'hash_collision') return `⚠ Va chạm hash tại pos=${s.pos}, kiểm tra ký tự...`;
-    // FIX: hiển thị rolling hash step
     if (s.type === 'roll')          return `Rolling hash: bỏ '${s.removed}', thêm '${s.added}' → hash mới: ${s.newHash}`;
     if (s.type === 'verify')        return `Xác minh: text[${s.ti}]='${s.char_t}' vs pattern[${s.pi}]='${s.char_p}'`;
     if (s.type === 'done')          return `✓ Xong! ${s.matches?.length ? `Tìm thấy ${s.matches.length} khớp: ${s.matches.join(', ')}` : 'Không tìm thấy'}`;
@@ -492,7 +485,6 @@ export default function StringPage() {
   );
 }
 
-// TST SVG Visualizer
 function TSTViz({ root, curStep }) {
   if (!root) return <div className="empty-msg">TST rỗng — chèn từ để bắt đầu</div>;
   const nodes = [], edges = [];

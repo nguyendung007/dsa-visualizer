@@ -1,84 +1,178 @@
+/* ============================================================
+   GRAPH PAGE STYLES
+   Tối ưu code CSS - clean, cân đối, áp dụng phương án 4
+   ============================================================ */
+
+/* ----- 1. WORKSPACE LAYOUT ----- */
 .graph-workspace {
   display: flex;
   flex: 1;
   overflow: hidden;
+  height: calc(100vh - 200px);
 }
 
 .graph-main {
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 10px;
   padding: 0 24px 12px;
   border-right: 1px solid #1e2d3d;
   overflow: hidden;
+  min-height: 0;
 }
 
+.graph-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  padding: 14px 18px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: rgba(13, 17, 23, 0.4);
+}
 
+/* ----- 2. CUSTOM SCROLLBAR ----- */
+.graph-sidebar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.graph-sidebar::-webkit-scrollbar-track {
+  background: #0d1117;
+  border-radius: 4px;
+}
+
+.graph-sidebar::-webkit-scrollbar-thumb {
+  background: #1e2d3d;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.graph-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #2d4a6a;
+}
+
+.graph-sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: #1e2d3d #0d1117;
+}
+
+/* ----- 3. STEP DESCRIPTION ----- */
+.step-desc {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 6px 0;
+}
+
+.step-badge {
+  padding: 3px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #58a6ff;
+  white-space: nowrap;
+  background: rgba(88, 166, 255, 0.08);
+  border: 1px solid rgba(88, 166, 255, 0.15);
+  border-radius: 12px;
+}
+
+.step-text {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: #c9d8e8;
+}
+
+/* ----- 4. GRAPH SVG ----- */
 .graph-svg {
   flex: 1;
   background: #0d1117;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid #1e2d3d;
+  min-height: 280px;
+  transition: border-color 0.2s;
+  cursor: default;
 }
 
+.graph-svg:hover {
+  border-color: #2d4a6a;
+}
+
+.graph-node-group {
+  cursor: grab;
+}
+
+.graph-node-group:active {
+  cursor: grabbing;
+}
+
+/* ----- 5. DISTANCE TABLE ----- */
 .dist-table {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
   padding: 6px 0;
   min-height: 28px;
+  flex-shrink: 0;
 }
 
 .dist-cell {
   font-size: 11px;
-  font-family: monospace;
+  font-family: 'Fira Code', Consolas, monospace;
   background: #132135;
   border: 1px solid #1e3a5f;
-  border-radius: 4px;
-  padding: 2px 8px;
+  border-radius: 6px;
+  padding: 3px 10px;
   color: #58a6ff;
+  font-weight: 600;
+  transition: all 0.2s;
 }
 
-.graph-sidebar {
-  width: 220px;
-  flex-shrink: 0;
-  padding: 12px 14px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.dist-cell:hover {
+  border-color: #4a6b8a;
 }
 
-.mode-btns {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+.astar-dist-cell {
+  font-size: 10px;
 }
 
-/* Moved common controls to global CSS */
+.mst-cell {
+  color: #10b981;
+}
 
-/* Data structure panel */
+/* ----- 6. DATA STRUCTURE PANEL ----- */
 .graph-ds-panel {
   padding: 6px 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  flex-shrink: 0;
 }
 
 .ds-box {
   background: #0a0e1a;
   border: 1px solid #1e2d3d;
-  border-radius: 6px;
-  padding: 8px 12px;
+  border-radius: 8px;
+  padding: 10px 14px;
+  transition: border-color 0.2s;
+}
+
+.ds-box:hover {
+  border-color: #2d4a6a;
 }
 
 .ds-title {
   font-size: 10px;
   color: #4a6b8a;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   margin-bottom: 6px;
   font-weight: 700;
+  border-bottom: 1px solid rgba(30, 45, 61, 0.3);
+  padding-bottom: 4px;
 }
 
 .ds-queue-row {
@@ -93,20 +187,43 @@
   color: #4a6b8a;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  font-weight: 600;
+  padding: 0 4px;
 }
 
 .ds-empty {
   font-size: 11px;
   color: #1e3a5f;
   font-style: italic;
+  padding: 4px 0;
 }
 
-/* Data structure cell styles moved to global CSS */
+.ds-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 32px;
+  padding: 4px 8px;
+  background: #132135;
+  border: 1px solid #1e3a5f;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'Fira Code', Consolas, monospace;
+  color: #e2e8f0;
+  transition: all 0.2s;
+}
+
+.ds-cell.ds-front {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.08);
+}
 
 .ds-cell-sub {
   font-size: 9px;
   color: #4a6b8a;
   font-weight: 400;
+  margin-top: 1px;
 }
 
 .ds-dist-row {
@@ -121,16 +238,480 @@
   align-items: center;
   background: #132135;
   border: 1px solid #1e3a5f;
-  border-radius: 4px;
-  padding: 4px 8px;
+  border-radius: 6px;
+  padding: 4px 10px;
   min-width: 36px;
+  transition: all 0.2s;
 }
 
-.ds-dist-node { font-size: 11px; color: #58a6ff; font-family: monospace; font-weight: 700; }
-.ds-dist-val { font-size: 10px; color: #8b9eb5; font-family: monospace; }
+.ds-dist-cell:hover {
+  border-color: #4a6b8a;
+}
 
-.graph-algo-desc     { font-size: 11px; color: #4a6b8a; line-height: 1.7; }
-.graph-info-row      { font-size: 12px; color: #8b9eb5; line-height: 1.8; display: flex; flex-direction: column; gap: 2px; }
-.graph-start-select  { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
-.graph-edge-weight   { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
-.graph-edge-hint     { font-size: 11px; color: #f59e0b; margin-top: 6px; }
+.ds-dist-node {
+  font-size: 11px;
+  color: #58a6ff;
+  font-family: 'Fira Code', Consolas, monospace;
+  font-weight: 700;
+}
+
+.ds-dist-val {
+  font-size: 10px;
+  color: #8b9eb5;
+  font-family: 'Fira Code', Consolas, monospace;
+}
+
+.astar-cell {
+  border-color: #1e3a5f;
+}
+
+.astar-val {
+  font-size: 9px;
+}
+
+.bestfirst-cell {
+  border-color: #1e3a5f;
+}
+
+/* ----- 7. SCC STYLES ----- */
+.scc-row {
+  gap: 6px;
+}
+
+.scc-cell {
+  flex-direction: row;
+  gap: 4px;
+  min-width: 40px;
+  padding: 4px 10px;
+  border-width: 2px;
+}
+
+.scc-label {
+  font-size: 9px;
+  color: #4a6b8a;
+  font-weight: 400;
+}
+
+/* ----- 8. TOPO STYLES ----- */
+.topo-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.topo-cycle {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.topo-row {
+  gap: 2px;
+}
+
+.topo-cell {
+  flex-direction: row;
+  gap: 2px;
+  min-width: 24px;
+  padding: 4px 8px;
+}
+
+.topo-arrow {
+  color: #4a6b8a;
+  font-size: 9px;
+  margin: 0 2px;
+}
+
+/* ----- 9. MODE BUTTONS ----- */
+.mode-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mode-btn {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #8b9eb5;
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  flex: 1;
+  min-width: 60px;
+  text-align: center;
+}
+
+.mode-btn:hover {
+  border-color: #4a6b8a;
+  color: #c9d8e8;
+}
+
+.mode-btn.active {
+  background: #58a6ff;
+  border-color: #58a6ff;
+  color: #000;
+  font-weight: 700;
+}
+
+.mode-btn.danger {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.06);
+}
+
+.mode-btn.danger:hover {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.12);
+}
+
+/* ----- 10. SIDEBAR CONTROLS ----- */
+.ctrl-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ctrl-section h3 {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #4a6b8a;
+  letter-spacing: 0.8px;
+  margin-bottom: 2px;
+  border-bottom: 1px solid rgba(30, 45, 61, 0.3);
+  padding-bottom: 4px;
+}
+
+/* ----- 11. INPUT STYLES ----- */
+.arr-input {
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #e2e8f0;
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 6px;
+  outline: none;
+  font-family: 'Fira Code', Consolas, monospace;
+  width: 100%;
+  min-width: 50px;
+  transition: all 0.2s ease;
+}
+
+.arr-input:focus {
+  border-color: #58a6ff;
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+}
+
+.arr-input::placeholder {
+  color: #4a6b8a;
+  font-size: 12px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.arr-input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.arr-input[type="number"]::-webkit-outer-spin-button,
+.arr-input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+select.arr-input {
+  appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234a6b8a'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+}
+
+/* ----- 12. BUTTONS ----- */
+.btn-generate {
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  background: #58a6ff;
+  border: none;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.btn-generate:hover {
+  background: #4a8fd4;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(88, 166, 255, 0.2);
+}
+
+.btn-generate:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.w-full {
+  width: 100%;
+}
+
+/* ----- 13. EDGE WEIGHT INPUT ----- */
+.graph-edge-weight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 4px 0;
+}
+
+.graph-edge-weight label {
+  font-size: 11px;
+  color: #4a6b8a;
+  font-weight: 500;
+}
+
+.graph-edge-weight .arr-input {
+  width: 60px;
+  min-width: 50px;
+  padding: 4px 8px;
+  font-size: 13px;
+  text-align: center;
+}
+
+.graph-edge-hint {
+  font-size: 11px;
+  color: #f59e0b;
+  margin-top: 6px;
+  font-weight: 500;
+  padding: 4px 8px;
+  background: rgba(245, 158, 11, 0.06);
+  border-radius: 4px;
+  border: 1px solid rgba(245, 158, 11, 0.1);
+}
+
+/* ----- 14. START SELECT ----- */
+.graph-start-select {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.graph-start-select label {
+  font-size: 11px;
+  color: #4a6b8a;
+  font-weight: 500;
+}
+
+.graph-start-select .arr-input {
+  width: 100%;
+  margin-top: 2px;
+}
+
+/* ----- 15. A* HEURISTIC SELECTOR ----- */
+.heuristic-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.heuristic-selector label {
+  font-size: 11px;
+  color: #4a6b8a;
+  font-weight: 500;
+}
+
+.heuristic-selector .arr-input {
+  width: 100%;
+  margin-top: 2px;
+}
+
+/* ----- 16. INFO SECTION ----- */
+.graph-info-row {
+  font-size: 12px;
+  color: #8b9eb5;
+  line-height: 1.8;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.graph-info-row div {
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(30, 45, 61, 0.15);
+}
+
+.graph-info-row div:last-child {
+  border-bottom: none;
+}
+
+.graph-info-row b {
+  color: #c9d8e8;
+  font-weight: 600;
+}
+
+.graph-algo-desc {
+  font-size: 11px;
+  color: #4a6b8a;
+  line-height: 1.7;
+}
+
+.graph-algo-desc b {
+  color: #8b9eb5;
+}
+
+/* ----- 17. RESPONSIVE ----- */
+@media (max-width: 1024px) {
+  .graph-sidebar {
+    width: 230px;
+    padding: 12px 14px;
+  }
+}
+
+@media (max-width: 900px) {
+  .graph-workspace {
+    flex-direction: column;
+    height: auto;
+    min-height: calc(100vh - 200px);
+  }
+
+  .graph-main {
+    border-right: none;
+    border-bottom: 1px solid #1e2d3d;
+    padding: 0 16px 12px;
+    min-height: 450px;
+  }
+
+  .graph-sidebar {
+    width: 100%;
+    padding: 14px 16px;
+    background: transparent;
+  }
+
+  .graph-svg {
+    min-height: 200px;
+  }
+}
+
+@media (max-width: 600px) {
+  .graph-main {
+    padding: 0 12px 10px;
+    min-height: 350px;
+  }
+
+  .graph-sidebar {
+    padding: 10px 12px;
+    gap: 12px;
+  }
+
+  .step-desc {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    min-height: 32px;
+  }
+
+  .step-badge {
+    font-size: 10px;
+    padding: 2px 10px;
+  }
+
+  .step-text {
+    font-size: 12px;
+  }
+
+  .graph-svg {
+    min-height: 160px;
+    border-radius: 6px;
+  }
+
+  .arr-input {
+    padding: 6px 10px;
+    font-size: 13px;
+    min-width: 40px;
+  }
+
+  .btn-generate {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+
+  .ctrl-section h3 {
+    font-size: 9px;
+  }
+
+  .mode-btn {
+    padding: 4px 10px;
+    font-size: 11px;
+    min-width: 50px;
+  }
+
+  .ds-box {
+    padding: 8px 10px;
+  }
+
+  .ds-cell {
+    min-width: 28px;
+    padding: 3px 6px;
+    font-size: 11px;
+  }
+
+  .ds-dist-cell {
+    padding: 3px 8px;
+    min-width: 30px;
+  }
+
+  .dist-cell {
+    font-size: 10px;
+    padding: 2px 8px;
+  }
+
+  .graph-info-row {
+    font-size: 11px;
+  }
+
+  .graph-algo-desc {
+    font-size: 10px;
+  }
+
+  .graph-edge-weight .arr-input {
+    width: 50px;
+    min-width: 40px;
+  }
+}
+
+/* ----- 18. UTILITY & ACCESSIBILITY ----- */
+/* Focus visible for accessibility */
+.arr-input:focus-visible,
+button:focus-visible,
+select:focus-visible {
+  outline: 2px solid #58a6ff;
+  outline-offset: 2px;
+}
+
+/* Prevent text selection on buttons */
+.btn-generate,
+.mode-btn {
+  user-select: none;
+}
+
+/* Smooth transitions */
+.graph-transition {
+  transition: all 0.2s ease;
+}
+
+/* Scrollbar cho main area - Firefox */
+.graph-main,
+.graph-sidebar {
+  scrollbar-color: #1e2d3d #0d1117;
+}
+
+/* ============================================================
+   END OF GRAPH PAGE STYLES
+   ============================================================ */

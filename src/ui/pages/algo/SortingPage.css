@@ -1,98 +1,118 @@
+/* ========================================
+   SORTING PAGE STYLES
+   ======================================== */
 
-.step-text {
-  font-size: 13px;
-  color: #c9d8e8;
+/* ----- LAYOUT & STRUCTURE ----- */
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.page-header {
+  padding: 20px 24px 12px;
+  border-bottom: 1px solid #1e2d3d;
+  flex-shrink: 0;
+}
+
+.page-header h1 {
+  font-size: 22px;
+  color: #e2e8f0;
+  font-weight: 700;
+}
+
+.page-header p {
+  font-size: 12px;
+  color: #4a6b8a;
+  margin-top: 4px;
+}
+
+/* ----- ALGORITHM TABS ----- */
+.algo-tabs {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 24px;
+  border-bottom: 1px solid #1e2d3d;
+  flex-shrink: 0;
+}
+
+.algo-buttons-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  width: 100%;
+}
+
+.algo-tab {
+  padding: 6px 14px;
+  border: 1px solid #1e2d3d;
+  background: #0d1117;
+  color: #8b9eb5;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.algo-tab:hover {
+  border-color: var(--tab-color, #58a6ff);
+  color: var(--tab-color, #58a6ff);
+}
+
+.algo-tab.active {
+  background: color-mix(in srgb, var(--tab-color, #58a6ff) 15%, transparent);
+  border-color: var(--tab-color, #58a6ff);
+  color: var(--tab-color, #58a6ff);
+  font-weight: 700;
+}
+
+.algo-tab.btn-add-tab {
+  border-style: dashed;
+  color: #58a6ff;
+  --tab-color: #58a6ff;
   font-weight: 500;
 }
 
-
-.pointer-info {
-  font-size: 11px;
-  color: #f59e0b;
-  font-family: 'Courier New', monospace;
-  background: rgba(245, 158, 11, 0.1);
-  padding: 2px 8px;
-  border-radius: 4px;
-  border: 1px solid rgba(245, 158, 11, 0.2);
-}
-
-
-.bar-val {
-  font-size: 9px;
-  color: #4a6b8a;
-  text-align: center;
-}
-
-/* Page-specific layout and visualization elements are centralized in global CSS now. */
-
-/* Counting Sort panel */
-.count-panel {
-  margin: 0 24px 6px;
-  background: #0d1117;
-  border: 1px solid #1e2d3d;
-  border-radius: 8px;
-  padding: 8px 12px;
-}
-.count-title {
-  font-size: 10px; color: #4a6b8a; text-transform: uppercase; letter-spacing: 1px;
-  margin-bottom: 6px; display: flex; align-items: center; gap: 8px;
-}
-.count-badge {
-  font-size: 10px; background: rgba(245,158,11,0.15); color: #f59e0b;
-  border-radius: 4px; padding: 1px 8px; text-transform: none; letter-spacing: 0;
-}
-.count-cells { display: flex; gap: 3px; flex-wrap: wrap; }
-.count-cell {
-  display: flex; flex-direction: column; align-items: center;
-  min-width: 32px; padding: 3px 4px; background: #132135;
-  border: 1px solid #1e3a5f; border-radius: 4px; transition: all 0.15s;
-}
-.count-cell.active  { border-color: #f59e0b; background: rgba(245,158,11,0.12); }
-.count-cell.prefix  { border-color: #58a6ff; background: rgba(88,166,255,0.10); }
-.count-idx { font-size: 8px; color: #4a6b8a; font-family: monospace; }
-.count-val { font-size: 13px; font-weight: 700; color: #e2e8f0; font-family: monospace; }
-
-.bar-label {
-  font-size: 9px;
-  color: #4a6b8a;
-  font-family: monospace;
-  text-align: center;
-  white-space: nowrap;
-}
-
-/* Scale selector */
+/* ----- SCALE SELECTOR ----- */
 .scale-selector {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin: 0 24px 16px;
-  padding: 8px 12px;
+  gap: 8px;
+  padding: 4px 10px;
   background: #0d1117;
   border: 1px solid #1e2d3d;
-  border-radius: 8px;
+  border-radius: 6px;
+  margin-left: 0;
 }
 
 .scale-label {
-  font-size: 14px;
+  font-size: 12px;
   color: #4a6b8a;
-  font-weight: 500;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .scale-buttons {
   display: flex;
-  gap: 6px;
+  gap: 4px;
 }
 
 .scale-btn {
-  padding: 4px 12px;
+  padding: 5px 10px;
   background: #132135;
   border: 1px solid #1e2d3d;
-  border-radius: 6px;
+  border-radius: 4px;
   color: #8b9eb5;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;
+  white-space: nowrap;
 }
 
 .scale-btn:hover {
@@ -104,15 +124,218 @@
   background: #58a6ff;
   border-color: #58a6ff;
   color: #000;
+  font-weight: 600;
 }
 
-.scale-selector    { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-left: auto; }
-.scale-label       { font-size: 11px; color: #4a6b8a; }
-.scale-buttons     { display: flex; gap: 4px; }
-.scale-btn         { padding: 3px 10px; border: 1px solid #1e2d3d; background: #0d1117; color: #8b9eb5; border-radius: 4px; cursor: pointer; font-size: 11px; }
-.scale-btn.active  { border-color: #58a6ff; color: #58a6ff; }
-.count-panel       { padding: 8px 24px; }
-.count-title       { font-size: 11px; color: #4a6b8a; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
-.count-cells       { display: flex; gap: 4px; flex-wrap: wrap; }
-.count-buckets     { display: flex; gap: 4px; flex-wrap: wrap; }
-.shell-info        { font-size: 11px; color: #4a6b8a; }
+.scale-hint-text {
+  font-size: 11px;
+  color: #4a6b8a;
+  margin-left: 6px;
+  border-left: 1px solid #1e2d3d;
+  padding-left: 8px;
+  white-space: nowrap;
+}
+
+/* ----- INPUT ROW ----- */
+.input-row {
+  display: flex;
+  gap: 8px;
+  padding: 12px 24px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.arr-input {
+  flex: 1;
+  padding: 8px 8px;
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 8px;
+  color: #e2e8f0;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.arr-input:focus {
+  outline: none;
+  border-color: #58a6ff;
+}
+
+.arr-input::placeholder {
+  color: #4a6b8a;
+}
+
+select.arr-input {
+  appearance: none;
+  cursor: pointer;
+}
+
+.input-row .btn-generate,
+.input-row .btn-random {
+  width: 110px;
+  padding: 8px 0;
+  text-align: center;
+}
+
+/* ----- STEP DISPLAY ----- */
+.step-desc {
+  padding: 6px 24px;
+}
+
+
+
+.step-text {
+  font-size: 13px;
+  color: #c9d8e8;
+  font-weight: 500;
+}
+
+/* ----- BARS VISUALIZATION ----- */
+.bars-container {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+  padding: 12px 0;
+  overflow: hidden;
+}
+
+.bar-wrap {
+  min-width: 16px;
+  max-width: 52px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.bar {
+  width: 100%;
+  border-radius: 3px 3px 0 0;
+  transition: height 0.12s ease, background 0.12s ease;
+  min-height: 4px;
+}
+
+.bar-label {
+  font-size: 9px;
+  color: #4a6b8a;
+  font-family: monospace;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.bar-val {
+  font-size: 9px;
+  color: #4a6b8a;
+  text-align: center;
+}
+
+/* ----- POINTER INFO ----- */
+.pointer-info {
+  font-size: 11px;
+  color: #f59e0b;
+  font-family: 'Courier New', monospace;
+  background: rgba(245, 158, 11, 0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+/* ----- COUNTING SORT PANEL ----- */
+.count-panel {
+  margin: 0 24px 6px;
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.count-title {
+  font-size: 10px;
+  color: #4a6b8a;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.count-badge {
+  font-size: 10px;
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border-radius: 4px;
+  padding: 1px 8px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.count-cells {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
+.count-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 32px;
+  padding: 3px 4px;
+  background: #132135;
+  border: 1px solid #1e3a5f;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.count-cell.active {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.count-cell.prefix {
+  border-color: #58a6ff;
+  background: rgba(88, 166, 255, 0.10);
+}
+
+.count-idx {
+  font-size: 8px;
+  color: #4a6b8a;
+  font-family: monospace;
+}
+
+.count-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e2e8f0;
+  font-family: monospace;
+}
+
+/* ----- BUCKET SORT PANEL ----- */
+.count-buckets {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+/* ----- SHELL SORT PANEL ----- */
+.shell-info {
+  font-size: 11px;
+  color: #4a6b8a;
+}
+
+/* ----- RESPONSIVE ----- */
+@media (max-width: 1024px) {
+  .scale-hint-text {
+    display: none;
+  }
+}
+
+/* ========================================
+   END OF STYLES
+   ======================================== */

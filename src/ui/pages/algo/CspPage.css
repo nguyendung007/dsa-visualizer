@@ -191,11 +191,13 @@
 /* ---------- Algo tabs ---------- */
 .algo-tabs {
   display: flex;
+  flex-direction: row;
   gap: 4px;
   flex-shrink: 0;
   padding: 8px 16px;
   background: var(--csp-bg);
   border-bottom: 1px solid var(--csp-border);
+  flex-wrap: wrap;
 }
 
 .algo-tab {
@@ -251,6 +253,13 @@
   border-radius: 6px;
 }
 
+.csp-unscheduled-title {
+  font-size: 10px;
+  color: #4a6b8a;
+  margin-bottom: 4px;
+  width: 100%;
+}
+
 .csp-course-badge {
   padding: 3px 10px;
   font-size: 11px;
@@ -277,6 +286,10 @@
   font-size: 9px;
   font-family: monospace;
   color: var(--csp-highlight-purple);
+}
+
+.csp-course-domain-empty {
+  color: #ef4444;
 }
 
 /* ---------- Info panel ---------- */
@@ -325,6 +338,9 @@
 .csp-info-val.highlight-blue   { color: var(--csp-highlight-blue); }
 .csp-info-val.highlight-purple { color: var(--csp-highlight-purple); }
 
+.highlight-red { color: var(--csp-highlight-red); }
+.highlight-green { color: var(--csp-highlight-green); }
+
 /* ---------- Assignment list ---------- */
 .csp-assignment-list {
   display: flex;
@@ -333,6 +349,10 @@
   max-height: 150px;
   margin-top: 4px;
   overflow-y: auto;
+}
+
+.csp-assignment-title {
+  margin-top: 8px;
 }
 
 .csp-assign-row {
@@ -364,6 +384,10 @@
 .csp-assign-val {
   font-size: 10px;
   color: var(--csp-text-light);
+}
+
+.csp-assign-schedule {
+  font-size: 10px;
 }
 
 /* ---------- Legend ---------- */
@@ -453,23 +477,27 @@
 
 /* ---------- Scrollbar styles ---------- */
 .csp-problem-sidebar::-webkit-scrollbar,
-.csp-info-sidebar::-webkit-scrollbar {
+.csp-info-sidebar::-webkit-scrollbar,
+.csp-assignment-list::-webkit-scrollbar {
   width: 4px;
 }
 
 .csp-problem-sidebar::-webkit-scrollbar-track,
-.csp-info-sidebar::-webkit-scrollbar-track {
+.csp-info-sidebar::-webkit-scrollbar-track,
+.csp-assignment-list::-webkit-scrollbar-track {
   background: var(--csp-bg);
 }
 
 .csp-problem-sidebar::-webkit-scrollbar-thumb,
-.csp-info-sidebar::-webkit-scrollbar-thumb {
+.csp-info-sidebar::-webkit-scrollbar-thumb,
+.csp-assignment-list::-webkit-scrollbar-thumb {
   background: var(--csp-border);
   border-radius: 2px;
 }
 
 .csp-problem-sidebar::-webkit-scrollbar-thumb:hover,
-.csp-info-sidebar::-webkit-scrollbar-thumb:hover {
+.csp-info-sidebar::-webkit-scrollbar-thumb:hover,
+.csp-assignment-list::-webkit-scrollbar-thumb:hover {
   background: #2d4a6a;
 }
 
@@ -507,6 +535,10 @@
   transform: scale(1.02);
 }
 
+.csp-btn-full {
+  width: 100%;
+}
+
 .mode-btn {
   padding: 6px 12px;
   font-size: 12px;
@@ -526,6 +558,38 @@
 .mode-btn.danger:hover {
   color: var(--csp-highlight-red);
   border-color: var(--csp-highlight-red);
+}
+
+/* ---------- Params ---------- */
+.csp-param-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.csp-param-label {
+  font-size: 11px;
+  color: #4a6b8a;
+}
+
+.csp-param-hint {
+  font-size: 10px;
+  color: #4a6b8a;
+  margin-top: 4px;
+}
+
+/* ---------- Algo description ---------- */
+.csp-algo-desc {
+  font-size: 11px;
+  color: #4a6b8a;
+  line-height: 1.8;
+}
+
+/* ---------- Info details ---------- */
+.csp-info-details {
+  font-size: 12px;
+  color: #8b9eb5;
+  line-height: 1.8;
 }
 
 /* ---------- Responsive ---------- */

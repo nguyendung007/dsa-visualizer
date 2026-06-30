@@ -1,49 +1,304 @@
+/* ============================================================
+   STRING ALGORITHMS PAGE STYLES
+   Tối ưu code CSS - clean, cân đối, áp dụng phương án 4
+   ============================================================ */
+
+/* ----- 1. WORKSPACE LAYOUT ----- */
 .string-workspace {
   display: flex;
   flex: 1;
   overflow: hidden;
+  height: calc(100vh - 200px);
 }
 
 .string-main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 0 20px 12px;
+  gap: 10px;
+  padding: 0 24px 12px;
   border-right: 1px solid #1e2d3d;
   overflow-y: auto;
-  gap: 10px;
+  min-height: 0;
 }
 
 .string-sidebar {
-  width: 240px;
+  width: 260px;
   flex-shrink: 0;
-  padding: 12px 14px;
+  padding: 14px 18px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+  background: rgba(13, 17, 23, 0.4);
 }
 
-/* Pattern matching */
+/* ----- 2. CUSTOM SCROLLBAR ----- */
+.string-main::-webkit-scrollbar,
+.string-sidebar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.string-main::-webkit-scrollbar-track,
+.string-sidebar::-webkit-scrollbar-track {
+  background: #0d1117;
+  border-radius: 4px;
+}
+
+.string-main::-webkit-scrollbar-thumb,
+.string-sidebar::-webkit-scrollbar-thumb {
+  background: #1e2d3d;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.string-main::-webkit-scrollbar-thumb:hover,
+.string-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #2d4a6a;
+}
+
+.string-main,
+.string-sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: #1e2d3d #0d1117;
+}
+
+/* ----- 3. STEP DESCRIPTION ----- */
+.step-desc {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 6px 0;
+}
+
+.step-badge {
+  padding: 3px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #58a6ff;
+  white-space: nowrap;
+  background: rgba(88, 166, 255, 0.08);
+  border: 1px solid rgba(88, 166, 255, 0.15);
+  border-radius: 12px;
+}
+
+.step-text {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: #c9d8e8;
+}
+
+/* ----- 4. SIDEBAR CONTROLS ----- */
+.ctrl-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ctrl-section h3 {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #4a6b8a;
+  letter-spacing: 0.8px;
+  margin-bottom: 2px;
+  border-bottom: 1px solid rgba(30, 45, 61, 0.3);
+  padding-bottom: 4px;
+}
+
+.ctrl-section label {
+  font-size: 11px;
+  color: #4a6b8a;
+  font-weight: 500;
+}
+
+/* ----- 5. INPUT PAIR - Áp dụng phương án 4 ----- */
+.input-pair {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.input-pair .arr-input {
+  flex: 1 1 auto;
+  min-width: 80px;
+}
+
+.input-pair button {
+  flex: 0 0 72px;
+  padding: 8px 0;
+  text-align: center;
+  min-width: 60px;
+}
+
+/* ----- 6. INPUT STYLES ----- */
+.arr-input {
+  padding: 8px 12px;
+  font-size: 14px;
+  color: #e2e8f0;
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 6px;
+  outline: none;
+  font-family: 'Fira Code', Consolas, monospace;
+  width: 100%;
+  min-width: 50px;
+  transition: all 0.2s ease;
+}
+
+.arr-input:focus {
+  border-color: #58a6ff;
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+}
+
+.arr-input::placeholder {
+  color: #4a6b8a;
+  font-size: 12px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.arr-input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.arr-input[type="number"]::-webkit-outer-spin-button,
+.arr-input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+textarea.arr-input {
+  font-family: 'Fira Code', Consolas, monospace;
+  font-size: 12px;
+  resize: vertical;
+  min-height: 60px;
+  line-height: 1.5;
+  padding: 8px 12px;
+}
+
+/* ----- 7. BUTTONS ----- */
+.btn-generate {
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  background: #58a6ff;
+  border: none;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.btn-generate:hover {
+  background: #4a8fd4;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(88, 166, 255, 0.2);
+}
+
+.btn-generate:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-generate.full-width {
+  width: 100%;
+  justify-content: center;
+}
+
+.btn-random {
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #10b981;
+  cursor: pointer;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.btn-random:hover {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: #10b981;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+}
+
+.btn-random:active {
+  transform: translateY(0);
+}
+
+.btn-random.full-width {
+  width: 100%;
+  justify-content: center;
+}
+
+.btn-danger {
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ef4444;
+  cursor: pointer;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.btn-danger:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #ef4444;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+}
+
+.btn-danger:active {
+  transform: translateY(0);
+}
+
+.btn-danger.full-width {
+  width: 100%;
+  justify-content: center;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #1e2d3d;
+  margin: 4px 0;
+}
+
+/* ----- 8. PATTERN MATCHING ----- */
 .match-viz {
   display: flex;
   flex-direction: column;
   gap: 8px;
   padding: 8px 0;
+  flex-shrink: 0;
 }
 
 .match-label {
   font-size: 10px;
   color: #4a6b8a;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   font-weight: 700;
 }
 
-.match-text-row, .match-pat-row {
+.match-text-row,
+.match-pat-row {
   display: flex;
   gap: 2px;
   flex-wrap: wrap;
+  padding: 2px 0;
 }
 
 .match-char {
@@ -54,23 +309,24 @@
   border-radius: 4px;
   border: 1px solid #1e2d3d;
   background: #0d1117;
-  transition: all 0.15s;
-  padding: 2px;
+  transition: all 0.2s ease;
+  padding: 2px 4px;
 }
 
 .match-char.active {
   border-color: #f59e0b;
-  background: rgba(245,158,11,0.15);
+  background: rgba(245, 158, 11, 0.12);
+  transform: scale(1.05);
 }
 
 .match-char.matched {
   border-color: #10b981;
-  background: rgba(16,185,129,0.15);
+  background: rgba(16, 185, 129, 0.12);
 }
 
 .match-char.window {
   border-color: #58a6ff;
-  background: rgba(88,166,255,0.08);
+  background: rgba(88, 166, 255, 0.06);
 }
 
 .match-char.pattern-char {
@@ -83,99 +339,512 @@
   background: transparent;
 }
 
-.mc-idx { font-size: 8px; color: #2e4a6a; font-family: monospace; }
-.mc-ch { font-size: 14px; font-weight: 700; color: #e2e8f0; font-family: monospace; }
+.mc-idx {
+  font-size: 8px;
+  color: #2e4a6a;
+  font-family: 'Fira Code', Consolas, monospace;
+}
 
-.lps-val { font-size: 12px !important; color: #58a6ff !important; }
+.mc-ch {
+  font-size: 14px;
+  font-weight: 700;
+  color: #e2e8f0;
+  font-family: 'Fira Code', Consolas, monospace;
+}
 
-.lps-table { margin-top: 4px; }
+/* ----- 9. LPS TABLE ----- */
+.lps-table {
+  margin-top: 4px;
+}
 
-.bad-char-table { margin-top: 4px; }
+.lps-val {
+  font-size: 12px !important;
+  color: #58a6ff !important;
+}
+
+/* ----- 10. BAD CHARACTER TABLE ----- */
+.bad-char-table {
+  margin-top: 4px;
+}
+
 .bc-cell {
-  display: flex; flex-direction: column; align-items: center;
-  background: #132135; border: 1px solid #1e3a5f; border-radius: 4px;
-  padding: 3px 6px; font-family: monospace; font-size: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #132135;
+  border: 1px solid #1e3a5f;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-family: 'Fira Code', Consolas, monospace;
+  font-size: 10px;
+  transition: all 0.15s;
 }
-.bc-ch { color: #58a6ff; font-weight: 700; }
-.bc-pos { color: #4a6b8a; }
 
+.bc-cell:hover {
+  border-color: #4a6b8a;
+}
+
+.bc-ch {
+  color: #58a6ff;
+  font-weight: 700;
+}
+
+.bc-pos {
+  color: #4a6b8a;
+}
+
+/* ----- 11. HASH DISPLAY ----- */
 .hash-display {
-  font-size: 12px; color: #8b9eb5;
-  background: #0a0e1a; border: 1px solid #1e2d3d;
-  border-radius: 6px; padding: 6px 12px;
+  font-size: 12px;
+  color: #8b9eb5;
+  background: rgba(88, 166, 255, 0.04);
+  border: 1px solid #1e2d3d;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-family: 'Fira Code', Consolas, monospace;
 }
 
+.hash-display b {
+  font-weight: 700;
+}
+
+/* ----- 12. MATCH RESULT ----- */
 .match-result {
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  font-size: 12px; color: #10b981;
-  background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.3);
-  border-radius: 6px; padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 6px;
+  padding: 8px 14px;
 }
 
 .match-pos {
-  background: #10b981; color: #0a0e1a; border-radius: 4px;
-  padding: 1px 6px; font-weight: 700; font-size: 11px; font-family: monospace;
+  background: #10b981;
+  color: #0a0e1a;
+  border-radius: 4px;
+  padding: 1px 8px;
+  font-weight: 700;
+  font-size: 11px;
+  font-family: 'Fira Code', Consolas, monospace;
 }
 
-/* Radix sort */
-.radix-viz { display: flex; flex-direction: column; gap: 8px; padding: 8px 0; }
-.radix-arr-label { font-size: 11px; color: #4a6b8a; display: flex; align-items: center; gap: 8px; }
+/* ----- 13. RADIX SORT ----- */
+.radix-viz {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+  flex-shrink: 0;
+}
+
+.radix-arr-label {
+  font-size: 11px;
+  color: #4a6b8a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
 .radix-digit-badge {
-  background: #132135; border: 1px solid #1e3a5f; border-radius: 4px;
-  padding: 1px 8px; font-size: 10px; color: #58a6ff; font-family: monospace;
-}
-.radix-words { display: flex; flex-direction: column; gap: 3px; }
-.radix-word {
-  display: flex; align-items: center; gap: 1px;
-  padding: 3px 8px; background: #0d1117; border: 1px solid #1e2d3d;
-  border-radius: 4px; transition: border-color 0.15s;
-}
-.radix-word.radix-active { border-color: #f59e0b; background: rgba(245,158,11,0.08); }
-.radix-ch { font-size: 14px; font-family: monospace; font-weight: 600; color: #8b9eb5; min-width: 12px; text-align: center; }
-.radix-ch.radix-focus { color: #f59e0b; font-weight: 900; text-decoration: underline; }
-.radix-result {
-  font-size: 12px; color: #10b981; background: rgba(16,185,129,0.08);
-  border: 1px solid rgba(16,185,129,0.3); border-radius: 6px; padding: 6px 12px;
+  background: #132135;
+  border: 1px solid #1e3a5f;
+  border-radius: 4px;
+  padding: 1px 10px;
+  font-size: 10px;
+  color: #58a6ff;
+  font-family: 'Fira Code', Consolas, monospace;
 }
 
-/* TST */
-.tst-viz { display: flex; flex-direction: column; gap: 8px; padding: 8px 0; }
-.tst-word-tag {
-  display: inline-block; background: #132135; border: 1px solid #1e3a5f;
-  border-radius: 4px; padding: 1px 6px; font-size: 10px; color: #58a6ff;
-  font-family: monospace; margin: 0 2px;
+.radix-words {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-height: 300px;
+  overflow-y: auto;
 }
+
+.radix-word {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  padding: 4px 10px;
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  font-family: 'Fira Code', Consolas, monospace;
+}
+
+.radix-word:hover {
+  border-color: #2d4a6a;
+}
+
+.radix-word.radix-active {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.06);
+}
+
+.radix-ch {
+  font-size: 14px;
+  font-family: 'Fira Code', Consolas, monospace;
+  font-weight: 600;
+  color: #8b9eb5;
+  min-width: 12px;
+  text-align: center;
+  transition: all 0.15s;
+}
+
+.radix-ch.radix-focus {
+  color: #f59e0b;
+  font-weight: 900;
+  text-decoration: underline;
+}
+
+.radix-result {
+  font-size: 12px;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.06);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-family: 'Fira Code', Consolas, monospace;
+}
+
+/* ----- 14. TST VISUALIZATION ----- */
+.tst-viz {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+  flex-shrink: 0;
+}
+
+.tst-word-tag {
+  display: inline-block;
+  background: #132135;
+  border: 1px solid #1e3a5f;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 10px;
+  color: #58a6ff;
+  font-family: 'Fira Code', Consolas, monospace;
+  margin: 0 2px;
+  transition: all 0.15s;
+}
+
+.tst-word-tag:hover {
+  border-color: #58a6ff;
+}
+
 .tst-result {
-  font-size: 13px; font-weight: 700; padding: 8px 14px; border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 6px;
   margin-top: 4px;
 }
-.tst-result.found { background: rgba(16,185,129,0.1); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
-.tst-result.notfound { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
 
-/* Suffix Array */
-.suffix-viz { display: flex; flex-direction: column; gap: 6px; padding: 8px 0; }
-.suffix-table { display: flex; flex-direction: column; gap: 2px; }
+.tst-result.found {
+  background: rgba(16, 185, 129, 0.08);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.tst-result.notfound {
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* ----- 15. SUFFIX ARRAY ----- */
+.suffix-viz {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 0;
+  flex-shrink: 0;
+}
+
+.suffix-table {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .suffix-header {
-  display: flex; gap: 8px; padding: 4px 8px;
-  font-size: 9px; color: #4a6b8a; text-transform: uppercase; letter-spacing: 0.5px;
+  display: flex;
+  gap: 8px;
+  padding: 4px 8px;
+  font-size: 9px;
+  color: #4a6b8a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
   border-bottom: 1px solid #1e2d3d;
 }
+
 .suffix-row {
-  display: flex; gap: 8px; align-items: center; padding: 4px 8px;
-  background: #0d1117; border: 1px solid #1e2d3d; border-radius: 4px;
-  font-family: monospace; font-size: 12px; transition: border-color 0.15s;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 4px 8px;
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 4px;
+  font-family: 'Fira Code', Consolas, monospace;
+  font-size: 12px;
+  transition: all 0.15s;
 }
-.suffix-row.suffix-lcp-active { border-color: #58a6ff; background: rgba(88,166,255,0.08); }
-.suffix-item { display: flex; gap: 8px; align-items: center; padding: 6px 10px; background: #0d1117; border: 1px solid #1e2d3d; border-radius: 6px; }
-.suffix-item.suffix-active { border-color: #f59e0b; background: rgba(245,158,11,0.08); }
-.suffix-idx { width: 36px; color: #58a6ff; font-weight: 700; }
-.suffix-str { flex: 1; color: #e2e8f0; }
-.suffix-lcp { width: 50px; color: '#10b981'; font-weight: 700; text-align: right; color: #10b981; }
 
+.suffix-row:hover {
+  border-color: #2d4a6a;
+}
 
-.string-textarea     { width: 100%; height: 70px; resize: vertical; margin-top: 4px; }
-.string-algo-desc    { font-size: 11px; color: #4a6b8a; line-height: 1.7; }
-.string-example-btns { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
-.tst-word-list       { font-size: 11px; color: #4a6b8a; margin-bottom: 6px; }
-.tst-actions         { display: flex; gap: 6px; margin-top: 8px; }
-.hash-display        { font-size: 11px; padding: 6px 10px; background: rgba(88,166,255,0.05); border-radius: 6px; margin-top: 4px; }
+.suffix-row.suffix-lcp-active {
+  border-color: #58a6ff;
+  background: rgba(88, 166, 255, 0.06);
+}
+
+.suffix-item {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 12px;
+  background: #0d1117;
+  border: 1px solid #1e2d3d;
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+
+.suffix-item.suffix-active {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.06);
+}
+
+.suffix-idx {
+  width: 36px;
+  color: #58a6ff;
+  font-weight: 700;
+}
+
+.suffix-str {
+  flex: 1;
+  color: #e2e8f0;
+}
+
+.suffix-lcp {
+  width: 50px;
+  color: #10b981;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* ----- 16. EMPTY MESSAGE ----- */
+.empty-msg {
+  font-size: 13px;
+  color: #1e3a5f;
+  text-align: center;
+  padding: 20px;
+  border: 1px dashed #1e2d3d;
+  border-radius: 6px;
+}
+
+/* ----- 17. RESPONSIVE ----- */
+@media (max-width: 1024px) {
+  .string-sidebar {
+    width: 230px;
+    padding: 12px 14px;
+  }
+}
+
+@media (max-width: 900px) {
+  .string-workspace {
+    flex-direction: column;
+    height: auto;
+    min-height: calc(100vh - 200px);
+  }
+
+  .string-main {
+    border-right: none;
+    border-bottom: 1px solid #1e2d3d;
+    padding: 0 16px 12px;
+    min-height: 400px;
+  }
+
+  .string-sidebar {
+    width: 100%;
+    padding: 14px 16px;
+    background: transparent;
+  }
+
+  .input-pair button {
+    flex: 0 0 68px;
+  }
+
+  .match-char {
+    min-width: 20px;
+    padding: 1px 3px;
+  }
+
+  .mc-ch {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .string-main {
+    padding: 0 12px 10px;
+    min-height: 350px;
+  }
+
+  .string-sidebar {
+    padding: 10px 12px;
+    gap: 12px;
+  }
+
+  .step-desc {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    min-height: 32px;
+  }
+
+  .step-badge {
+    font-size: 10px;
+    padding: 2px 10px;
+  }
+
+  .step-text {
+    font-size: 12px;
+  }
+
+  .arr-input {
+    padding: 6px 10px;
+    font-size: 13px;
+    min-width: 40px;
+  }
+
+  textarea.arr-input {
+    font-size: 11px;
+    min-height: 50px;
+  }
+
+  .btn-generate,
+  .btn-random,
+  .btn-danger {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+
+  .input-pair button {
+    flex: 0 0 60px;
+    padding: 6px 0;
+    min-width: 50px;
+  }
+
+  .input-pair {
+    gap: 6px;
+  }
+
+  .ctrl-section h3 {
+    font-size: 9px;
+  }
+
+  .match-char {
+    min-width: 18px;
+    padding: 1px 2px;
+  }
+
+  .mc-idx {
+    font-size: 7px;
+  }
+
+  .mc-ch {
+    font-size: 11px;
+  }
+
+  .hash-display {
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+
+  .radix-word {
+    padding: 3px 6px;
+    font-size: 12px;
+  }
+
+  .radix-ch {
+    font-size: 12px;
+    min-width: 10px;
+  }
+
+  .suffix-row {
+    font-size: 11px;
+    padding: 3px 6px;
+  }
+
+  .suffix-idx {
+    width: 30px;
+  }
+
+  .suffix-lcp {
+    width: 40px;
+  }
+
+  .tst-word-tag {
+    font-size: 9px;
+    padding: 1px 6px;
+  }
+
+  .tst-result {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+
+  .match-result {
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+
+  .match-pos {
+    font-size: 10px;
+    padding: 1px 6px;
+  }
+}
+
+/* ----- 18. UTILITY & ACCESSIBILITY ----- */
+/* Focus visible for accessibility */
+.arr-input:focus-visible,
+button:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #58a6ff;
+  outline-offset: 2px;
+}
+
+/* Prevent text selection on buttons */
+.btn-generate,
+.btn-random,
+.btn-danger {
+  user-select: none;
+}
+
+/* Smooth transitions */
+.string-transition {
+  transition: all 0.2s ease;
+}
+
+/* Scrollbar for main area - Firefox */
+.string-main,
+.string-sidebar {
+  scrollbar-color: #1e2d3d #0d1117;
+}
+
+/* ============================================================
+   END OF STRING ALGORITHMS PAGE STYLES
+   ============================================================ */

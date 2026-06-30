@@ -20,7 +20,6 @@ export default function LinkedListPage() {
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed]     = useState(600);
 
-  // FIX: mỗi section có input riêng, không dùng chung 1 val/pos
   const [insertVal, setInsertVal]   = useState('');
   const [insertPos, setInsertPos]   = useState('');
   const [deleteVal, setDeleteVal]   = useState('');

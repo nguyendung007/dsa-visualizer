@@ -1,5 +1,3 @@
-// Fix: thêm useProgress, saveProgress trong onDone
-// Fix: khi đổi tab method, reset stepIdx về 0 (trước chỉ setSteps([]) và setCurStep(null), thiếu setStepIdx)
 import { useState, useRef } from 'react';
 import { twoSumBruteForce, twoSumTwoPointer, twoSumHashMap } from '../../../core/problems/index.js';
 import { AnimationEngine } from '../../../shell/animation/AnimationEngine.js';
@@ -84,7 +82,7 @@ export default function ProblemsPage() {
               setMethod(k);
               setSteps([]);
               setCurStep(null);
-              setStepIdx(0); // FIX: reset bước về 0 khi đổi method
+              setStepIdx(0); 
               engineRef.current?.pause();
               setPlaying(false);
             }}>

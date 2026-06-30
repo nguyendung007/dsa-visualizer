@@ -6,11 +6,12 @@ import {
   PLAYER_X,
   PLAYER_O,
   EMPTY,
+  getDynamicDepth,
+  getCandidates,
+  evaluateBoard,
 } from '../../../core/adversarialSearch/index.ts';
 import Controls from '../../components/Controls.jsx';
 import './AdversarialPage.css';
-
-const BOARD_SIZE = 9;
 
 const ALGOS = {
   minimax:   { name: 'Minimax',    icon: '🎯', color: '#58a6ff' },
@@ -23,7 +24,8 @@ function cellKey(r, c) { return `${r},${c}`; }
 export default function AdversarialPage() {
   const [algo, setAlgo]               = useState('alphaBeta');
   const [depth, setDepth]             = useState(3);
-  const [gameState, setGameState]     = useState(() => new GameState(BOARD_SIZE));
+  const [boardSize, setBoardSize]     = useState(9);
+  const [gameState, setGameState]     = useState(() => new GameState(9));
   const [isThinking, setIsThinking]   = useState(false);
   const [treeSteps, setTreeSteps]     = useState([]);
   const [stepIdx, setStepIdx]         = useState(0);
@@ -36,15 +38,25 @@ export default function AdversarialPage() {
   const [lastMove, setLastMove]       = useState(null);
   const [compareResult, setCompareResult] = useState(null);
   const [aiFinalMove, setAiFinalMove] = useState(null);
+  const [forceUpdate, setForceUpdate] = useState(false);
 
   const animRef = useRef(null);
   const gameRef = useRef(gameState);
-  const logEndRef = useRef(null); // Ref để tự động cuộn log khi cây chạy
+  const logEndRef = useRef(null);
 
-  const handleReset = useCallback(() => {
-    clearInterval(animRef.current);
-    animRef.current = null;
-    const ng = new GameState(BOARD_SIZE);
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setForceUpdate(prev => !prev);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleBoardSizeChange = useCallback((newSize) => {
+    if (newSize < 3 || newSize > 15) return;
+    setBoardSize(newSize);
+    const ng = new GameState(newSize);
     gameRef.current = ng;
     setGameState(ng);
     setMoveHistory([]);
@@ -59,6 +71,25 @@ export default function AdversarialPage() {
     setIsThinking(false);
     setAiFinalMove(null);
   }, []);
+
+  const handleReset = useCallback(() => {
+    clearInterval(animRef.current);
+    animRef.current = null;
+    const ng = new GameState(boardSize);
+    gameRef.current = ng;
+    setGameState(ng);
+    setMoveHistory([]);
+    setGameOver(null);
+    setWinCells([]);
+    setLastMove(null);
+    setTreeSteps([]);
+    setStepIdx(0);
+    setMetrics({ nodes: 0, pruned: 0, time: 0, score: 0 });
+    setPlaying(false);
+    setCompareResult(null);
+    setIsThinking(false);
+    setAiFinalMove(null);
+  }, [boardSize]);
 
   const triggerAI = useCallback((gs, hist) => {
     const currentGs = gs || gameRef.current;
@@ -108,7 +139,6 @@ export default function AdversarialPage() {
     return () => clearInterval(animRef.current);
   }, [playing, treeSteps, speed]);
 
-  // Tự động cuộn xuống dưới cùng khi sinh log mới để người dùng dễ theo dõi
   useEffect(() => {
     if (logEndRef.current) {
       logEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -174,8 +204,17 @@ export default function AdversarialPage() {
 
   const curStep = treeSteps[stepIdx - 1] || null;
 
-  const renderBoard = () =>
-    gameState.board.flatMap((row, r) =>
+  const getCellSize = () => {
+    const containerWidth = Math.min(500, window.innerWidth * 0.35);
+    const containerHeight = Math.min(500, window.innerHeight * 0.45);
+    const maxSize = Math.min(containerWidth, containerHeight);
+    const calculated = (maxSize - 10) / boardSize;
+    return Math.min(Math.max(calculated, 18), 50);
+  };
+
+  const renderBoard = () => {
+    const cellSize = getCellSize();
+    return gameState.board.flatMap((row, r) =>
       row.map((cell, c) => {
         const isWin  = winCells.some(w => w.row === r && w.col === c);
         const isLast = lastMove?.row === r && lastMove?.col === c;
@@ -199,6 +238,11 @@ export default function AdversarialPage() {
           <div
             key={cellKey(r, c)}
             className={`adv-cell${cell !== EMPTY ? ' occupied' : ''}${isWin ? ' win-cell' : ''}${isLast ? ' last-move' : ''}${cellAlgoClass}`}
+            style={{ 
+              width: `${cellSize}px`, 
+              height: `${cellSize}px`,
+              fontSize: `${Math.min(cellSize * 0.5, 28)}px`
+            }}
             onClick={() => handleCellClick(r, c)}
           >
             {cell === PLAYER_X && <span className="piece piece-x">X</span>}
@@ -213,6 +257,7 @@ export default function AdversarialPage() {
         );
       })
     );
+  };
 
   const renderTreeLog = () => {
     if (treeSteps.length === 0) return (
@@ -230,7 +275,7 @@ export default function AdversarialPage() {
             <div
               key={i}
               className={`adv-log-row-large adv-log-${step.type}${i === visible.length - 1 ? ' current' : ''}`}
-              style={{ paddingLeft: `${indentLevel * 24}px` }} // Tăng khoảng cách thụt lề nhìn cho rõ
+              style={{ paddingLeft: `${indentLevel * 20}px` }}
             >
               <span className="adv-log-icon-large">
                 {step.type === 'explore' && '🔍 [Duyệt]'}
@@ -269,23 +314,39 @@ export default function AdversarialPage() {
           </button>
         ))}
 
-        <div className="adv-depth-inline">
-          <span>Độ sâu cây (Depth)</span>
-          <input
-            type="range" min="1" max="4" value={depth}
-            onChange={e => { setDepth(+e.target.value); handleReset(); }}
-          />
-          <span className="adv-depth-val">{depth}</span>
+        <div className="adv-controls-group">
+          <div className="adv-depth-inline">
+            <span>Độ sâu</span>
+            <input
+              type="range" min="1" max="4" value={depth}
+              onChange={e => { setDepth(+e.target.value); handleReset(); }}
+            />
+            <span className="adv-depth-val">{depth}</span>
+          </div>
+
+          <div className="adv-size-inline">
+            <span>Kích cỡ</span>
+            <input
+              type="number"
+              min="3"
+              max="15"
+              value={boardSize}
+              onChange={(e) => {
+                const val = Number(e.target.value);
+                if (val >= 3 && val <= 15) {
+                  handleBoardSizeChange(val);
+                }
+              }}
+              className="adv-size-input"
+            />
+          </div>
         </div>
       </div>
 
-      {/* Tái cấu trúc Layout chính */}
       <div className="graph-workspace adv-split-workspace">
         
-        {/* KHỐI TRÁI LỚN: CHỨA BÀN CỜ VÀ LIVE TRACE ĐỨNG CẠNH NHAU */}
         <div className="graph-main adv-double-columns-panel">
           
-          {/* Cột 1: Bàn cờ */}
           <div className="adv-column-board">
             <div className="step-desc">
               <span className="step-badge">{stepIdx}/{treeSteps.length}</span>
@@ -293,7 +354,14 @@ export default function AdversarialPage() {
             </div>
 
             <div className="adv-board-wrap-left">
-              <div className="adv-board-grid" style={{ gridTemplateColumns: `repeat(${BOARD_SIZE}, 1fr)` }}>
+              <div 
+                className="adv-board-grid"
+                style={{ 
+                  gridTemplateColumns: `repeat(${boardSize}, ${getCellSize()}px)`,
+                  gridTemplateRows: `repeat(${boardSize}, ${getCellSize()}px)`,
+                  gap: '2px',
+                }}
+              >
                 {renderBoard()}
               </div>
 
@@ -307,33 +375,45 @@ export default function AdversarialPage() {
               {gameOver && (
                 <div className="adv-overlay adv-overlay-gameover">
                   <div className={`adv-result adv-result-${gameOver}`}>{statusText()}</div>
-                  <div className="adv-result-sub">Nhấn nút Reset để chơi ván mới</div>
+                  <div className="adv-result-sub">Nhấn Reset để chơi ván mới</div>
                 </div>
               )}
             </div>
+          </div>
 
-            {/* Bảng thông số kỹ thuật bên dưới bàn cờ */}
-            <div className="graph-ds-panel" style={{ marginTop: '20px', width: '100%' }}>
+          <div className="adv-column-trace">
+            <div className="adv-metrics-panel">
               <div className="ds-box">
                 <div className="ds-title">Thông số cây giải thuật</div>
                 <div className="ds-queue-row">
-                  <div className="ds-cell"><span className="ds-cell-sub">Nodes duyệt</span><span style={{ color: '#58a6ff' }}>{metrics.nodes.toLocaleString()}</span></div>
-                  {algo !== 'minimax' && <div className="ds-cell"><span className="ds-cell-sub">Nhánh bị tỉa</span><span style={{ color: '#f85149' }}>{metrics.pruned.toLocaleString()}</span></div>}
-                  <div className="ds-cell"><span className="ds-cell-sub">Thời gian</span><span style={{ color: '#10b981' }}>{metrics.time}ms</span></div>
-                  <div className="ds-cell"><span className="ds-cell-sub">Điểm số</span><span style={{ color: metrics.score > 0 ? '#10b981' : metrics.score < 0 ? '#f85149' : '#f59e0b' }}>{metrics.score}</span></div>
+                  <div className="ds-cell">
+                    <span className="ds-cell-sub">Nodes duyệt</span>
+                    <span className="ds-value nodes">{metrics.nodes.toLocaleString()}</span>
+                  </div>
+                  {algo !== 'minimax' && (
+                    <div className="ds-cell">
+                      <span className="ds-cell-sub">Nhánh bị tỉa</span>
+                      <span className="ds-value pruned">{metrics.pruned.toLocaleString()}</span>
+                    </div>
+                  )}
+                  <div className="ds-cell">
+                    <span className="ds-cell-sub">Thời gian</span>
+                    <span className="ds-value time">{metrics.time}ms</span>
+                  </div>
+                  <div className="ds-cell">
+                    <span className="ds-cell-sub">Điểm số</span>
+                    <span className={`ds-value score ${metrics.score > 0 ? 'positive' : metrics.score < 0 ? 'negative' : 'neutral'}`}>
+                      {metrics.score}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Cột 2: Cây tìm kiếm Live Trace phiên bản TO RỘNG */}
-          <div className="adv-column-trace">
             {renderTreeLog()}
           </div>
 
         </div>
 
-        {/* KHỐI PHẢI BÊN RÌA: CHỈ CHỨA ĐIỀU KHIỂN & CHÚ THÍCH */}
         <div className="graph-sidebar adv-narrow-sidebar">
           <div className="ctrl-section">
             <h3>Hành động</h3>
@@ -351,11 +431,23 @@ export default function AdversarialPage() {
 
           <div className="ctrl-section">
             <h3>Chú thích ký hiệu</h3>
-            <div className="ds-queue-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '12px', marginTop: '10px' }}>
-              <div className="adv-legend-item"><span className="adv-legend-dot explore-dot" /><span>Đang khám phá nhánh</span></div>
-              <div className="adv-legend-item"><span className="adv-legend-dot evaluate-dot" /><span>Đánh giá nút lá (Heuristic)</span></div>
-              <div className="adv-legend-item"><span className="adv-legend-dot result-dot" /><span>Dội ngược kết quả lên cha</span></div>
-              <div className="adv-legend-item"><span className="adv-legend-dot prune-dot" /><span>Bị cắt tỉa Alpha-Beta Pruning</span></div>
+            <div className="adv-legend-list">
+              <div className="adv-legend-item">
+                <span className="adv-legend-dot explore-dot" />
+                <span>Đang khám phá nhánh</span>
+              </div>
+              <div className="adv-legend-item">
+                <span className="adv-legend-dot evaluate-dot" />
+                <span>Đánh giá nút lá (Heuristic)</span>
+              </div>
+              <div className="adv-legend-item">
+                <span className="adv-legend-dot result-dot" />
+                <span>Dội ngược kết quả lên cha</span>
+              </div>
+              <div className="adv-legend-item">
+                <span className="adv-legend-dot prune-dot" />
+                <span>Bị cắt tỉa Alpha-Beta Pruning</span>
+              </div>
             </div>
           </div>
         </div>

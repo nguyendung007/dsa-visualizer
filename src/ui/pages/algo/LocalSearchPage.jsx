@@ -10,9 +10,8 @@ import Controls from '../../components/Controls.jsx';
 import { useProgress } from '../../../context/ProgressContext.jsx';
 import './LocalSearchPage.css';
 
-// ─── Config ──────────────────────────────────────────────────────────────────
 const ROWS = 20;
-const COLS = 30;
+const COLS = 45;
 
 const ALGOS = {
   hillClimbing: {
@@ -34,10 +33,8 @@ const ALGOS = {
 
 function key(r, c) { return `${r},${c}`; }
 
-// ─── Heatmap color: lạnh (tối) → nóng (sáng) ─────────────────────────────────
-// Dùng gradient: navy → blue → cyan → green → yellow → orange → red
+
 function heatColor(v) {
-  // v in [0,1]; trả về hex color
   const stops = [
     [0.00, [8,   15,  40]],
     [0.15, [20,  60,  120]],
@@ -60,13 +57,11 @@ function heatColor(v) {
   return `rgb(${r},${g},${b})`;
 }
 
-// ─── Step description ─────────────────────────────────────────────────────────
 function stepDesc(s) {
   if (!s) return 'Nhấn ▶ để bắt đầu tìm kiếm cục bộ';
   return s.desc ?? s.type ?? '';
 }
 
-// ─── Fitness mini-chart ───────────────────────────────────────────────────────
 function FitnessChart({ history, color, width = 200, height = 50 }) {
   if (!history || history.length < 2) return null;
   const max = Math.max(...history);
@@ -86,7 +81,6 @@ function FitnessChart({ history, color, width = 200, height = 50 }) {
   );
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
 export default function LocalSearchPage() {
   const [algo, setAlgo]         = useState('hillClimbing');
   const [heatmap, setHeatmap]   = useState(() => generateHeatmap(ROWS, COLS));
@@ -117,25 +111,21 @@ export default function LocalSearchPage() {
   const rows = heatmap.length;
   const cols = heatmap[0].length;
 
-  // Kích thước cell SVG
-  const CELL = Math.min(Math.floor(560 / cols), Math.floor(360 / rows));
+  const CELL = Math.min(Math.floor(900 / cols), Math.floor(360 / rows));
   const svgW = cols * CELL;
   const svgH = rows * CELL;
 
-  // Tích luỹ fitness history từ steps đã đi qua
   useEffect(() => {
     if (!curStep) { setFitnessHist([]); return; }
     const val = curStep.value ?? curStep.genBestVal ?? curStep.bestVal;
     if (val !== undefined) {
       setFitnessHist(prev => {
-        // Reset khi restart (stepIdx === 1)
         if (stepIdx <= 1) return [val];
         return [...prev, val];
       });
     }
   }, [curStep, stepIdx]);
 
-  // ── New heatmap ──
   function newHeatmap() {
     engineRef.current?.pause();
     const h = generateHeatmap(ROWS, COLS, Math.random());
@@ -144,7 +134,6 @@ export default function LocalSearchPage() {
     setPlaying(false); setFitnessHist([]);
   }
 
-  // ── Run ──
   function runAlgo() {
     engineRef.current?.pause();
     setFitnessHist([]);
@@ -174,7 +163,6 @@ export default function LocalSearchPage() {
     saveProgress('localSearch', ALGOS[algo].name);
   }
 
-  // ── Cell rendering state ──
   function getCellOverlay(r, c) {
     if (!curStep) return null;
     const k = key(r, c);
@@ -210,7 +198,6 @@ export default function LocalSearchPage() {
     return null;
   }
 
-  // ── Stats ──
   const globalBestVal = curStep?.bestEverVal ?? curStep?.bestVal ?? curStep?.value;
   const curVal = curStep?.value ?? curStep?.genBestVal;
   const saTemp = curStep?.T;
@@ -251,17 +238,16 @@ export default function LocalSearchPage() {
             <span className="step-text">{stepDesc(curStep)}</span>
           </div>
 
-          {/* Heatmap */}
           <div className="ls-svg-wrap">
             <svg
               width={svgW} height={svgH}
               viewBox={`0 0 ${svgW} ${svgH}`}
               className="ls-svg"
               style={{ cursor: clickMode ? 'crosshair' : 'default' ,
-                       width: svgW,  // Thêm dòng này
-                       height: svgH, // Thêm dòng này
-                       maxWidth: '100%', // Thêm dòng này
-                       maxHeight: '100%', // Thêm dòng này
+                       width: svgW,  
+                       height: svgH, 
+                       maxWidth: '100%', 
+                       maxHeight: '100%', 
 
               }}
               
