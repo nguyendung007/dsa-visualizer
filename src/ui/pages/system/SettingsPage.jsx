@@ -1,4 +1,3 @@
-// Thêm module setting để user tùy chỉnh
 import { useState } from 'react';
 import './SettingsPage.css';
 
@@ -40,6 +39,15 @@ export default function SettingsPage() {
   const [customBg, setCustomBg] = useState(bg);
   const [saved, setSaved] = useState(false);
   const isCustom = !BG_PRESETS.slice(0, -1).some(p => p.value === bg);
+
+  const [effectOn, setEffectOn] = useState(() => localStorage.getItem('effectOn') !== 'false'); // mặc định true
+
+function handleToggleEffect() {
+  const next = !effectOn;
+  setEffectOn(next);
+  localStorage.setItem('effectOn', String(next));
+  window.dispatchEvent(new Event('effectOnChanged'));
+}
 
   function handleFont(val) {
     setFont(val);
@@ -186,6 +194,7 @@ export default function SettingsPage() {
           </div>
         </section>
 
+
         {/* Actions */}
         <div className="settings-actions">
           <button className="settings-btn-reset" onClick={handleReset}>↺ Đặt lại mặc định</button>
@@ -193,6 +202,15 @@ export default function SettingsPage() {
             {saved ? '✓ Đã lưu!' : 'Lưu cài đặt'}
           </button>
         </div>
+        <section className="settings-section">
+  <div className="settings-section-title">Hiệu ứng toàn cục</div>
+  <button
+    className={`settings-option ${effectOn ? 'active' : ''}`}
+    onClick={handleToggleEffect}
+  >
+    {effectOn ? '✓ Đang bật' : '✕ Đang tắt'}
+  </button>
+</section>
 
       </div>
     </div>

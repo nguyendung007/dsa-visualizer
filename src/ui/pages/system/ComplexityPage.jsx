@@ -135,7 +135,6 @@ export default function ComplexityPage() {
     const list = custom.slice(); list.splice(i, 1); saveCustom(list);
   }
 
-  // Merge base lists with custom entries per category
   const sortingItems = [...SORTING, ...custom.filter(c => c.category === 'sorting')];
   const graphItems = [...GRAPH, ...custom.filter(c => c.category === 'graph')];
   const treeItems = [...TREES, ...custom.filter(c => c.category === 'trees')];
