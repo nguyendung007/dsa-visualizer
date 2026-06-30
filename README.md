@@ -1,21 +1,23 @@
-# Xây dựng phần mềm học môn DSA cho UET- DSA Visualizer
+# Phần mềm học môn DSA cho UET - DSA Visualizer
 
 Ứng dụng trực quan hóa thuật toán & cấu trúc dữ liệu, xây dựng bằng React.  
 Được xây dựng và phát triển bởi một người bị ám ảnh bởi môn này.
 
 ---
 
-# 🚀 Cách chạy dự án (Quick Start)
+## 🚀 Cách chạy dự án (Quick Start)
 
 Mở Terminal tại thư mục bạn muốn lưu dự án và chạy các lệnh sau:
 
 ```bash
-1. Clone dự án về máy 
+# 1. Clone dự án về máy
 git clone https://github.com/nguyendung007/dsa-visualizer.git
 
-2. Cài đặt thư viện và khởi chạy giao diện mô phỏng
+# 2. Cài đặt thư viện và khởi chạy giao diện mô phỏng
 npm install && npm run dev
 ```
+
+---
 
 ## 1. Hỗ trợ các thuật toán
 
@@ -53,6 +55,10 @@ Inorder · Preorder · Postorder · Level-order · Biểu thức cây
 | Prim | Cây khung nhỏ nhất |
 | Kosaraju | Thành phần liên thông mạnh |
 | Topological Sort | Sắp xếp topo |
+| Best-First Search | Tìm kiếm theo hướng tối ưu |
+| A-star (A*) | Tìm kiếm đường đi tối ưu với heuristic |
+| Tabu Search | Tìm kiếm với bộ nhớ cấm |
+| Beam Search | Tìm kiếm với giới hạn số trạng thái |
 
 ### 📦 Data Structures
 Stack · Queue · Priority Queue · Hash Table
@@ -67,7 +73,19 @@ Quick Find · Quick Union · Weighted · Path Compression
 TST · LSD Radix Sort · MSD Radix Sort · 3-Way String Sort · Suffix Array · KMP · Boyer-Moore · Rabin-Karp
 
 ### ⚡ Problems
-Two Sum: Brute Force · Two Pointer · Hash Map
+- **Two Sum:** Brute Force · Two Pointer · Hash Map
+- **Constraint Satisfaction Problem (CSP):** Bài toán thỏa mãn ràng buộc
+
+### 🤖 AI & Machine Learning
+- **Adversarial Search:** Các thuật toán tìm kiếm đối kháng
+- **Decision Tree:** Cây quyết định
+- **Local Search:** Hill Climbing · Simulated Annealing · Genetic Algorithm
+- **Naive Bayes:** Phân loại xác suất đơn giản
+- **Knowledge Model:** Mô hình tri thức
+
+### 🧠 Tìm kiếm nâng cao
+- **Maze Page:** Mô phỏng mê cung với các thuật toán tìm đường (Tabu Search, Beam Search)
+- **Local Search:** Tối ưu cục bộ với nhiều chiến lược khác nhau
 
 ### 𝑂 Complexity
 Bảng Big-O lý thuyết + tra cứu độ phức tạp toàn bộ thuật toán
@@ -119,7 +137,49 @@ Cài đặt được **lưu vào localStorage** — giữ nguyên sau khi reload
 
 ---
 
-## 4. 🚀 Các cải tiến của phiên bản v.15
+## 4. Tính năng AI và Logger hỗ trợ phát triển
+
+### 🤖 Chat AI tích hợp
+- Tích hợp **Google Gemini API** để hỗ trợ người dùng giải thích thuật toán
+- Có thể chat trực tiếp với AI để hỏi về độ phức tạp, cách hoạt động, hoặc so sánh các thuật toán
+- API endpoint: `src/api/ai.js` - cấu hình kết nối với Google AI
+
+### 📝 Logger System (cho Developer)
+Module logger được tích hợp sẵn để hỗ trợ quá trình phát triển và debug:
+
+**Vị trí:** `src/ui/logger/`
+
+**Các thành phần:**
+- `Logger.jsx` - Component chính hiển thị log theo thời gian thực
+- `LoggerPanel.jsx` - Bảng điều khiển log với các bộ lọc
+- `Logger.css` - Style cho hệ thống log
+
+**Tính năng:**
+- Ghi lại tất cả các hành động của người dùng (click, chọn thuật toán, thay đổi cài đặt)
+- Log các sự kiện hệ thống (render, lỗi, warnings)
+- Bộ lọc log theo cấp độ (info, warning, error, debug)
+- Xuất log ra file để phân tích
+- Hiển thị timestamp cho mỗi sự kiện
+
+**Cách sử dụng cho Developer:**
+```jsx
+import { useLogger } from '../ui/logger/Logger';
+
+function MyComponent() {
+  const { log } = useLogger();
+  
+  const handleClick = () => {
+    log('info', 'Người dùng đã click vào nút X', { component: 'MyComponent' });
+    // Thực hiện hành động...
+  };
+  
+  return <button onClick={handleClick}>Click me</button>;
+}
+```
+
+---
+
+## 5. 🚀 Các cải tiến của phiên bản v2
 
 ### 📌 Thuật toán tìm kiếm
 - ✅ Thêm `BestFirstSearch` vào Graph
@@ -139,9 +199,14 @@ Cài đặt được **lưu vào localStorage** — giữ nguyên sau khi reload
 - ✅ `NaivePage` - Naive Bayes *(còn thô)*
 - ✅ `CspPage` - Bài toán thỏa mãn ràng buộc CSP (Constraint Satisfaction Problem)
 
+### 🛠️ Công cụ Developer
+- ✅ **Logger System** - Ghi log và debug real-time
+- ✅ **AI Integration** - Tích hợp Google Gemini API cho chat hỗ trợ
+- ✅ **API Module** - Cấu trúc API rõ ràng (`src/api/`)
+
 ---
 
-## 5. 🛠️ Công cụ phân tích mã nguồn (Python Tools)
+## 6. 🛠️ Công cụ phân tích mã nguồn (Python Tools)
 
 Để hỗ trợ cho những ai muốn viết lại mã nguồn, ở đây có đính kèm 1 tệp web phân tích mã nguồn viết bằng Python, giúp bạn dễ dàng hiểu cấu trúc và mở rộng ứng dụng.
 
@@ -196,73 +261,68 @@ print(result['summary']['total_states_found'])
 
 **💡 Gợi ý:** Bạn có thể dễ dàng thêm tool mới bằng cách tạo file Python với hàm `analyze(folder_path)` trả về dict.
 
+---
+
 ## Cấu trúc thư mục dự án
 
 ```text
 src/
-├── api
-│   ├── auth.js
-│   ├── client.js
-│   └── progress.js
-├── assets
+├── api/                           # API Services
+│   ├── ai.js                      # Google Gemini API integration
+│   ├── auth.js                    # Authentication services
+│   ├── client.js                  # API client configuration
+│   └── progress.js                # Progress tracking API
+├── assets/                        # Static assets
 │   ├── bg1.png
 │   ├── bg2.png
 │   └── bg3.png
-├── context
+├── context/                       # React Context providers
 │   ├── AuthContext.jsx
 │   └── ProgressContext.jsx
-├── core
-│   ├── adversarialSearch
-│   │   └── index.js
-│   ├── csp
-│   │   └── index.js
-│   ├── dataStructures
-│   │   └── index.js
-│   ├── decision
-│   │   └── index.js
-│   ├── graph
-│   │   └── index.js
-│   ├── knowledge
-│   │   └── index.js
-│   ├── linkedlist
-│   │   └── index.js
-│   ├── localSearch
-│   │   └── index.js
-│   ├── maze
-│   │   └── index.js
-│   ├── naive
-│   │   └── index.js
-│   ├── problems
-│   │   └── index.js
-│   ├── sorting
+├── core/                          # Core algorithms
+│   ├── adversarialSearch/         # Adversarial search algorithms
+│   ├── csp/                       # Constraint Satisfaction Problems
+│   ├── dataStructures/            # Data structures implementations
+│   ├── decision/                  # Decision Tree algorithms
+│   ├── graph/                     # Graph algorithms
+│   ├── knowledge/                 # Knowledge models
+│   ├── linkedlist/                # Linked List operations
+│   ├── localSearch/               # Local search algorithms
+│   ├── maze/                      # Maze generation & solving
+│   ├── naive/                     # Naive Bayes classifier
+│   ├── problems/                  # Algorithmic problems
+│   ├── sorting/                   # Sorting algorithms
 │   │   ├── index.js
-│   │   └── proxyWrapper.js
-│   ├── string
-│   │   └── index.js
-│   ├── trees
+│   │   └── proxyWrapper.js        # Proxy for custom sort animation
+│   ├── string/                    # String algorithms
+│   ├── trees/                     # Tree data structures
 │   │   ├── index.js
 │   │   └── traversal.js
-│   └── unionfind
-│       └── index.js
-├── shell
-│   └── animation
-│       └── AnimationEngine.js
-├── ui
-│   ├── components
+│   └── unionfind/                 # Union-Find algorithms
+├── shell/                         # Shell/Engine
+│   └── animation/
+│       └── AnimationEngine.js     # Animation engine core
+├── ui/                            # UI Components
+│   ├── components/                # Reusable components
 │   │   ├── Controls.css
 │   │   ├── Controls.jsx
 │   │   ├── GlobalUIEffects.jsx
 │   │   ├── LoadingSpinner.jsx
 │   │   ├── SplitScreenTransition.jsx
-│   │   └── Toast.jsx
-│   ├── custom
+│   │   ├── Toast.jsx
+│   │   └── TransitionOutlet.jsx
+│   ├── custom/                    # Custom user-defined components
 │   │   ├── CustomSorting.css
 │   │   └── CustomSorting.jsx
-│   ├── layouts
+│   ├── layouts/                   # Layout components
 │   │   ├── MainLayout.css
 │   │   └── MainLayout.jsx
-│   ├── pages
-│   │   ├── algo
+│   ├── logger/                    # Logger system
+│   │   ├── Logger.css
+│   │   ├── Logger.jsx             # Main logger component
+│   │   └── LoggerPanel.jsx        # Logger control panel
+│   ├── pages/                     # Page components
+│   │   ├── algo/                  # Algorithm pages
 │   │   │   ├── AdversarialPage.css
 │   │   │   ├── AdversarialPage.jsx
 │   │   │   ├── CspPage.css
@@ -295,7 +355,9 @@ src/
 │   │   │   ├── TreePage.jsx
 │   │   │   ├── UnionFindPage.css
 │   │   │   └── UnionFindPage.jsx
-│   │   └── system
+│   │   └── system/                # System pages
+│   │       ├── AIPage.css         # AI Chat page
+│   │       ├── AIPage.jsx
 │   │       ├── ComplexityPage.css
 │   │       ├── ComplexityPage.jsx
 │   │       ├── LoginPage.css
@@ -304,9 +366,14 @@ src/
 │   │       ├── ProgressPage.jsx
 │   │       ├── SettingsPage.css
 │   │       └── SettingsPage.jsx
-│   └── styles
+│   └── styles/
 │       └── global.css
 ├── App.jsx
 └── main.jsx
 ```
-## Cuối cùng : Đây mới chỉ là bản 1.5,vẫn còn rất nhiều vấn đề và sẽ được khắc phục sớm nhất ở bản v2 hoàn chỉnh 
+
+---
+
+## Cuối cùng : Chúc mng A/A+
+
+---
