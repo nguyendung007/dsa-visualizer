@@ -1,17 +1,15 @@
 import { useEffect, useState, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 
-// ─── CONFIG ──────────────────────────────────────────────────────────────────
 const CONFIG = {
   meteorCount:        500,
   meteorColors:       ['#17ecdb', '#4714d1', '#de0de6', '#f30a0a', '#2ae619'],
-  transitionDuration: 1000,   // ms — tổng thời gian hiệu ứng
+  transitionDuration: 1000,  
   overlayBg:          '#0a041a',
   overlayOpacity: {
-    fadeIn:  300,   // ms
+    fadeIn:  300,   
   },
 };
-// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * SplitScreenTransition
@@ -57,7 +55,6 @@ export default function SplitScreenTransition({ location, outlet }) {
     return () => clearTimeout(t1);
   }, [location.pathname, outlet, displayPathname]);
 
-  // Meteor data — hình ngẫu nhiên, chỉ tạo lại khi transition bắt đầu
   const meteors = useMemo(() => {
     return Array.from({ length: CONFIG.meteorCount }).map((_, i) => {
       const color = CONFIG.meteorColors[Math.floor(Math.random() * CONFIG.meteorColors.length)];
@@ -75,7 +72,7 @@ export default function SplitScreenTransition({ location, outlet }) {
     });
   }, [isTransitioning]);
 
-  // Inject keyframes once
+
   useEffect(() => {
     const style = document.createElement('style');
     style.id = 'meteor-dynamic-styles';

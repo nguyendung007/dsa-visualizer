@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 
-// ─── CONFIG ──────────────────────────────────────────────────────────────────
 const CONFIG = {
   position:  { bottom: '20px', right: '20px' },
   fontSize:  { icon: '18px', text: '14px' },
@@ -19,7 +18,6 @@ const CONFIG = {
     warning: { bg: 'rgba(245, 158, 11, 0.1)', border: '#f59e0b', icon: '⚠' },
   },
 };
-// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Toast

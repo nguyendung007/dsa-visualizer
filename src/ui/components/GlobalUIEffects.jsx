@@ -1,34 +1,33 @@
 import { useEffect } from 'react';
 
-// ─── CONFIG ──────────────────────────────────────────────────────────────────
 const CONFIG = {
   particle: {
     defaultCount:  50,
     defaultColors: ['#17ecdb', '#4714d1', '#de0de6', '#f50808', '#0a041a', '#2ae619'],
-    spawnInterval: 2800,   // ms
-    lifetime:      12000,  // ms
+    spawnInterval: 2800,  
+    lifetime:      12000,  
     maxOverflow:   20,
     trimBatch:     5,
   },
   sparkle: {
-    interval:  400,  // ms
-    lifetime:  1800, // ms
+    interval:  400,  
+    lifetime:  1800, 
   },
   bigFlame: {
-    interval:  4200, // ms
-    lifetime:  2400, // ms
+    interval:  4200, 
+    lifetime:  2400, 
     size:      '120px',
   },
   subGlow: {
-    interval: 150, // ms
+    interval: 150, 
   },
   ripple: {
-    lifetime: 600, // ms
+    lifetime: 600,
   },
   shockwave: {
-    lifetime:    1100, // ms
+    lifetime:    1100,
     buttonLabel: '⚡ BLAZING ⚡',
-    resetDelay:  1000, // ms
+    resetDelay:  1000, 
   },
   ids: {
     effectRoot:       'global-ui-effect-root',
@@ -48,7 +47,7 @@ const CONFIG = {
     enableRipple:   true,
   },
 };
-// ─────────────────────────────────────────────────────────────────────────────
+
 
 function createStyleSheet(rootId) {
   const sheet = document.createElement('style');
@@ -148,18 +147,21 @@ function spawnRipple(e) {
  *   enableBigFlame  boolean
  *   enableRipple    boolean
  */
+
 export default function GlobalUIEffects({
+
   particleCount  = CONFIG.particle.defaultCount,
   particleColors = CONFIG.particle.defaultColors,
   enableSparkle  = CONFIG.flags.enableSparkle,
   enableBigFlame = CONFIG.flags.enableBigFlame,
   enableRipple   = CONFIG.flags.enableRipple,
 }) {
-  useEffect(() => {
+
+  useEffect(() => {  
+    
     const colors = particleColors.length ? particleColors : CONFIG.particle.defaultColors;
     const { ids, selectors, particle, sparkle, bigFlame, subGlow, shockwave } = CONFIG;
 
-    // Root DOM node
     const root = document.createElement('div');
     root.id = ids.effectRoot;
     document.body.appendChild(root);
@@ -170,10 +172,8 @@ export default function GlobalUIEffects({
 
     const sheet = createStyleSheet(ids.effectRoot);
 
-    // Initial particles
     for (let i = 0; i < particleCount; i++) spawnParticle(container, colors);
 
-    // Particle pool maintenance
     const particleTimer = setInterval(() => {
       if (container.children.length < particleCount + 15) {
         const p = spawnParticle(container, colors);
@@ -189,7 +189,6 @@ export default function GlobalUIEffects({
       ? setInterval(() => spawnSparkle(ids.effectRoot), sparkle.interval)
       : null;
 
-    // Click: ripple + button press
     const onClickWindow = (e) => {
       if (enableRipple) spawnRipple(e);
       const btn = document.querySelector(selectors.button);
@@ -199,7 +198,6 @@ export default function GlobalUIEffects({
       }
     };
 
-    // Body click: shockwave glow
     const onClickBody = (e) => {
       e.stopPropagation();
       const glow = document.createElement('div');
@@ -248,7 +246,6 @@ export default function GlobalUIEffects({
       }
     };
 
-    // Mouse move: parallax ring + border glow
     const onMouseMove = (e) => {
       const heroBox = document.querySelector(selectors.hero);
       if (!heroBox) return;
