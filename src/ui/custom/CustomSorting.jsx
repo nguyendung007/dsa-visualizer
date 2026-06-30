@@ -1,5 +1,3 @@
-// Phục vụ nhận thuật toán từ user,sẽ dùng chung với mọi page 
-
 import { useState } from 'react';
 import { wrapWithProxy } from '../../core/sorting/proxyWrapper.js';
 import './CustomSorting.css';
