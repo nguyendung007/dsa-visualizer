@@ -15,7 +15,6 @@ import {
   TabuStep
 } from "./config";
 
-// ─── Breadth-First Search ────────────────────────────────────────────────────
 export function bfs(graph: Graph, start: string): BFSStep[] {
   const steps: BFSStep[] = [];
   const visited = new Set<string>();
@@ -40,7 +39,6 @@ export function bfs(graph: Graph, start: string): BFSStep[] {
   return steps;
 }
 
-// ─── Depth-First Search ──────────────────────────────────────────────────────
 export function dfs(graph: Graph, start: string): DFSStep[] {
   const steps: DFSStep[] = [];
   const visited = new Set<string>();
@@ -63,7 +61,6 @@ export function dfs(graph: Graph, start: string): DFSStep[] {
   return steps;
 }
 
-// ─── Dijkstra ────────────────────────────────────────────────────────────────
 export function dijkstra(graph: Graph, start: string): DijkstraStep[] {
   const steps: DijkstraStep[] = [];
   const dist: { [key: string]: number } = {};
@@ -73,7 +70,6 @@ export function dijkstra(graph: Graph, start: string): DijkstraStep[] {
   for (const node in graph) dist[node] = Infinity;
   dist[start] = 0;
 
-  // Priority queue as sorted array of [node, dist]
   const pq: [string, number][] = [[start, 0]];
   steps.push({ type: 'init', dist: { ...dist }, current: start, pq: [...pq] });
 
@@ -101,7 +97,6 @@ export function dijkstra(graph: Graph, start: string): DijkstraStep[] {
   return steps;
 }
 
-// ─── Kruskal ─────────────────────────────────────────────────────────────────
 export function kruskal(nodes: string[], edges: Edge[]): KruskalStep[] {
   const steps: KruskalStep[] = [];
   const sorted = [...edges].sort((a, b) => a.weight - b.weight);
@@ -130,7 +125,6 @@ export function kruskal(nodes: string[], edges: Edge[]): KruskalStep[] {
   return steps;
 }
 
-// ─── Bellman-Ford ───────────────────────────────────────────────────────────
 export function bellmanFord(graph: Graph, nodes: string[], start: string): BellmanFordStep[] {
   const steps: BellmanFordStep[] = [];
   const dist: { [key: string]: number } = {};
@@ -165,18 +159,17 @@ export function bellmanFord(graph: Graph, nodes: string[], start: string): Bellm
         dist[edge.to] = dist[edge.from] + edge.weight;
         prev[edge.to] = edge.from;
         updated = true;
-        steps.push({ type: 'update', node: edge.to, dist: dist[edge.to], dist_all: { ...dist }, iteration: i + 1, pq: [] });
+        steps.push({ type: 'update', node: edge.to, dist: { ...dist }, dist_all: { ...dist }, iteration: i + 1, pq: [] });
       }
     }
     if (!updated) break;
   }
 
-  // Check for negative cycles
   let hasNegCycle = false;
   for (const edge of allEdges) {
     if (dist[edge.from] !== Infinity && dist[edge.from] + edge.weight < dist[edge.to]) {
       hasNegCycle = true;
-      steps.push({ type: 'negativeCycle', from: edge.from, to: edge.to, pq: [] });
+      steps.push({ type: 'negativeCycle', from: edge.from, to: edge.to, dist: { ...dist }, pq: [] });
       break;
     }
   }
@@ -185,12 +178,10 @@ export function bellmanFord(graph: Graph, nodes: string[], start: string): Bellm
   return steps;
 }
 
-// ─── Prim ────────────────────────────────────────────────────────────────────
 export function prim(graph: Graph, nodes: string[], start: string): PrimStep[] {
   const steps: PrimStep[] = [];
   const inMST = new Set<string>();
   const mst: Edge[] = [];
-  // Priority queue entries: [cost, from, to]
   let pq: [number, string, string][] = [];
 
   inMST.add(start);
@@ -248,13 +239,11 @@ export function prim(graph: Graph, nodes: string[], start: string): PrimStep[] {
   return steps;
 }
 
-// ─── Kosaraju-Sharir (Strongly Connected Components) ─────────────────────────
 export function kosaraju(graph: Graph, nodes: string[]): KosarajuStep[] {
   const steps: KosarajuStep[] = [];
   const visited = new Set<string>();
   const finishOrder: string[] = [];
 
-  // Build reverse graph
   const rev: Graph = {};
   nodes.forEach(n => rev[n] = []);
   for (const u in graph) {
@@ -264,7 +253,6 @@ export function kosaraju(graph: Graph, nodes: string[]): KosarajuStep[] {
     }
   }
 
-  // Phase 1: DFS on original graph, record finish order
   steps.push({ type: 'phase', phase: 1, desc: 'Pha 1: DFS trên đồ thị gốc, ghi thứ tự kết thúc' });
   function dfs1(u: string) {
     visited.add(u);
@@ -280,7 +268,6 @@ export function kosaraju(graph: Graph, nodes: string[]): KosarajuStep[] {
   }
   for (const n of nodes) { if (!visited.has(n)) dfs1(n); }
 
-  // Phase 2: DFS on reversed graph in reverse finish order
   steps.push({ type: 'phase', phase: 2, desc: 'Pha 2: DFS trên đồ thị đảo ngược theo thứ tự finish' });
   const visited2 = new Set<string>();
   const sccs: string[][] = [];
@@ -305,7 +292,6 @@ export function kosaraju(graph: Graph, nodes: string[]): KosarajuStep[] {
   return steps;
 }
 
-// ─── Topological Sort — DFS & Kahn ──────────────────────────────────────────
 export function topoSortDFS(graph: Graph, nodes: string[]): TopoStep[] {
   const steps: TopoStep[] = [];
   const visited = new Set<string>(), stack: string[] = [], temp = new Set<string>();
@@ -368,7 +354,6 @@ export function topoSortKahn(graph: Graph, nodes: string[]): TopoStep[] {
   return steps;
 }
 
-// ─── A-Star Search ───────────────────────────────────────────────────────────
 export function aStar(graph: Graph, start: string, goal: string, heuristic: ((node: string, goal: string) => number) | null = null): AStarStep[] {
   const steps: AStarStep[] = [];
   const nodes = Object.keys(graph);
@@ -504,8 +489,8 @@ export function aStar(graph: Graph, start: string, goal: string, heuristic: ((no
           type: 'update',
           node: neighbor,
           from: current,
-          gScore: gScore[neighbor],
-          fScore: fScore[neighbor],
+          gScore: { ...gScore },
+          fScore: { ...fScore },
           openSet: new Set(openSet),
           closedSet: new Set(closedSet),
           gScoreAll: { ...gScore },
@@ -561,7 +546,6 @@ export function heuristicEuclidean(goal: string) {
   };
 }
 
-// ─── Best-First Search ───────────────────────────────────────────────────────
 export function bestFirstSearch(graph: Graph, start: string, goal: string, heuristic: ((node: string, goal: string) => number) | null = null): BestFirstStep[] {
   const steps: BestFirstStep[] = [];
   const nodes = Object.keys(graph);
@@ -664,7 +648,7 @@ export function bestFirstSearch(graph: Graph, start: string, goal: string, heuri
           type: 'discover',
           node: neighbor,
           from: current,
-          fScore: fScore[neighbor],
+          fScore: { ...fScore },
           openSet: new Set(openSet),
           closedSet: new Set(closedSet),
           fScoreAll: { ...fScore },
@@ -701,7 +685,6 @@ export function bestFirstSearch(graph: Graph, start: string, goal: string, heuri
   return steps;
 }
 
-// ─── Beam Search ─────────────────────────────────────────────────────────────
 export function beamSearch(graph: Graph, start: string, goal: string, beamWidth = 3, heuristic: ((node: string, goal: string) => number) | null = null): BeamStep[] {
   const steps: BeamStep[] = [];
   const nodes = Object.keys(graph);
@@ -813,8 +796,8 @@ export function beamSearch(graph: Graph, start: string, goal: string, beamWidth 
             type: 'update',
             node: neighbor,
             from: current,
-            gScore: gScore[neighbor],
-            fScore: fScore[neighbor],
+            gScore: { ...gScore },
+            fScore: { ...fScore },
             openSet: new Set(openSet),
             closedSet: new Set(closedSet),
             gScoreAll: { ...gScore },
@@ -887,7 +870,6 @@ export function beamSearch(graph: Graph, start: string, goal: string, beamWidth 
   return steps;
 }
 
-// ─── Tabu Search ─────────────────────────────────────────────────────────────
 export function tabuSearch(graph: Graph, start: string, goal: string, maxIterations = 100, tabuSize = 10, heuristic: ((node: string, goal: string) => number) | null = null): TabuStep[] {
   const steps: TabuStep[] = [];
   const nodes = Object.keys(graph);

@@ -1,4 +1,3 @@
-// index.ts
 export class BSTNode {
   val: number;
   left: BSTNode | null = null;

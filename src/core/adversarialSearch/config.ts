@@ -1,15 +1,10 @@
-// ─── Adversarial Search Index ──────────────────────────────────────────────────
-// Core logic cho các thuật toán tìm kiếm đối kháng
-
-// ─── Constants ──────────────────────────────────────────────────────────────────
 export const EMPTY = 0;
-export const PLAYER_X = 1; // Người chơi
-export const PLAYER_O = 2; // AI
+export const PLAYER_X = 1; 
+export const PLAYER_O = 2; 
 
 export const WIN_SCORE = 1000000;
 export const INFINITY = Number.MAX_SAFE_INTEGER;
 
-// ─── Types ──────────────────────────────────────────────────────────────────────
 export type Player = typeof EMPTY | typeof PLAYER_X | typeof PLAYER_O;
 export type Board = number[][];
 export type Move = { row: number; col: number; player?: Player; };
@@ -34,6 +29,13 @@ export interface MinimaxStep {
   bestScore?: number;
   nodesExplored?: number;
   prunedBranches?: number;
+
+  candidates?: Move[];    
+  topMoves?: Move[];        
+  streakScore?: number;     
+  isWinningMove?: boolean;  
+  isBlockingMove?: boolean; 
+  isCenterPick?: boolean;   
 }
 
 export interface MinimaxResult {

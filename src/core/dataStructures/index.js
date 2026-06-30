@@ -51,7 +51,6 @@ export function queueOps(operations) {
 }
 
 export function priorityQueueOps(operations) {
-  // Min-heap based priority queue
   const steps = [];
   let heap = []; // array of {val, priority}
 
@@ -124,8 +123,6 @@ export function hashTableOps(operations, tableSize = 11, hashFormula = 'default'
 
   function buildHashFn(formula) {
     try {
-      // formula is a JS expression using variables: key (string), size (table size)
-      // eslint-disable-next-line no-new-func
       return new Function('key', 'size', `
         let h = 0;
         const k = String(key);
@@ -173,7 +170,6 @@ export function hashTableOps(operations, tableSize = 11, hashFormula = 'default'
         table[baseIdx].push({ key: op.key, val: op.val });
         steps.push({ table: table.map(b => [...b]), op: 'insert', key: op.key, val: op.val, idx: baseIdx, probeMode });
       } else {
-        // Linear probing: tìm slot trống hoặc tombstone để insert
         let idx = baseIdx;
         let probeCount = 0;
         let firstTombstone = -1; // FIX: track tombstone slot đầu tiên gặp
@@ -182,11 +178,8 @@ export function hashTableOps(operations, tableSize = 11, hashFormula = 'default'
           if (table[idx] === null) break; // slot thật sự trống → dừng
 
           if (table[idx] === undefined) {
-            // tombstone slot: ghi nhận nếu là lần đầu, rồi tiếp tục probe
-            // (cần đảm bảo key chưa tồn tại ở slot sau)
             if (firstTombstone === -1) firstTombstone = idx;
           } else if (table[idx].key === op.key) {
-            // key đã tồn tại → update val tại chỗ
             steps.push({ table: [...table], op: 'probe_linear', key: op.key, idx, baseIdx, probeCount, probeMode });
             table[idx] = { key: op.key, val: op.val };
             steps.push({ table: [...table], op: 'insert', key: op.key, val: op.val, idx, baseIdx, probeMode, updated: true });
@@ -201,7 +194,6 @@ export function hashTableOps(operations, tableSize = 11, hashFormula = 'default'
         }
 
         if (firstTombstone !== -2) {
-          // Chưa xử lý → dùng tombstone slot nếu có, không thì dùng slot null hiện tại
           const insertIdx = firstTombstone !== -1 ? firstTombstone : idx;
           if (probeCount < tableSize || firstTombstone !== -1) {
             table[insertIdx] = { key: op.key, val: op.val };
@@ -225,7 +217,6 @@ export function hashTableOps(operations, tableSize = 11, hashFormula = 'default'
         }
         steps.push({ table: table.map(b => [...b]), op: found !== null ? 'found' : 'notfound', key: op.key, val: found, idx: baseIdx, probeMode });
       } else {
-        // FIX: search phải skip qua tombstone (undefined), chỉ dừng khi gặp null thật sự
         let idx = baseIdx;
         let found = null, probeCount = 0;
         while (probeCount < tableSize) {
@@ -234,7 +225,6 @@ export function hashTableOps(operations, tableSize = 11, hashFormula = 'default'
           steps.push({ table: [...table], op: 'probe_linear', idx, key: op.key, probeCount, probeMode });
 
           if (table[idx] !== undefined && table[idx]?.key === op.key) {
-            // FIX: bỏ qua tombstone (undefined), chỉ check slot có data
             found = table[idx].val;
             break;
           }
@@ -257,7 +247,6 @@ export function hashTableOps(operations, tableSize = 11, hashFormula = 'default'
           steps.push({ table: table.map(b => [...b]), op: 'notfound', key: op.key, idx: baseIdx, probeMode });
         }
       } else {
-        // FIX: delete cũng phải skip tombstone khi tìm key
         let idx = baseIdx, probeCount = 0;
         while (probeCount < tableSize) {
           if (table[idx] === null) break; // slot trống thật → không tìm thấy
@@ -273,7 +262,6 @@ export function hashTableOps(operations, tableSize = 11, hashFormula = 'default'
           probeCount++;
         }
         if (table[idx] !== undefined || probeCount >= tableSize) {
-          // không tìm thấy
           if (probeCount >= tableSize || table[idx] === null) {
             steps.push({ table: [...table], op: 'notfound', key: op.key, idx: baseIdx, probeMode });
           }

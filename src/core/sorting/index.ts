@@ -1,5 +1,3 @@
-// index.ts
-// Cập nhật : Thay pattern push + return steps => Thành function* + yield
 
 export function selectionSort(arr: number[]): any[] {
   const steps: any[] = [];
@@ -131,12 +129,10 @@ export function heapSort(arr: number[]): any[] {
   function heapify(a: number[], n: number, i: number) {
     let largest = i, l = 2 * i + 1, r = 2 * i + 2;
 
-    // Step 1: compare với l
     if (l < n) {
       steps.push({ array: [...a], comparing: [i, l], heapify: i });
       if (a[l] > a[largest]) largest = l;
     }
-    // Step 2: compare với r (chỉ push nếu r tồn tại)
     if (r < n) {
       steps.push({ array: [...a], comparing: [largest, r], heapify: i });
       if (a[r] > a[largest]) largest = r;
@@ -169,7 +165,6 @@ export function countingSort(arr: number[]): any[] {
 
   steps.push({ array: [...a], phase: 'init', count: [...count], min, max, desc: `Khởi tạo mảng count[${range}] = 0, min=${min}, max=${max}` });
 
-  // Phase 1: Count
   for (let i = 0; i < a.length; i++) {
     count[a[i] - min]++;
     steps.push({
@@ -179,7 +174,6 @@ export function countingSort(arr: number[]): any[] {
     });
   }
 
-  // Phase 2: Prefix sum
   const prefixCount = [...count];
   for (let i = 1; i < range; i++) {
     prefixCount[i] += prefixCount[i - 1];
@@ -189,7 +183,6 @@ export function countingSort(arr: number[]): any[] {
     });
   }
 
-  // Phase 3: Build output
   const output = Array(a.length).fill(0);
   for (let i = a.length - 1; i >= 0; i--) {
     const pos = prefixCount[a[i] - min] - 1;
@@ -224,7 +217,6 @@ export function radixSort(arr: number[]): any[] {
     const digitPos = Math.floor(Math.log10(exp)) + 1;
     const buckets: number[][] = Array.from({ length: 10 }, () => []);
 
-    // Phân phối vào bucket theo chữ số tại vị trí exp
     for (let i = 0; i < a.length; i++) {
       const d = Math.floor(a[i] / exp) % 10;
       buckets[d].push(a[i]);
@@ -236,7 +228,6 @@ export function radixSort(arr: number[]): any[] {
       });
     }
 
-    // Gom bucket trở lại mảng
     let idx = 0;
     for (let b = 0; b < 10; b++) {
       for (const val of buckets[b]) {
@@ -265,12 +256,10 @@ export function radixSort(arr: number[]): any[] {
   return steps;
 }
 
-// ─── Shell Sort ──────────────────────────────────────────────────────────────
 export function shellSort(arr: number[]): any[] {
   const steps: any[] = [];
   const a = [...arr];
   const n = a.length;
-  // Knuth sequence: 1, 4, 13, 40, ...
   let gap = 1;
   while (gap < Math.floor(n / 3)) gap = gap * 3 + 1;
 
@@ -295,7 +284,6 @@ export function shellSort(arr: number[]): any[] {
   return steps;
 }
 
-// ─── Bucket Sort ─────────────────────────────────────────────────────────────
 export function bucketSort(arr: number[]): any[] {
   const steps: any[] = [];
   const a = [...arr];
@@ -308,14 +296,12 @@ export function bucketSort(arr: number[]): any[] {
   const buckets: number[][] = Array.from({ length: bucketCount }, () => []);
   steps.push({ array: [...a], buckets: buckets.map(b => [...b]), phase: 'init', bucketCount, size, min, max, desc: `Tạo ${bucketCount} bucket, mỗi bucket span ${size}` });
 
-  // Distribute
   for (let i = 0; i < n; i++) {
     const bi = Math.min(Math.floor((a[i] - min) / size), bucketCount - 1);
     buckets[bi].push(a[i]);
     steps.push({ array: [...a], buckets: buckets.map(b => [...b]), phase: 'distribute', highlight: [i], bucket: bi, val: a[i], desc: `a[${i}]=${a[i]} → bucket[${bi}]` });
   }
 
-  // Sort each bucket (insertion sort)
   for (let b = 0; b < bucketCount; b++) {
     const bk = buckets[b];
     for (let i = 1; i < bk.length; i++) {
@@ -326,7 +312,6 @@ export function bucketSort(arr: number[]): any[] {
     if (bk.length > 1) steps.push({ array: [...a], buckets: buckets.map(b2 => [...b2]), phase: 'sort_bucket', bucket: b, desc: `Sắp xếp bucket[${b}]: [${bk.join(', ')}]` });
   }
 
-  // Collect
   let idx = 0;
   for (let b = 0; b < bucketCount; b++) {
     for (const val of buckets[b]) {
@@ -339,7 +324,6 @@ export function bucketSort(arr: number[]): any[] {
   return steps;
 }
 
-// Export all functions as default for compatibility
 export default {
   selectionSort,
   insertionSort,

@@ -1,4 +1,3 @@
-// config.ts
 export interface FrameSlot {
   type: string;
   default: any;

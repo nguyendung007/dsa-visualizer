@@ -1,11 +1,3 @@
-// index.ts
-// ============================================================
-// CSP Core — Functional Core (pure functions → steps[])
-// Mỗi hàm trả về mảng steps để AnimationEngine consume
-// Step shape chung:
-//   { type, assignment, domains, currentVar, currentVal,
-//     conflictVars, arcFrom, arcTo, iteration, desc }
-// ============================================================
 
 import {
   MAP_COLORING_PROBLEM,
@@ -14,9 +6,6 @@ import {
   SCHEDULING_PROBLEM
 } from './config.ts';
 
-// ============================================================
-// Type Definitions
-// ============================================================
 
 export interface MapColoringProblem {
   variables: string[];
@@ -42,13 +31,9 @@ export interface Step {
   arcTo?: string;
   iteration?: number;
   desc?: string;
-  // Map specific
   [key: string]: any;
 }
 
-// ============================================================
-// Utility Functions
-// ============================================================
 
 function cloneDomains<T extends Record<string, any[]>>(d: T): T {
   const r: any = {};
@@ -68,11 +53,7 @@ function isConsistentMap(
   return true;
 }
 
-// ============================================================
-// MAP COLORING
-// ============================================================
 
-// Backtracking — Map Coloring
 export function mapColoringBacktracking(problem: MapColoringProblem): Step[] {
   const { variables, domains, neighbors } = problem;
   const steps: Step[] = [];
@@ -149,13 +130,11 @@ export function mapColoringBacktracking(problem: MapColoringProblem): Step[] {
   return steps;
 }
 
-// AC-3 — Map Coloring
 export function mapColoringAC3(problem: MapColoringProblem): Step[] {
   const { variables, neighbors } = problem;
   const steps: Step[] = [];
   const domains = cloneDomains(problem.domains);
 
-  // Build arc queue
   const queue: [string, string][] = [];
   for (const xi of variables) {
     for (const xj of (neighbors[xi] || [])) {
@@ -184,7 +163,6 @@ export function mapColoringAC3(problem: MapColoringProblem): Step[] {
       desc: `Kiểm tra cung (${xi}, ${xj}): domain[${xi}] = {${domains[xi].join(',')}}`,
     });
 
-    // Revise
     const removed: string[] = [];
     const newDomain = domains[xi].filter(vx => {
       return domains[xj].some(vy => vy !== vx);
@@ -221,7 +199,6 @@ export function mapColoringAC3(problem: MapColoringProblem): Step[] {
         desc: `Thu hẹp domain[${xi}]: bỏ {${removedVals.join(',')}} → còn {${domains[xi].join(',')}}`,
       });
 
-      // Thêm lại các cung liên quan
       for (const xk of (neighbors[xi] || [])) {
         if (xk !== xj && !queue.some(([a, b]) => a === xk && b === xi)) {
           queue.push([xk, xi]);
@@ -249,7 +226,6 @@ export function mapColoringAC3(problem: MapColoringProblem): Step[] {
     }
   }
 
-  // Sau AC-3, nếu domain nào = 1 giá trị → tự suy ra assignment
   const assignment: Record<string, string> = {};
   for (const v of variables) {
     if (domains[v].length === 1) assignment[v] = domains[v][0];
@@ -264,12 +240,10 @@ export function mapColoringAC3(problem: MapColoringProblem): Step[] {
   return steps;
 }
 
-// Min-Conflicts — Map Coloring
 export function mapColoringMinConflicts(problem: MapColoringProblem, maxSteps: number = 100): Step[] {
   const { variables, domains, neighbors } = problem;
   const steps: Step[] = [];
 
-  // Gán ngẫu nhiên ban đầu
   const assignment: Record<string, string> = {};
   for (const v of variables) {
     assignment[v] = domains[v][Math.floor(Math.random() * domains[v].length)];
@@ -288,7 +262,6 @@ export function mapColoringMinConflicts(problem: MapColoringProblem, maxSteps: n
   }
 
   for (let iter = 1; iter <= maxSteps; iter++) {
-    // Tìm các biến đang có xung đột
     const conflicted = variables.filter(v =>
       countConflicts(v, assignment[v], assignment) > 0
     );
@@ -304,11 +277,9 @@ export function mapColoringMinConflicts(problem: MapColoringProblem, maxSteps: n
       return steps;
     }
 
-    // Chọn ngẫu nhiên một biến đang xung đột
     const variable = conflicted[Math.floor(Math.random() * conflicted.length)];
     const conflictsBefore = countConflicts(variable, assignment[variable], assignment);
 
-    // Chọn giá trị ít xung đột nhất
     let minConf = Infinity, bestVals: string[] = [];
     for (const val of domains[variable]) {
       const c = countConflicts(variable, val, assignment);
@@ -342,7 +313,6 @@ export function mapColoringMinConflicts(problem: MapColoringProblem, maxSteps: n
   return steps;
 }
 
-// Branch & Bound — Map Coloring
 export function mapColoringBranchBound(problem: MapColoringProblem): Step[] {
   const { variables, domains, neighbors } = problem;
   const steps: Step[] = [];
@@ -357,7 +327,6 @@ export function mapColoringBranchBound(problem: MapColoringProblem): Step[] {
   });
 
   function bound(asgn: Record<string, string>): number {
-    // Số biến chưa gán còn lại (bound đơn giản)
     return variables.filter(v => !(v in asgn)).length;
   }
 
@@ -442,9 +411,6 @@ export function mapColoringBranchBound(problem: MapColoringProblem): Step[] {
   return steps;
 }
 
-// ============================================================
-// N-QUEENS
-// ============================================================
 
 function queensConflict(row: number, col: number, placement: (number | undefined)[]): boolean {
   for (let r = 0; r < placement.length; r++) {
@@ -540,7 +506,6 @@ export function nQueensBacktracking(n: number): Step[] {
 
 export function nQueensAC3(n: number): Step[] {
   const steps: Step[] = [];
-  // Với N-Queens, domain của mỗi hàng = cột có thể đặt
   const domains: Record<string, number[]> = {};
   for (let i = 0; i < n; i++) domains[`Q${i}`] = Array.from({ length: n }, (_, j) => j);
 
@@ -627,7 +592,6 @@ export function nQueensAC3(n: number): Step[] {
 
 export function nQueensMinConflicts(n: number, maxIter: number = 200): Step[] {
   const steps: Step[] = [];
-  // Gán ngẫu nhiên mỗi hàng một cột
   const placement: number[] = Array.from({ length: n }, () => Math.floor(Math.random() * n));
 
   steps.push({
@@ -739,9 +703,6 @@ export function nQueensBranchBound(n: number): Step[] {
   return steps;
 }
 
-// ============================================================
-// SUDOKU
-// ============================================================
 
 function sudokuIsValid(board: number[][], row: number, col: number, num: number): boolean {
   for (let c = 0; c < 9; c++) if (board[row][c] === num) return false;
@@ -822,7 +783,6 @@ export function sudokuAC3(initBoard: number[][]): Step[] {
   const steps: Step[] = [];
   const board = copyBoard(initBoard);
 
-  // Domains cho từng ô
   const domains: Record<string, number[]> = {};
   for (let r = 0; r < 9; r++)
     for (let c = 0; c < 9; c++) {
@@ -918,7 +878,6 @@ export function sudokuMinConflicts(initBoard: number[][], maxIter: number = 500)
   const steps: Step[] = [];
   const board = copyBoard(initBoard);
 
-  // Điền ngẫu nhiên các ô trống
   for (let r = 0; r < 9; r++)
     for (let c = 0; c < 9; c++)
       if (board[r][c] === 0) board[r][c] = Math.ceil(Math.random() * 9);
@@ -993,7 +952,6 @@ export function sudokuBranchBound(initBoard: number[][]): Step[] {
     desc: 'Sudoku Branch & Bound: ưu tiên ô ít lựa chọn nhất (MRV)',
   });
 
-  // MRV: tìm ô trống có ít giá trị hợp lệ nhất
   function findMRV(): [number, number, number] | null {
     let best: [number, number] | null = null, bestCount = 10;
     for (let r = 0; r < 9; r++)
@@ -1050,9 +1008,6 @@ export function sudokuBranchBound(initBoard: number[][]): Step[] {
   return steps;
 }
 
-// ============================================================
-// SCHEDULING
-// ============================================================
 
 function buildConflictsMap(conflicts: [string, string][]): Record<string, string[]> {
   const map: Record<string, string[]> = {};
@@ -1084,7 +1039,6 @@ export function schedulingBacktracking(problem: SchedulingProblem): Step[] {
   const steps: Step[] = [];
   const assignment: Record<string, { slot: string; room: string }> = {};
 
-  // Domain: tất cả combo (slot × room)
   const domain: { slot: string; room: string }[] = [];
   for (const slot of slots) for (const room of rooms) domain.push({ slot, room });
 
@@ -1105,7 +1059,6 @@ export function schedulingBacktracking(problem: SchedulingProblem): Step[] {
       });
 
       const conflict = schedulingConflict(course, slot, assignment, conflictsMap);
-      // Kiểm tra phòng không bị dùng trùng cùng slot
       const roomBusy = Object.values(assignment).some(a => a.slot === slot && a.room === room);
 
       if (!conflict && !roomBusy) {
@@ -1351,7 +1304,6 @@ export function schedulingBranchBound(problem: SchedulingProblem): Step[] {
   return steps;
 }
 
-// Re-export config items for backward compatibility
 export {
   MAP_COLORING_PROBLEM,
   MAP_NODE_POSITIONS,

@@ -41,7 +41,6 @@ export function dijkstra(graph, start) {
   for (const node in graph) dist[node] = Infinity;
   dist[start] = 0;
 
-  // Priority queue as sorted array of [node, dist]
   const pq = [[start, 0]];
   steps.push({ type: 'init', dist: {...dist}, current: start, pq: [...pq] });
 
@@ -119,7 +118,6 @@ export function bellmanFord(graph, nodes, start) {
     if (!updated) break;
   }
 
-  // Check for negative cycles
   let hasNegCycle = false;
   for (const edge of allEdges) {
     if (dist[edge.from] !== Infinity && dist[edge.from] + edge.weight < dist[edge.to]) {
@@ -137,7 +135,6 @@ export function prim(graph, nodes, start) {
   const steps = [];
   const inMST = new Set();
   const mst = [];
-  // Priority queue entries: [cost, from, to]
   let pq = [];
 
   inMST.add(start);
@@ -195,13 +192,11 @@ export function prim(graph, nodes, start) {
   return steps;
 }
 
-// ─── Kosaraju-Sharir (Strongly Connected Components) ─────────────────────────
 export function kosaraju(graph, nodes) {
   const steps = [];
   const visited = new Set();
   const finishOrder = [];
 
-  // Build reverse graph
   const rev = {};
   nodes.forEach(n => rev[n] = []);
   for (const u in graph) {
@@ -211,7 +206,6 @@ export function kosaraju(graph, nodes) {
     }
   }
 
-  // Phase 1: DFS on original graph, record finish order
   steps.push({ type: 'phase', phase: 1, desc: 'Pha 1: DFS trên đồ thị gốc, ghi thứ tự kết thúc' });
   function dfs1(u) {
     visited.add(u);
@@ -227,7 +221,6 @@ export function kosaraju(graph, nodes) {
   }
   for (const n of nodes) { if (!visited.has(n)) dfs1(n); }
 
-  // Phase 2: DFS on reversed graph in reverse finish order
   steps.push({ type: 'phase', phase: 2, desc: 'Pha 2: DFS trên đồ thị đảo ngược theo thứ tự finish' });
   const visited2 = new Set();
   const sccs = [];
@@ -252,7 +245,6 @@ export function kosaraju(graph, nodes) {
   return steps;
 }
 
-// ─── Topological Sort — DFS (Kahn) ────────────────────────────────────────────
 export function topoSortDFS(graph, nodes) {
   const steps = [];
   const visited = new Set(), stack = [], temp = new Set();
@@ -315,25 +307,20 @@ export function topoSortKahn(graph, nodes) {
   return steps;
 }
 
-// A-star.js
 export function aStar(graph, start, goal, heuristic = null) {
   const steps = [];
   
-  // Lấy danh sách tất cả nodes từ graph
   const nodes = Object.keys(graph);
   
-  // Hàm heuristic mặc định (trả về 0 - hoạt động như Dijkstra)
   const defaultHeuristic = (node, goal) => 0;
   const hFunc = heuristic || defaultHeuristic;
   
-  // Khởi tạo các cấu trúc dữ liệu
   const gScore = {};
   const fScore = {};
   const cameFrom = {};
   const openSet = new Set();
   const closedSet = new Set();
   
-  // Khởi tạo giá trị cho tất cả nodes
   nodes.forEach(n => {
     gScore[n] = Infinity;
     fScore[n] = Infinity;
@@ -343,7 +330,6 @@ export function aStar(graph, start, goal, heuristic = null) {
   fScore[start] = hFunc(start, goal);
   openSet.add(start);
   
-  // Lưu bước khởi tạo
   steps.push({
     type: 'init',
     start,
@@ -358,7 +344,6 @@ export function aStar(graph, start, goal, heuristic = null) {
   });
   
   while (openSet.size > 0) {
-    // Tìm node trong openSet có fScore nhỏ nhất
     let current = null;
     let minF = Infinity;
     
@@ -369,7 +354,6 @@ export function aStar(graph, start, goal, heuristic = null) {
       }
     }
     
-    // Lưu bước xử lý node hiện tại
     steps.push({
       type: 'process',
       node: current,
@@ -382,9 +366,7 @@ export function aStar(graph, start, goal, heuristic = null) {
       stack: [...closedSet]
     });
     
-    // Kiểm tra nếu đã đến đích
     if (current === goal) {
-      // Xây dựng đường đi
       const path = [];
       let temp = current;
       while (temp) {
@@ -392,7 +374,6 @@ export function aStar(graph, start, goal, heuristic = null) {
         temp = cameFrom[temp];
       }
       
-      // Lưu bước tìm thấy đích
       steps.push({
         type: 'goal_found',
         current,
@@ -406,7 +387,6 @@ export function aStar(graph, start, goal, heuristic = null) {
         stack: [...closedSet]
       });
       
-      // Lưu bước kết thúc
       steps.push({
         type: 'done',
         path,
@@ -423,16 +403,13 @@ export function aStar(graph, start, goal, heuristic = null) {
       return steps;
     }
     
-    // Di chuyển current từ openSet sang closedSet
     openSet.delete(current);
     closedSet.add(current);
     
-    // Duyệt qua các neighbor của current
     for (const edge of (graph[current] || [])) {
       const neighbor = edge.to;
       const weight = edge.weight || 1;
       
-      // Lưu bước xét cạnh
       steps.push({
         type: 'relax',
         from: current,
@@ -455,7 +432,6 @@ export function aStar(graph, start, goal, heuristic = null) {
       const tentativeG = gScore[current] + weight;
       
       if (tentativeG < gScore[neighbor]) {
-        // Cập nhật đường đi tốt hơn
         cameFrom[neighbor] = current;
         gScore[neighbor] = tentativeG;
         fScore[neighbor] = tentativeG + hFunc(neighbor, goal);
@@ -464,7 +440,6 @@ export function aStar(graph, start, goal, heuristic = null) {
           openSet.add(neighbor);
         }
         
-        // Lưu bước cập nhật
         steps.push({
           type: 'update',
           node: neighbor,
@@ -483,7 +458,6 @@ export function aStar(graph, start, goal, heuristic = null) {
     }
   }
   
-  // Không tìm thấy đường đi
   steps.push({
     type: 'no_path',
     openSet: new Set(openSet),
@@ -511,7 +485,6 @@ export function aStar(graph, start, goal, heuristic = null) {
   return steps;
 }
 
-// Hàm heuristic Manhattan (có thể import riêng nếu cần)
 export function heuristicManhattan(goal) {
   return function(node) {
     const [nx, ny] = node.split(',').map(Number);
@@ -520,7 +493,6 @@ export function heuristicManhattan(goal) {
   };
 }
 
-// Hàm heuristic Euclidean (có thể import riêng nếu cần)
 export function heuristicEuclidean(goal) {
   return function(node) {
     const [nx, ny] = node.split(',').map(Number);
@@ -529,25 +501,20 @@ export function heuristicEuclidean(goal) {
   };
 }
 
-// Thêm vào cuối file index.js, sau hàm aStar
 
 export function bestFirstSearch(graph, start, goal, heuristic = null) {
   const steps = [];
   
-  // Lấy danh sách tất cả nodes từ graph
   const nodes = Object.keys(graph);
   
-  // Hàm heuristic mặc định (trả về 0)
   const defaultHeuristic = (node, goal) => 0;
   const hFunc = heuristic || defaultHeuristic;
   
-  // Khởi tạo các cấu trúc dữ liệu
   const cameFrom = {};
   const openSet = new Set();
   const closedSet = new Set();
   const fScore = {}; // Chỉ lưu f-score (heuristic)
   
-  // Khởi tạo giá trị cho tất cả nodes
   nodes.forEach(n => {
     fScore[n] = Infinity;
   });
@@ -555,7 +522,6 @@ export function bestFirstSearch(graph, start, goal, heuristic = null) {
   fScore[start] = hFunc(start, goal);
   openSet.add(start);
   
-  // Lưu bước khởi tạo
   steps.push({
     type: 'init',
     start,
@@ -569,7 +535,6 @@ export function bestFirstSearch(graph, start, goal, heuristic = null) {
   });
   
   while (openSet.size > 0) {
-    // Tìm node trong openSet có fScore nhỏ nhất (heuristic tốt nhất)
     let current = null;
     let minF = Infinity;
     
@@ -580,7 +545,6 @@ export function bestFirstSearch(graph, start, goal, heuristic = null) {
       }
     }
     
-    // Lưu bước xử lý node hiện tại
     steps.push({
       type: 'process',
       node: current,
@@ -592,9 +556,7 @@ export function bestFirstSearch(graph, start, goal, heuristic = null) {
       stack: [...closedSet]
     });
     
-    // Kiểm tra nếu đã đến đích
     if (current === goal) {
-      // Xây dựng đường đi
       const path = [];
       let temp = current;
       while (temp) {
@@ -629,11 +591,9 @@ export function bestFirstSearch(graph, start, goal, heuristic = null) {
       return steps;
     }
     
-    // Di chuyển current từ openSet sang closedSet
     openSet.delete(current);
     closedSet.add(current);
     
-    // Duyệt qua các neighbor của current
     for (const edge of (graph[current] || [])) {
       const neighbor = edge.to;
       const weight = edge.weight || 1;
@@ -663,7 +623,6 @@ export function bestFirstSearch(graph, start, goal, heuristic = null) {
     }
   }
   
-  // Không tìm thấy đường đi
   steps.push({
     type: 'no_path',
     openSet: new Set(openSet),
@@ -689,9 +648,7 @@ export function bestFirstSearch(graph, start, goal, heuristic = null) {
   return steps;
 }
 
-// Thêm sau bestFirstSearch
 
-// ─── Beam Search ────────────────────────────────────────────────────────────
 export function beamSearch(graph, start, goal, beamWidth = 3, heuristic = null) {
   const steps = [];
   
@@ -699,7 +656,6 @@ export function beamSearch(graph, start, goal, beamWidth = 3, heuristic = null) 
   const defaultHeuristic = (node, goal) => 0;
   const hFunc = heuristic || defaultHeuristic;
   
-  // Khởi tạo
   const cameFrom = {};
   const gScore = {};
   const fScore = {};
@@ -730,7 +686,6 @@ export function beamSearch(graph, start, goal, beamWidth = 3, heuristic = null) 
   });
   
   while (openSet.size > 0) {
-    // Chọn beam tốt nhất từ openSet
     const beam = Array.from(openSet)
       .sort((a, b) => fScore[a] - fScore[b])
       .slice(0, beamWidth);
@@ -824,8 +779,6 @@ export function beamSearch(graph, start, goal, beamWidth = 3, heuristic = null) 
       }
     }
     
-    // Cập nhật openSet cho vòng lặp tiếp theo
-    // Giữ lại các node tốt nhất dựa trên fScore
     const allCandidates = Array.from(openSet)
       .filter(n => !closedSet.has(n))
       .sort((a, b) => fScore[a] - fScore[b])
@@ -834,7 +787,6 @@ export function beamSearch(graph, start, goal, beamWidth = 3, heuristic = null) 
     openSet.clear();
     allCandidates.forEach(n => openSet.add(n));
     
-    // Nếu không còn node nào trong openSet sau khi lọc
     if (openSet.size === 0 && !closedSet.has(goal)) {
       steps.push({
         type: 'no_path',
@@ -862,7 +814,6 @@ export function beamSearch(graph, start, goal, beamWidth = 3, heuristic = null) 
     }
   }
   
-  // Không tìm thấy đường đi
   steps.push({
     type: 'no_path',
     openSet: new Set(openSet),
@@ -888,7 +839,6 @@ export function beamSearch(graph, start, goal, beamWidth = 3, heuristic = null) 
   return steps;
 }
 
-// ─── Tabu Search ────────────────────────────────────────────────────────────
 export function tabuSearch(graph, start, goal, maxIterations = 100, tabuSize = 10, heuristic = null) {
   const steps = [];
   
@@ -896,7 +846,6 @@ export function tabuSearch(graph, start, goal, maxIterations = 100, tabuSize = 1
   const defaultHeuristic = (node, goal) => 0;
   const hFunc = heuristic || defaultHeuristic;
   
-  // Khởi tạo giải pháp ban đầu (tìm đường đi đơn giản)
   let currentPath = [start];
   let currentCost = 0;
   let bestPath = [start];
@@ -923,13 +872,11 @@ export function tabuSearch(graph, start, goal, maxIterations = 100, tabuSize = 1
     stack: []
   });
   
-  // Xây dựng danh sách hàng xóm cho mỗi node
   const neighbors = {};
   nodes.forEach(n => {
     neighbors[n] = graph[n]?.map(e => e.to) || [];
   });
   
-  // Hàm tính chi phí của đường đi
   const calculatePathCost = (path) => {
     let cost = 0;
     for (let i = 0; i < path.length - 1; i++) {
@@ -949,7 +896,6 @@ export function tabuSearch(graph, start, goal, maxIterations = 100, tabuSize = 1
   while (iteration < maxIterations && !foundGoal && currentPath.length > 0) {
     const currentNode = currentPath[currentPath.length - 1];
     
-    // Nếu đã đến goal
     if (currentNode === goal) {
       foundGoal = true;
       const totalCost = calculatePathCost(currentPath);
@@ -972,13 +918,11 @@ export function tabuSearch(graph, start, goal, maxIterations = 100, tabuSize = 1
       break;
     }
     
-    // Lấy các hàng xóm chưa thăm hoặc không trong tabu
     const candidates = (neighbors[currentNode] || [])
       .filter(n => !visitedSet.has(n) && !tabuList.includes(n))
       .sort((a, b) => hFunc(a, goal) - hFunc(b, goal));
     
     if (candidates.length === 0) {
-      // Nếu không có lựa chọn nào, quay lui một bước (tìm đường mới)
       if (currentPath.length > 1) {
         const backNode = currentPath[currentPath.length - 2];
         const backCost = calculatePathCost(currentPath.slice(0, -1));
@@ -1000,22 +944,18 @@ export function tabuSearch(graph, start, goal, maxIterations = 100, tabuSize = 1
         break;
       }
     } else {
-      // Chọn candidate tốt nhất
       const nextNode = candidates[0];
       const newCost = calculatePathCost([...currentPath, nextNode]);
       
-      // Cập nhật
       currentPath.push(nextNode);
       currentCost = newCost;
       visitedSet.add(nextNode);
       
-      // Cập nhật tabu
       tabuList.push(nextNode);
       if (tabuList.length > tabuSize) {
         tabuList.shift();
       }
       
-      // Cập nhật giải pháp tốt nhất
       if (newCost < bestCost && nextNode === goal) {
         bestPath = [...currentPath];
         bestCost = newCost;
@@ -1042,7 +982,6 @@ export function tabuSearch(graph, start, goal, maxIterations = 100, tabuSize = 1
     iteration++;
   }
   
-  // Kết thúc
   steps.push({
     type: 'done',
     path: bestPath,

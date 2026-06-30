@@ -1,4 +1,3 @@
-// config.ts
 export interface LLNode {
   id: number;
   val: any;

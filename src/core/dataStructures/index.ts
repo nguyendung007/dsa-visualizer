@@ -1,0 +1,548 @@
+import {
+  StackOperation,
+  QueueOperation,
+  PriorityQueueOperation,
+  HashTableOperation,
+  StackStep,
+  QueueStep,
+  PriorityQueueStep,
+  HashTableStep,
+  HashFunction
+} from './config';
+
+export * from './config';
+
+export function stackOps(operations: StackOperation[]): StackStep[] {
+  const steps: StackStep[] = [];
+  const stack: any[] = [];
+
+  for (const op of operations) {
+    if (op.type === 'push') {
+      stack.push(op.val);
+      steps.push({
+        stack: [...stack],
+        op: 'push',
+        val: op.val,
+        top: stack.length - 1,
+        highlight: stack.length - 1,
+        action: 'entering'
+      });
+    } else if (op.type === 'pop') {
+      if (stack.length === 0) {
+        steps.push({
+          stack: [...stack],
+          op: 'pop',
+          val: null,
+          top: -1,
+          error: 'Stack rỗng!'
+        });
+        continue;
+      }
+      const val = stack[stack.length - 1];
+      steps.push({
+        stack: [...stack],
+        op: 'pop',
+        val,
+        top: stack.length - 1,
+        highlight: stack.length - 1,
+        action: 'leaving'
+      });
+      stack.pop();
+      steps.push({
+        stack: [...stack],
+        op: 'pop_done',
+        val,
+        top: stack.length - 1
+      });
+    } else if (op.type === 'peek') {
+      if (stack.length === 0) {
+        steps.push({
+          stack: [...stack],
+          op: 'peek',
+          val: null,
+          top: -1,
+          error: 'Stack rỗng!'
+        });
+        continue;
+      }
+      steps.push({
+        stack: [...stack],
+        op: 'peek',
+        val: stack[stack.length - 1],
+        top: stack.length - 1,
+        highlight: stack.length - 1
+      });
+    }
+  }
+  return steps;
+}
+
+export function queueOps(operations: QueueOperation[]): QueueStep[] {
+  const steps: QueueStep[] = [];
+  const queue: any[] = [];
+
+  for (const op of operations) {
+    if (op.type === 'enqueue') {
+      queue.push(op.val);
+      steps.push({
+        queue: [...queue],
+        op: 'enqueue',
+        val: op.val,
+        front: 0,
+        rear: queue.length - 1,
+        highlight: queue.length - 1,
+        action: 'entering'
+      });
+    } else if (op.type === 'dequeue') {
+      if (queue.length === 0) {
+        steps.push({
+          queue: [...queue],
+          op: 'dequeue',
+          val: null,
+          front: 0,
+          rear: -1,
+          error: 'Queue rỗng!'
+        });
+        continue;
+      }
+      const val = queue[0];
+      steps.push({
+        queue: [...queue],
+        op: 'dequeue',
+        val,
+        front: 0,
+        rear: queue.length - 1,
+        highlight: 0,
+        action: 'leaving'
+      });
+      queue.shift();
+      steps.push({
+        queue: [...queue],
+        op: 'dequeue_done',
+        val,
+        front: 0,
+        rear: queue.length - 1
+      });
+    } else if (op.type === 'peek') {
+      if (queue.length === 0) {
+        steps.push({
+          queue: [...queue],
+          op: 'peek',
+          val: null,
+          front: 0,
+          rear: -1,
+          error: 'Queue rỗng!'
+        });
+        continue;
+      }
+      steps.push({
+        queue: [...queue],
+        op: 'peek',
+        val: queue[0],
+        front: 0,
+        rear: queue.length - 1,
+        highlight: 0
+      });
+    }
+  }
+  return steps;
+}
+
+export function priorityQueueOps(operations: PriorityQueueOperation[]): PriorityQueueStep[] {
+  const steps: PriorityQueueStep[] = [];
+  let heap: Array<{ val: any; priority: number }> = [];
+
+  function heapifyUp(arr: Array<{ val: any; priority: number }>, i: number): Array<{ swap: [number, number] }> {
+    const actions: Array<{ swap: [number, number] }> = [];
+    while (i > 0) {
+      const parent = Math.floor((i - 1) / 2);
+      if (arr[parent].priority <= arr[i].priority) break;
+      actions.push({ swap: [i, parent] });
+      [arr[i], arr[parent]] = [arr[parent], arr[i]];
+      i = parent;
+    }
+    return actions;
+  }
+
+  function heapifyDown(arr: Array<{ val: any; priority: number }>, i: number): Array<{ swap: [number, number] }> {
+    const actions: Array<{ swap: [number, number] }> = [];
+    const n = arr.length;
+    while (true) {
+      let min = i;
+      const l = 2 * i + 1,
+        r = 2 * i + 2;
+      if (l < n && arr[l].priority < arr[min].priority) min = l;
+      if (r < n && arr[r].priority < arr[min].priority) min = r;
+      if (min === i) break;
+      actions.push({ swap: [i, min] });
+      [arr[i], arr[min]] = [arr[min], arr[i]];
+      i = min;
+    }
+    return actions;
+  }
+
+  for (const op of operations) {
+    if (op.type === 'insert') {
+      heap.push({ val: op.val, priority: op.priority ?? op.val });
+      const idx = heap.length - 1;
+      steps.push({
+        heap: heap.map(x => ({ ...x })),
+        op: 'insert',
+        val: op.val,
+        priority: op.priority ?? op.val,
+        highlight: idx
+      });
+      const swaps = heapifyUp(heap, idx);
+      for (const s of swaps) {
+        steps.push({
+          heap: heap.map(x => ({ ...x })),
+          op: 'heapify_up',
+          swap: s.swap,
+          highlight: s.swap[1]
+        });
+      }
+      steps.push({
+        heap: heap.map(x => ({ ...x })),
+        op: 'insert_done',
+        val: op.val
+      });
+    } else if (op.type === 'extractMin') {
+      if (heap.length === 0) {
+        steps.push({
+          heap: [],
+          op: 'extractMin',
+          val: null,
+          error: 'PQ rỗng!'
+        });
+        continue;
+      }
+      const min = heap[0];
+      steps.push({
+        heap: heap.map(x => ({ ...x })),
+        op: 'extractMin',
+        val: min.val,
+        priority: min.priority,
+        highlight: 0
+      });
+      heap[0] = heap[heap.length - 1];
+      heap.pop();
+      if (heap.length > 0) {
+        const swaps = heapifyDown(heap, 0);
+        for (const s of swaps) {
+          steps.push({
+            heap: heap.map(x => ({ ...x })),
+            op: 'heapify_down',
+            swap: s.swap,
+            highlight: s.swap[1]
+          });
+        }
+      }
+      steps.push({
+        heap: heap.map(x => ({ ...x })),
+        op: 'extract_done',
+        val: min.val
+      });
+    } else if (op.type === 'peek') {
+      steps.push({
+        heap: heap.map(x => ({ ...x })),
+        op: 'peek',
+        val: heap[0]?.val,
+        priority: heap[0]?.priority,
+        highlight: 0
+      });
+    }
+  }
+  return steps;
+}
+
+export function hashTableOps(
+  operations: HashTableOperation[],
+  tableSize: number = 11,
+  hashFormula: string = 'default',
+  probeMode: string = 'chaining'
+): HashTableStep[] {
+  const table: any[] = probeMode === 'chaining'
+    ? Array(tableSize).fill(null).map(() => [])
+    : Array(tableSize).fill(null);
+  const steps: HashTableStep[] = [];
+
+  function buildHashFn(formula: string): HashFunction | null {
+    try {
+      return new Function('key', 'size', `
+        let h = 0;
+        const k = String(key);
+        ${formula};
+        return ((h % size) + size) % size;
+      `) as HashFunction;
+    } catch {
+      return null;
+    }
+  }
+
+  let hashFn: HashFunction;
+  if (hashFormula === 'default') {
+    hashFn = (key: string): number => {
+      let h = 0;
+      for (const c of String(key)) h = (h * 31 + c.charCodeAt(0)) % tableSize;
+      return h;
+    };
+  } else if (hashFormula === 'sum') {
+    hashFn = (key: string): number => {
+      let h = 0;
+      for (const c of String(key)) h += c.charCodeAt(0);
+      return h % tableSize;
+    };
+  } else if (hashFormula === 'djb2') {
+    hashFn = (key: string): number => {
+      let h = 5381;
+      for (const c of String(key)) h = ((h << 5) + h) + c.charCodeAt(0);
+      return ((h >>> 0) % tableSize);
+    };
+  } else if (typeof hashFormula === 'string') {
+    hashFn = buildHashFn(hashFormula) || ((key: string): number => {
+      let h = 0;
+      for (const c of String(key)) h = (h * 31 + c.charCodeAt(0)) % tableSize;
+      return h;
+    });
+  } else {
+    hashFn = (key: string): number => {
+      let h = 0;
+      for (const c of String(key)) h = (h * 31 + c.charCodeAt(0)) % tableSize;
+      return h;
+    };
+  }
+
+  for (const op of operations) {
+    if (op.type === 'insert') {
+      const baseIdx = hashFn(op.key);
+      steps.push({
+        table: probeMode === 'chaining' ? table.map((b: any[]) => [...b]) : [...table],
+        op: 'hash',
+        key: op.key,
+        idx: baseIdx,
+        formula: `hash("${op.key}") = ${baseIdx}`,
+        probeMode
+      });
+
+      if (probeMode === 'chaining') {
+        table[baseIdx].push({ key: op.key, val: op.val });
+        steps.push({
+          table: table.map((b: any[]) => [...b]),
+          op: 'insert',
+          key: op.key,
+          val: op.val,
+          idx: baseIdx,
+          probeMode
+        });
+      } else {
+        let idx = baseIdx;
+        let probeCount = 0;
+        let firstTombstone = -1;
+
+        while (probeCount < tableSize) {
+          if (table[idx] === null) break;
+
+          if (table[idx] === undefined) {
+            if (firstTombstone === -1) firstTombstone = idx;
+          } else if (table[idx].key === op.key) {
+            steps.push({
+              table: [...table],
+              op: 'probe_linear',
+              key: op.key,
+              idx,
+              baseIdx,
+              probeCount,
+              probeMode
+            });
+            table[idx] = { key: op.key, val: op.val };
+            steps.push({
+              table: [...table],
+              op: 'insert',
+              key: op.key,
+              val: op.val,
+              idx,
+              baseIdx,
+              probeMode,
+              updated: true
+            });
+            firstTombstone = -2;
+            break;
+          } else {
+            steps.push({
+              table: [...table],
+              op: 'probe_linear',
+              key: op.key,
+              idx,
+              baseIdx,
+              probeCount,
+              probeMode
+            });
+          }
+
+          idx = (idx + 1) % tableSize;
+          probeCount++;
+        }
+
+        if (firstTombstone !== -2) {
+          const insertIdx = firstTombstone !== -1 ? firstTombstone : idx;
+          if (probeCount < tableSize || firstTombstone !== -1) {
+            table[insertIdx] = { key: op.key, val: op.val };
+            steps.push({
+              table: [...table],
+              op: 'insert',
+              key: op.key,
+              val: op.val,
+              idx: insertIdx,
+              baseIdx,
+              probeMode,
+              reusedTombstone: firstTombstone !== -1
+            });
+          } else {
+            steps.push({
+              table: [...table],
+              op: 'table_full',
+              key: op.key,
+              probeMode
+            });
+          }
+        }
+      }
+    } else if (op.type === 'search') {
+      const baseIdx = hashFn(op.key);
+      steps.push({
+        table: probeMode === 'chaining' ? table.map((b: any[]) => [...b]) : [...table],
+        op: 'hash',
+        key: op.key,
+        idx: baseIdx,
+        probeMode
+      });
+
+      if (probeMode === 'chaining') {
+        const bucket = table[baseIdx];
+        let found: any = null;
+        for (let i = 0; i < bucket.length; i++) {
+          steps.push({
+            table: table.map((b: any[]) => [...b]),
+            op: 'probe',
+            idx: baseIdx,
+            probing: i,
+            key: op.key,
+            probeMode
+          });
+          if (bucket[i].key === op.key) { found = bucket[i].val; break; }
+        }
+        steps.push({
+          table: table.map((b: any[]) => [...b]),
+          op: found !== null ? 'found' : 'notfound',
+          key: op.key,
+          val: found,
+          idx: baseIdx,
+          probeMode
+        });
+      } else {
+        let idx = baseIdx;
+        let found: any = null,
+          probeCount = 0;
+        while (probeCount < tableSize) {
+          if (table[idx] === null) break;
+
+          steps.push({
+            table: [...table],
+            op: 'probe_linear',
+            idx,
+            key: op.key,
+            probeCount,
+            probeMode
+          });
+
+          if (table[idx] !== undefined && table[idx]?.key === op.key) {
+            found = table[idx].val;
+            break;
+          }
+
+          idx = (idx + 1) % tableSize;
+          probeCount++;
+        }
+        steps.push({
+          table: [...table],
+          op: found !== null ? 'found' : 'notfound',
+          key: op.key,
+          val: found,
+          idx,
+          probeMode
+        });
+      }
+    } else if (op.type === 'delete') {
+      const baseIdx = hashFn(op.key);
+      if (probeMode === 'chaining') {
+        const bucket = table[baseIdx];
+        const i = bucket.findIndex((x: any) => x.key === op.key);
+        if (i !== -1) {
+          steps.push({
+            table: table.map((b: any[]) => [...b]),
+            op: 'delete',
+            key: op.key,
+            idx: baseIdx,
+            probeMode
+          });
+          bucket.splice(i, 1);
+          steps.push({
+            table: table.map((b: any[]) => [...b]),
+            op: 'delete_done',
+            key: op.key,
+            idx: baseIdx,
+            probeMode
+          });
+        } else {
+          steps.push({
+            table: table.map((b: any[]) => [...b]),
+            op: 'notfound',
+            key: op.key,
+            idx: baseIdx,
+            probeMode
+          });
+        }
+      } else {
+        let idx = baseIdx,
+          probeCount = 0;
+        while (probeCount < tableSize) {
+          if (table[idx] === null) break;
+
+          if (table[idx] !== undefined && table[idx]?.key === op.key) {
+            steps.push({
+              table: [...table],
+              op: 'delete',
+              key: op.key,
+              idx,
+              probeMode
+            });
+            table[idx] = undefined;
+            steps.push({
+              table: [...table],
+              op: 'delete_done',
+              key: op.key,
+              idx,
+              probeMode
+            });
+            break;
+          }
+
+          idx = (idx + 1) % tableSize;
+          probeCount++;
+        }
+        if (table[idx] !== undefined || probeCount >= tableSize) {
+          if (probeCount >= tableSize || table[idx] === null) {
+            steps.push({
+              table: [...table],
+              op: 'notfound',
+              key: op.key,
+              idx: baseIdx,
+              probeMode
+            });
+          }
+        }
+      }
+    }
+  }
+  return steps;
+}

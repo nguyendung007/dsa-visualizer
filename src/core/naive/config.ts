@@ -1,4 +1,3 @@
-// ─── Naive Bayes Config ────────────────────────────────────────────────────
 
 export interface DataRow {
   id: number;

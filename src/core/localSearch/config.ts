@@ -1,6 +1,4 @@
-// config.ts
 export interface AlgorithmConfig {
-  // Hill Climbing không có config đặc biệt
 }
 
 export interface SimulatedAnnealingConfig {

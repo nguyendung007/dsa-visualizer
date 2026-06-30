@@ -1,6 +1,3 @@
-// ─── Adversarial Search Index ──────────────────────────────────────────────────
-// Core logic cho các thuật toán tìm kiếm đối kháng
-
 import {
   EMPTY,
   PLAYER_X,
@@ -19,26 +16,19 @@ import {
   type GameStateData
 } from './config.js';
 
-// ─── Board Utilities ──────────────────────────────────────────────────────────
+// ============================
+// UTILITY FUNCTIONS
+// ============================
 
-/**
- * Tạo bàn cờ mới
- */
 export function createBoard(size: number = 9): Board {
   return Array.from({ length: size }, () => Array(size).fill(EMPTY));
 }
 
-/**
- * Kiểm tra nước đi hợp lệ
- */
 export function isValidMove(board: Board, row: number, col: number): boolean {
   const size = board.length;
   return row >= 0 && row < size && col >= 0 && col < size && board[row][col] === EMPTY;
 }
 
-/**
- * Lấy danh sách các nước đi hợp lệ
- */
 export function getValidMoves(board: Board): Move[] {
   const size = board.length;
   const moves: Move[] = [];
@@ -50,36 +40,26 @@ export function getValidMoves(board: Board): Move[] {
   return moves;
 }
 
-/**
- * Copy bàn cờ
- */
 export function copyBoard(board: Board): Board {
   return board.map(row => [...row]);
 }
 
-/**
- * Đặt quân cờ
- */
 export function makeMove(board: Board, row: number, col: number, player: Player): Board {
   const newBoard = copyBoard(board);
   newBoard[row][col] = player;
   return newBoard;
 }
 
-// ─── Win Detection ────────────────────────────────────────────────────────────
+// ============================
+// WIN DETECTION
+// ============================
 
-/**
- * Kiểm tra thắng trên bàn cờ
- * Trả về { winner: PLAYER_X | PLAYER_O | null, winCells: [...] }
- */
 export function checkWin(board: Board, row: number, col: number, player: Player): WinResult {
   if (!player) return { winner: null, winCells: [] };
   
   const size = board.length;
-  
-  // Nếu row/col không hợp lệ, kiểm tra toàn bộ bàn cờ
+
   if (row < 0 || row >= size || col < 0 || col >= size) {
-    // Kiểm tra tất cả các ô
     for (let r = 0; r < size; r++) {
       for (let c = 0; c < size; c++) {
         if (board[r][c] === player) {
@@ -92,16 +72,15 @@ export function checkWin(board: Board, row: number, col: number, player: Player)
   }
   
   const directions = [
-    [0, 1],  // Ngang
-    [1, 0],  // Dọc
-    [1, 1],  // Chéo phải
-    [1, -1]  // Chéo trái
+    [0, 1],
+    [1, 0],  
+    [1, 1],  
+    [1, -1]  
   ];
 
   for (const [dr, dc] of directions) {
     let cells: Move[] = [{ row, col }];
     
-    // Check hướng dương
     for (let step = 1; step < 5; step++) {
       const nr = row + dr * step;
       const nc = col + dc * step;
@@ -109,7 +88,6 @@ export function checkWin(board: Board, row: number, col: number, player: Player)
       cells.push({ row: nr, col: nc });
     }
     
-    // Check hướng âm
     for (let step = 1; step < 5; step++) {
       const nr = row - dr * step;
       const nc = col - dc * step;
@@ -125,120 +103,216 @@ export function checkWin(board: Board, row: number, col: number, player: Player)
   return { winner: null, winCells: [] };
 }
 
-/**
- * Kiểm tra bàn cờ đã đầy chưa
- */
 export function isBoardFull(board: Board): boolean {
   return getValidMoves(board).length === 0;
 }
 
-// ─── Heuristic / Evaluation ──────────────────────────────────────────────────
+// ============================
+// ENHANCED EVALUATION FUNCTION (from bot3.cpp)
+// ============================
 
 /**
- * Đếm số lượng quân cờ liên tiếp trong một hướng
+ * Đếm số chuỗi liên tiếp của player theo hướng (dr, dc)
+ * Tương tự countStreaks trong bot3.cpp
  */
-function countInDirection(board: Board, row: number, col: number, dr: number, dc: number, player: Player): number {
-  const size = board.length;
+function countStreaks(board: Board, size: number, player: Player, dr: number, dc: number): number {
   let count = 0;
-  let r = row + dr;
-  let c = col + dc;
   
-  while (r >= 0 && r < size && c >= 0 && c < size && board[r][c] === player) {
-    count++;
-    r += dr;
-    c += dc;
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      // Bỏ qua nếu ô trước đó đã cùng hướng (tránh đếm trùng)
+      const pr = r - dr, pc = c - dc;
+      if (pr >= 0 && pr < size && pc >= 0 && pc < size && board[pr][pc] === player) continue;
+      
+      let streak = 0;
+      let nr = r, nc = c;
+      while (nr >= 0 && nr < size && nc >= 0 && nc < size && board[nr][nc] === player) {
+        streak++;
+        nr += dr;
+        nc += dc;
+      }
+      
+      // Chỉ đếm chuỗi có độ dài từ 2 trở lên để tránh nhiễu
+      if (streak >= 2) {
+        count += streak * streak; // Bình phương để ưu tiên chuỗi dài hơn
+      }
+    }
   }
   return count;
 }
 
 /**
- * Đánh giá một vị trí cụ thể
- */
-function evaluatePosition(board: Board, row: number, col: number, player: Player): number {
-  const directions = [[0,1], [1,0], [1,1], [1,-1]];
-  let score = 0;
-  
-  for (const [dr, dc] of directions) {
-    const count = 1 + countInDirection(board, row, col, dr, dc, player) 
-                    + countInDirection(board, row, col, -dr, -dc, player);
-    
-    // Đánh giá dựa trên số quân liên tiếp
-    if (count >= 5) {
-      score += WIN_SCORE;
-    } else if (count === 4) {
-      score += 100000;
-    } else if (count === 3) {
-      score += 10000;
-    } else if (count === 2) {
-      score += 1000;
-    } else if (count === 1) {
-      score += 100;
-    }
-  }
-  
-  return score;
-}
-
-/**
- * Hàm đánh giá toàn bộ bàn cờ
- * Trả về điểm số từ góc nhìn của PLAYER_X (dương = X có lợi, âm = O có lợi)
+ * Đánh giá bàn cờ dựa trên số chuỗi (streak-based evaluation)
+ * Tương tự evaluate trong bot3.cpp nhưng cải tiến hơn
  */
 export function evaluateBoard(board: Board, player: Player = PLAYER_X): number {
   const size = board.length;
   const opponent = player === PLAYER_X ? PLAYER_O : PLAYER_X;
   let score = 0;
   
-  // Đánh giá cho từng quân cờ trên bàn
-  for (let r = 0; r < size; r++) {
-    for (let c = 0; c < size; c++) {
-      if (board[r][c] === player) {
-        score += evaluatePosition(board, r, c, player);
-      } else if (board[r][c] === opponent) {
-        score -= evaluatePosition(board, r, c, opponent);
-      }
-    }
+  // Các hướng: ngang, dọc, chéo chính, chéo phụ
+  const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
+  
+  for (const [dr, dc] of directions) {
+    // Điểm cho player (càng nhiều chuỗi càng tốt)
+    score += 100 * countStreaks(board, size, player, dr, dc);
+    // Trừ điểm cho opponent
+    score -= 100 * countStreaks(board, size, opponent, dr, dc);
   }
   
   return score;
 }
 
-// ─── Minimax Algorithm ──────────────────────────────────────────────────────
+// ============================
+// CANDIDATE FILTERING (from bot3.cpp)
+// ============================
 
 /**
- * Tạo ID cho node trong cây tìm kiếm
+ * Lọc các ô trống gần quân cờ hiện có
+ * Tương tự getCandidates trong bot3.cpp
  */
-function nodeId(row: number, col: number, depth: number): string {
-  return `${row},${col}-d${depth}`;
+export function getCandidates(board: Board): Move[] {
+  const size = board.length;
+  const radius = size <= 8 ? 1 : 2;
+  const center = Math.floor(size / 2);
+  const seen = new Set<string>();
+  const candidates: Move[] = [];
+  
+  // Tìm các ô trống gần quân cờ
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      if (board[r][c] === EMPTY) continue;
+      
+      for (let dr = -radius; dr <= radius; dr++) {
+        for (let dc = -radius; dc <= radius; dc++) {
+          const nr = r + dr, nc = c + dc;
+          if (nr < 0 || nr >= size || nc < 0 || nc >= size) continue;
+          if (board[nr][nc] !== EMPTY) continue;
+          
+          const key = `${nr},${nc}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          candidates.push({ row: nr, col: nc });
+        }
+      }
+    }
+  }
+  
+  // Nếu không có candidate (bàn cờ trống), chọn trung tâm
+  if (candidates.length === 0) {
+    candidates.push({ row: center, col: center });
+    return candidates;
+  }
+  
+  // Sắp xếp theo khoảng cách đến trung tâm (ưu tiên gần tâm)
+  // Tương tự center_pick trong bot2.cpp và bot3.cpp
+  candidates.sort((a, b) => {
+    const da = Math.max(Math.abs(a.row - center), Math.abs(a.col - center));
+    const db = Math.max(Math.abs(b.row - center), Math.abs(b.col - center));
+    return da - db;
+  });
+  
+  return candidates;
 }
 
 /**
- * Minimax thuần túy (không cắt tỉa)
+ * Lấy top N nước đi tốt nhất dựa trên đánh giá sơ bộ
  */
+function getTopMoves(board: Board, candidates: Move[], maxMoves: number = 10): Move[] {
+  if (candidates.length <= maxMoves) return candidates;
+  
+  const scored = candidates.map(move => {
+    // Đánh giá sơ bộ: mô phỏng đặt quân và tính điểm
+    const tempBoard = copyBoard(board);
+    tempBoard[move.row][move.col] = PLAYER_O; // Giả sử đang là AI
+    const score = evaluateBoard(tempBoard, PLAYER_O);
+    return { ...move, score };
+  });
+  
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, maxMoves).map(({ row, col }) => ({ row, col }));
+}
+
+// ============================
+// DYNAMIC DEPTH (from bot3.cpp)
+// ============================
+
+/**
+ * Tính độ sâu động dựa trên kích thước bàn cờ
+ * Tương tự hard_level trong bot3.cpp
+ */
+export function getDynamicDepth(size: number): number {
+  if (size <= 5) return 8;
+  if (size <= 8) return 5;
+  return 3;
+}
+
+/**
+ * Tính số lượng top moves dựa trên kích thước bàn cờ
+ */
+function getTopMovesCount(size: number): number {
+  if (size <= 5) return 8;
+  if (size <= 8) return 10;
+  return 12;
+}
+
+// ============================
+// WIN/LOSS/DRAW DETECTION FOR AI
+// ============================
+
+function checkTerminal(board: Board, player: Player, opponent: Player): { terminal: boolean; score: number } {
+  // Kiểm tra win cho player
+  const winResult = checkWin(board, -1, -1, player);
+  if (winResult.winner === player) {
+    return { terminal: true, score: WIN_SCORE };
+  }
+  
+  // Kiểm tra win cho opponent
+  const oppWinResult = checkWin(board, -1, -1, opponent);
+  if (oppWinResult.winner === opponent) {
+    return { terminal: true, score: -WIN_SCORE };
+  }
+  
+  // Kiểm tra hòa
+  if (isBoardFull(board)) {
+    return { terminal: true, score: 0 };
+  }
+  
+  return { terminal: false, score: 0 };
+}
+
+// ============================
+// MINIMAX WITH CANDIDATE FILTERING & TOP MOVES
+// ============================
+
 export function minimax(
   board: Board,
   depth: number,
   isMaximizing: boolean,
   player: Player,
   maxDepth: number,
-  steps: MinimaxStep[] = []
+  steps: MinimaxStep[] = [],
+  candidates?: Move[]
 ): MinimaxResult {
   const opponent = player === PLAYER_X ? PLAYER_O : PLAYER_X;
   const currentPlayer = isMaximizing ? player : opponent;
   
-  // Kiểm tra thắng (cho toàn bộ board)
-  const winResult = checkWin(board, -1, -1, currentPlayer);
-  if (winResult.winner) {
-    const score = winResult.winner === player ? WIN_SCORE : -WIN_SCORE;
+  // Kiểm tra terminal (win/loss/draw)
+  const terminal = checkTerminal(board, player, opponent);
+  if (terminal.terminal) {
     steps.push({
       type: 'terminal',
       depth,
-      score,
+      score: terminal.score,
       isMaximizing,
-      message: `Phát hiện thắng cho ${winResult.winner === PLAYER_X ? 'X' : 'O'}`
+      message: terminal.score === WIN_SCORE ? `🏆 ${player === PLAYER_X ? 'X' : 'O'} thắng!` :
+               terminal.score === -WIN_SCORE ? `😔 ${opponent === PLAYER_X ? 'X' : 'O'} thắng!` :
+               '🤝 Hòa!'
     });
-    return { score, steps, nodesExplored: 1 };
+    return { score: terminal.score, steps, nodesExplored: 1 };
   }
   
+  // Kiểm tra depth
   if (depth === 0) {
     const score = evaluateBoard(board, player);
     steps.push({
@@ -247,34 +321,49 @@ export function minimax(
       score,
       isMaximizing,
       nodesExplored: 1,
-      message: `Đánh giá ở độ sâu ${depth}: ${score}`
+      message: `📊 Đánh giá leaf: ${score}`
     });
     return { score, steps, nodesExplored: 1 };
   }
   
-  const moves = getValidMoves(board);
-  if (moves.length === 0) {
+  // Lấy candidates nếu chưa có
+  if (!candidates) {
+    candidates = getCandidates(board);
+    steps.push({
+      type: 'candidates',
+      depth,
+      message: `📋 Tìm thấy ${candidates.length} ứng viên`,
+    });
+  }
+  
+  // Giới hạn số nước đi xét (topN)
+  const topN = getTopMovesCount(board.length);
+  const topMoves = getTopMoves(board, candidates, topN);
+  
+  if (topMoves.length === 0) {
     const score = evaluateBoard(board, player);
     steps.push({
       type: 'terminal',
       depth,
       score,
       isMaximizing,
-      message: `Không còn nước đi: ${score}`
+      message: `Không còn nước đi hợp lệ: ${score}`
     });
     return { score, steps, nodesExplored: 1 };
   }
   
-  let bestScore = isMaximizing ? -Infinity : Infinity;
-  let bestMove = moves[0];
-  let totalNodes = 1;
+  steps.push({
+    type: 'top_moves',
+    depth,
+    message: `🎯 Xét ${topMoves.length} nước đi tốt nhất (trên ${candidates.length} ứng viên)`,
+  });
   
-  // Giới hạn số nước đi để performance
-  const topMoves = moves.slice(0, Math.min(moves.length, 10));
+  let bestScore = isMaximizing ? -Infinity : Infinity;
+  let bestMove = topMoves[0];
+  let totalNodes = 1;
   
   for (const move of topMoves) {
     const newBoard = makeMove(board, move.row, move.col, currentPlayer);
-    const id = nodeId(move.row, move.col, depth);
     
     steps.push({
       type: 'explore',
@@ -282,10 +371,10 @@ export function minimax(
       move,
       currentPlayer,
       isMaximizing,
-      nodeId: id,
-      message: `Đang xét nước đi (${move.row},${move.col}) tại depth ${depth}`
+      message: `🔍 Đang xét (${move.row},${move.col}) tại depth ${depth}`
     });
     
+    // Đệ quy gọi minimax với depth giảm
     const result = minimax(
       newBoard,
       depth - 1,
@@ -304,10 +393,10 @@ export function minimax(
       move,
       score,
       isMaximizing,
-      nodeId: id,
-      message: `Nước đi (${move.row},${move.col}) có điểm: ${score}`
+      message: `↩️ Nước đi (${move.row},${move.col}) có điểm: ${score}`
     });
     
+    // Cập nhật best
     if (isMaximizing) {
       if (score > bestScore) {
         bestScore = score;
@@ -327,7 +416,7 @@ export function minimax(
     bestMove,
     bestScore,
     isMaximizing,
-    message: `Chọn nước đi tốt nhất tại depth ${depth}: (${bestMove.row},${bestMove.col}) = ${bestScore}`
+    message: `⭐ Chọn (${bestMove.row},${bestMove.col}) = ${bestScore}`
   });
   
   return {
@@ -338,11 +427,10 @@ export function minimax(
   };
 }
 
-// ─── Alpha-Beta Pruning ─────────────────────────────────────────────────────
+// ============================
+// ALPHA-BETA WITH CANDIDATE FILTERING & TOP MOVES
+// ============================
 
-/**
- * Alpha-Beta Pruning
- */
 export function alphaBeta(
   board: Board,
   depth: number,
@@ -351,27 +439,30 @@ export function alphaBeta(
   isMaximizing: boolean,
   player: Player,
   maxDepth: number,
-  steps: MinimaxStep[] = []
+  steps: MinimaxStep[] = [],
+  candidates?: Move[]
 ): MinimaxResult {
   const opponent = player === PLAYER_X ? PLAYER_O : PLAYER_X;
   const currentPlayer = isMaximizing ? player : opponent;
   
-  // Kiểm tra thắng (cho toàn bộ board)
-  const winResult = checkWin(board, -1, -1, currentPlayer);
-  if (winResult.winner) {
-    const score = winResult.winner === player ? WIN_SCORE : -WIN_SCORE;
+  // Kiểm tra terminal (win/loss/draw)
+  const terminal = checkTerminal(board, player, opponent);
+  if (terminal.terminal) {
     steps.push({
       type: 'terminal',
       depth,
-      score,
+      score: terminal.score,
       alpha,
       beta,
       isMaximizing,
-      message: `Phát hiện thắng cho ${winResult.winner === PLAYER_X ? 'X' : 'O'}`
+      message: terminal.score === WIN_SCORE ? `🏆 ${player === PLAYER_X ? 'X' : 'O'} thắng!` :
+               terminal.score === -WIN_SCORE ? `😔 ${opponent === PLAYER_X ? 'X' : 'O'} thắng!` :
+               '🤝 Hòa!'
     });
-    return { score, steps, nodesExplored: 1, prunedBranches: 0 };
+    return { score: terminal.score, steps, nodesExplored: 1, prunedBranches: 0 };
   }
   
+  // Kiểm tra depth
   if (depth === 0) {
     const score = evaluateBoard(board, player);
     steps.push({
@@ -381,34 +472,49 @@ export function alphaBeta(
       alpha,
       beta,
       isMaximizing,
-      message: `Đánh giá leaf: ${score}`
+      message: `📊 Đánh giá leaf: ${score}`
     });
     return { score, steps, nodesExplored: 1, prunedBranches: 0 };
   }
   
-  const moves = getValidMoves(board);
-  if (moves.length === 0) {
+  // Lấy candidates nếu chưa có
+  if (!candidates) {
+    candidates = getCandidates(board);
+    steps.push({
+      type: 'candidates',
+      depth,
+      message: `📋 Tìm thấy ${candidates.length} ứng viên`,
+    });
+  }
+  
+  // Giới hạn số nước đi xét (topN)
+  const topN = getTopMovesCount(board.length);
+  const topMoves = getTopMoves(board, candidates, topN);
+  
+  if (topMoves.length === 0) {
     const score = evaluateBoard(board, player);
     steps.push({
       type: 'terminal',
       depth,
       score,
-      message: `Không còn nước đi: ${score}`
+      message: `Không còn nước đi hợp lệ: ${score}`
     });
     return { score, steps, nodesExplored: 1, prunedBranches: 0 };
   }
   
+  steps.push({
+    type: 'top_moves',
+    depth,
+    message: `🎯 Xét ${topMoves.length} nước đi tốt nhất (trên ${candidates.length} ứng viên)`,
+  });
+  
   let bestScore = isMaximizing ? -Infinity : Infinity;
-  let bestMove = moves[0];
+  let bestMove = topMoves[0];
   let totalNodes = 1;
   let totalPruned = 0;
   
-  // Giới hạn số nước đi để performance
-  const topMoves = moves.slice(0, Math.min(moves.length, 10));
-  
   for (const move of topMoves) {
     const newBoard = makeMove(board, move.row, move.col, currentPlayer);
-    const id = nodeId(move.row, move.col, depth);
     
     steps.push({
       type: 'explore',
@@ -418,10 +524,10 @@ export function alphaBeta(
       isMaximizing,
       alpha,
       beta,
-      nodeId: id,
-      message: `Đang xét (${move.row},${move.col}) tại depth ${depth}, α=${alpha}, β=${beta}`
+      message: `🔍 Đang xét (${move.row},${move.col}) tại depth ${depth}, α=${alpha}, β=${beta}`
     });
     
+    // Đệ quy gọi alphaBeta với depth giảm
     const result = alphaBeta(
       newBoard,
       depth - 1,
@@ -445,10 +551,10 @@ export function alphaBeta(
       isMaximizing,
       alpha,
       beta,
-      nodeId: id,
-      message: `( ${move.row},${move.col}) = ${score}, α=${alpha}, β=${beta}`
+      message: `↩️ Nước đi (${move.row},${move.col}) có điểm: ${score}, α=${alpha}, β=${beta}`
     });
     
+    // Cập nhật best và alpha/beta
     if (isMaximizing) {
       if (score > bestScore) {
         bestScore = score;
@@ -463,7 +569,7 @@ export function alphaBeta(
       beta = Math.min(beta, score);
     }
     
-    // Cắt tỉa
+    // Alpha-Beta Pruning
     if (alpha >= beta) {
       steps.push({
         type: 'prune',
@@ -471,7 +577,6 @@ export function alphaBeta(
         move,
         alpha,
         beta,
-        nodeId: id,
         message: `✂️ Cắt tỉa tại (${move.row},${move.col})! α=${alpha} >= β=${beta}`
       });
       totalPruned++;
@@ -487,7 +592,7 @@ export function alphaBeta(
     isMaximizing,
     alpha,
     beta,
-    message: `Chọn (${bestMove.row},${bestMove.col}) = ${bestScore}`
+    message: `⭐ Chọn (${bestMove.row},${bestMove.col}) = ${bestScore}`
   });
   
   return {
@@ -499,36 +604,164 @@ export function alphaBeta(
   };
 }
 
-// ─── AI Engine ──────────────────────────────────────────────────────────────
+// ============================
+// QUICK WIN/BLOCK CHECKS (from bot2.cpp)
+// ============================
 
 /**
- * Tạo steps cho animation từ Minimax hoặc Alpha-Beta
+ * Kiểm tra nước đi thắng ngay cho player
+ * Tương tự simple_heuristic trong bot2.cpp
  */
+function findWinningMove(board: Board, player: Player): Move | null {
+  const size = board.length;
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      if (board[r][c] === EMPTY) {
+        const tempBoard = makeMove(board, r, c, player);
+        const winResult = checkWin(tempBoard, r, c, player);
+        if (winResult.winner === player) {
+          return { row: r, col: c };
+        }
+      }
+    }
+  }
+  return null;
+}
 
+/**
+ * Tìm nước đi để chặn đối thủ thắng
+ * Tương tự simple_heuristic trong bot2.cpp
+ */
+function findBlockingMove(board: Board, player: Player): Move | null {
+  const opponent = player === PLAYER_X ? PLAYER_O : PLAYER_X;
+  return findWinningMove(board, opponent);
+}
+
+/**
+ * Chọn ô gần trung tâm nhất
+ * Tương tự center_pick trong bot2.cpp
+ */
+function findCenterMove(board: Board): Move | null {
+  const size = board.length;
+  const center = Math.floor(size / 2);
+  let bestMove: Move | null = null;
+  let bestDist = Infinity;
+  
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      if (board[r][c] === EMPTY) {
+        const dist = Math.max(Math.abs(r - center), Math.abs(c - center));
+        if (dist < bestDist) {
+          bestDist = dist;
+          bestMove = { row: r, col: c };
+        }
+      }
+    }
+  }
+  return bestMove;
+}
+
+// ============================
+// MAIN AI FUNCTION
+// ============================
 
 export function generateAISteps(
   board: Board,
   algorithm: string = 'alphaBeta',
-  depth: number = 3,
+  depth: number = -1, // -1 = auto
   player: Player = PLAYER_O
 ): AIResult {
-  const isMaximizing = true;
+  const size = board.length;
+  const opponent = player === PLAYER_X ? PLAYER_O : PLAYER_X;
+  
+  // Auto depth nếu không được chỉ định
+  if (depth === -1) {
+    depth = getDynamicDepth(size);
+  }
+  
   const steps: MinimaxStep[] = [];
+  
+  // BƯỚC 1: Kiểm tra nước đi thắng ngay (từ bot2.cpp)
+  const winningMove = findWinningMove(board, player);
+  if (winningMove) {
+    steps.push({
+      type: 'ai_decision',
+      depth: 0,
+      move: winningMove,
+      score: WIN_SCORE,
+      message: `🎯 AI tìm thấy nước đi thắng ngay tại (${winningMove.row},${winningMove.col})`
+    });
+    return {
+      steps,
+      move: winningMove,
+      score: WIN_SCORE,
+      nodesExplored: 1,
+      prunedBranches: 0
+    };
+  }
+  
+  // BƯỚC 2: Kiểm tra chặn nước đi thắng của đối thủ (từ bot2.cpp)
+  const blockingMove = findBlockingMove(board, player);
+  if (blockingMove) {
+    steps.push({
+      type: 'ai_decision',
+      depth: 0,
+      move: blockingMove,
+      score: 0,
+      message: `🛡️ AI chặn nước đi thắng của đối thủ tại (${blockingMove.row},${blockingMove.col})`
+    });
+    return {
+      steps,
+      move: blockingMove,
+      score: 0,
+      nodesExplored: 1,
+      prunedBranches: 0
+    };
+  }
+  
+  // BƯỚC 3: Lấy candidates (từ bot3.cpp)
+  let candidates = getCandidates(board);
+  
+  // Nếu không có candidates, chọn trung tâm (từ bot2.cpp)
+  if (candidates.length === 0) {
+    const centerMove = findCenterMove(board);
+    if (centerMove) {
+      steps.push({
+        type: 'ai_decision',
+        depth: 0,
+        move: centerMove,
+        score: 0,
+        message: `🎯 AI chọn trung tâm tại (${centerMove.row},${centerMove.col})`
+      });
+      return {
+        steps,
+        move: centerMove,
+        score: 0,
+        nodesExplored: 1,
+        prunedBranches: 0
+      };
+    }
+    throw new Error('Không tìm thấy nước đi hợp lệ');
+  }
+  
+  // BƯỚC 4: Chạy minimax/alpha-beta trên candidates
+  steps.push({
+    type: 'candidates',
+    depth,
+    message: `📋 Tìm thấy ${candidates.length} ứng viên, depth=${depth}`
+  });
   
   let result: MinimaxResult;
   if (algorithm === 'minimax') {
-    result = minimax(board, depth, isMaximizing, player, depth, steps);
+    result = minimax(board, depth, true, player, depth, steps, candidates);
   } else {
-    // Alpha-Beta
-    result = alphaBeta(board, depth, -Infinity, Infinity, isMaximizing, player, depth, steps);
+    result = alphaBeta(board, depth, -Infinity, Infinity, true, player, depth, steps, candidates);
   }
   
-  // Đảm bảo result.move tồn tại
   if (!result.move) {
     throw new Error('Không tìm thấy nước đi hợp lệ');
   }
   
-  // Thêm step kết luận
   steps.push({
     type: 'ai_decision',
     depth: depth,
@@ -536,7 +769,7 @@ export function generateAISteps(
     score: result.score,
     nodesExplored: result.nodesExplored,
     prunedBranches: result.prunedBranches ?? 0,
-    message: `🎯 AI chọn (${result.move.row},${result.move.col}) với điểm ${result.score}`
+    message: `🎯 AI chọn (${result.move.row},${result.move.col}) với điểm ${result.score} (Nodes: ${result.nodesExplored})`
   });
   
   return {
@@ -548,9 +781,10 @@ export function generateAISteps(
   };
 }
 
-/**
- * Tạo steps cho AI vs AI (so sánh)
- */
+// ============================
+// COMPARE ALGORITHMS
+// ============================
+
 export function compareAlgorithms(board: Board, depth: number = 3, player: Player = PLAYER_X): ComparisonResult {
   const isMaximizing = player === PLAYER_X;
   
@@ -577,7 +811,6 @@ export function compareAlgorithms(board: Board, depth: number = 3, player: Playe
       nodesExplored: abResult.nodesExplored,
       prunedBranches: abResult.prunedBranches || 0
     },
-    // Dữ liệu so sánh
     comparison: {
       nodesSaved: miniResult.nodesExplored - (abResult.nodesExplored || 0),
       percentageSaved: ((miniResult.nodesExplored - (abResult.nodesExplored || 0)) / miniResult.nodesExplored * 100).toFixed(2),
@@ -586,12 +819,11 @@ export function compareAlgorithms(board: Board, depth: number = 3, player: Playe
   };
 }
 
-// ─── Game State Management ──────────────────────────────────────────────────
 
-/**
- * Quản lý trạng thái game
- */
 
+// ============================
+// GAME STATE CLASS
+// ============================
 
 export class GameState {
   size: number;
@@ -624,7 +856,6 @@ export class GameState {
     this.board = makeMove(this.board, row, col, this.currentPlayer);
     this.moveHistory.push({ row, col, player: this.currentPlayer });
     
-    // Kiểm tra thắng
     const result = checkWin(this.board, row, col, this.currentPlayer);
     if (result.winner) {
       this.gameOver = true;
@@ -639,14 +870,12 @@ export class GameState {
       };
     }
     
-    // Kiểm tra hòa
     if (isBoardFull(this.board)) {
       this.gameOver = true;
       this.winner = null;
       return { success: true, gameOver: true, winner: null, message: '🤝 Hòa!' };
     }
     
-    // Đổi người chơi
     this.currentPlayer = this.currentPlayer === PLAYER_X ? PLAYER_O : PLAYER_X;
     return { success: true, gameOver: false };
   }
@@ -693,7 +922,10 @@ export class GameState {
   }
 }
 
-// Export lại tất cả từ config để tương thích
+// ============================
+// EXPORTS
+// ============================
+
 export {
   EMPTY,
   PLAYER_X,

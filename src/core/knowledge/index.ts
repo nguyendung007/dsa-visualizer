@@ -1,4 +1,3 @@
-// index.ts
 import {
   Frame,
   FrameSlot,
@@ -11,7 +10,6 @@ import {
   SemanticStep
 } from './config';
 
-// ─── 1. FRAME SYSTEM ──────────────────────────────────────────────────────────
 export function frameOps(operations: FrameOperation[]): FrameStep[] {
   const steps: FrameStep[] = [];
   const frames: Record<string, Frame> = {};
@@ -162,7 +160,6 @@ export function frameOps(operations: FrameOperation[]): FrameStep[] {
   return steps;
 }
 
-// ─── 2. CONCEPT GRAPH ────────────────────────────────────────────────────────
 export function conceptGraphOps(graph: ConceptGraph, operations: ConceptOperation[]): FrameStep[] {
   const steps: FrameStep[] = [];
   const { nodes = [], edges = [] } = graph;
@@ -373,7 +370,6 @@ export function conceptGraphOps(graph: ConceptGraph, operations: ConceptOperatio
   return steps;
 }
 
-// ─── 3. SEMANTIC NETWORK ────────────────────────────────────────────────────
 export function semanticNetOps(network: SemanticNetwork, operations: SemanticOperation[]): SemanticStep[] {
   const steps: SemanticStep[] = [];
   const { concepts = [], relations = [], instances = [] } = network;

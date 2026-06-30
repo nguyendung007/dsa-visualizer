@@ -1,5 +1,3 @@
-// config.ts
-// config.ts
 export interface GraphNode {
   to: string;
   weight?: number;
@@ -111,9 +109,7 @@ export interface TopoStep extends Step {
   queue?: string[];
 }
 
-// Giữ nguyên các phần dưới của config.ts (AStarStep, BestFirstStep, BeamStep, TabuStep...)
 
-// A* Search
 export interface AStarStep extends Step {
   start?: string;
   goal?: string;
@@ -136,7 +132,6 @@ export interface AStarStep extends Step {
   weight?: number;
 }
 
-// Best First Search
 export interface BestFirstStep extends Step {
   start?: string;
   goal?: string;
@@ -154,7 +149,6 @@ export interface BestFirstStep extends Step {
   stack: any[];
 }
 
-// Beam Search
 export interface BeamStep extends Step {
   start?: string;
   goal?: string;
@@ -176,7 +170,6 @@ export interface BeamStep extends Step {
   stack: any[];
 }
 
-// Tabu Search
 export interface TabuStep extends Step {
   start?: string;
   goal?: string;

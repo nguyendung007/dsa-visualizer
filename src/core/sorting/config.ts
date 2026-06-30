@@ -1,4 +1,3 @@
-// config.ts
 export const SORTING_ALGORITHMS = {
   SELECTION: 'selectionSort',
   INSERTION: 'insertionSort',

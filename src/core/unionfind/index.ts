@@ -1,7 +1,5 @@
-// index.ts
 import { UF, Step, createUF } from './config';
 
-// ─── Quick Find ──────────────────────────────────────────────────────────────
 export function qfFind(uf: UF, p: number): number {
   return uf.id[p];
 }
@@ -59,7 +57,6 @@ export function qfUnion(uf: UF, p: number, q: number, steps: Step[] = []): Step[
   return steps;
 }
 
-// ─── Quick Union ─────────────────────────────────────────────────────────────
 export function quRoot(parent: number[], p: number, steps?: Step[], tracePath: boolean = false): number {
   const path: number[] = [];
   while (parent[p] !== p) {
@@ -109,7 +106,6 @@ export function quUnion(uf: UF, p: number, q: number, steps: Step[] = []): Step[
   return steps;
 }
 
-// ─── Weighted Quick Union ────────────────────────────────────────────────────
 export function wquUnion(uf: UF, p: number, q: number, steps: Step[] = []): Step[] {
   const rp = quRoot(uf.parent, p, steps, true);
   const rq = quRoot(uf.parent, q, steps, true);
@@ -171,7 +167,6 @@ export function wquUnion(uf: UF, p: number, q: number, steps: Step[] = []): Step
   return steps;
 }
 
-// ─── Path Compression ────────────────────────────────────────────────────────
 export function pcFind(parent: number[], p: number, steps: Step[] = []): number {
   const orig = p;
   const path: number[] = [];
@@ -189,7 +184,6 @@ export function pcFind(parent: number[], p: number, steps: Step[] = []): number 
     desc: `Root(${orig}) = ${root}, đường đi: ${[...path, root].join('→')}`
   });
   
-  // Path compression: halving
   for (const node of path) {
     if (parent[node] !== root) {
       const old = parent[node];
@@ -245,5 +239,4 @@ export function pcUnion(uf: UF, p: number, q: number, steps: Step[] = []): Step[
   return steps;
 }
 
-// Re-export createUF from config
 export { createUF };

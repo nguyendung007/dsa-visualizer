@@ -1,4 +1,3 @@
-// traversal.ts
 export function inorder(root: any): any[] {
   const steps: any[] = [];
   const result: any[] = [];

@@ -1,11 +1,9 @@
-// index.ts
 import {
   KMP, RABIN_KARP, SUFFIX_ARRAY, LABELS,
   type SearchStep, type RadixStep, type Quick3Step,
   type SuffixStep, type TSTStep, type TSTNode,
 } from './config.js';
 
-// ─── TST (Ternary Search Tree) ───────────────────────────────────────────────
 export function tstInsert(
   root: TSTNode | null,
   word: string,
@@ -77,7 +75,6 @@ export function tstToLayout(root: TSTNode | null): { nodes: any[]; edges: any[] 
   return { nodes, edges };
 }
 
-// ─── LSD Radix Sort ──────────────────────────────────────────────────────────
 export function lsdRadixSort(arr: string[]): RadixStep[] {
   const steps: RadixStep[] = [];
   if (!arr.length) return steps;
@@ -100,7 +97,6 @@ export function lsdRadixSort(arr: string[]): RadixStep[] {
   return steps;
 }
 
-// ─── MSD Radix Sort ──────────────────────────────────────────────────────────
 export function msdRadixSort(arr: string[]): RadixStep[] {
   const steps: RadixStep[] = [];
   if (!arr.length) return steps;
@@ -124,17 +120,14 @@ export function msdRadixSort(arr: string[]): RadixStep[] {
         sort(a, start, idx - 1, d + 1);
       }
     }
-    // Sửa: dùng replace để loại bỏ \0
     steps.push({ type: 'collected', digit: d, arr: a.map(s => s.replace(/\0/g, '')) });
   }
 
   sort(a, 0, a.length - 1, 0);
-  // Sửa: dùng replace để loại bỏ \0
   steps.push({ type: 'done', arr: a.map(s => s.replace(/\0/g, '')) });
   return steps;
 }
 
-// ─── KMP (Knuth-Morris-Pratt) ─────────────────────────────────────────────────
 export function buildKMPTable(pattern: string): number[] {
   const lps = Array(pattern.length).fill(0);
   let len = 0, i = 1;
@@ -174,12 +167,10 @@ export function kmpSearch(text: string, pattern: string): SearchStep[] {
   return steps;
 }
 
-// ─── Boyer-Moore ──────────────────────────────────────────────────────────────
 export function boyerMoore(text: string, pattern: string): SearchStep[] {
   const steps: SearchStep[] = [];
   const m = pattern.length, n = text.length;
 
-  // Bad character table
   const bad: Record<string, number> = {};
   for (let i = 0; i < m; i++) bad[pattern[i]] = i;
   steps.push({ type: 'bad_char_table', table: { ...bad } });
@@ -208,9 +199,7 @@ export function boyerMoore(text: string, pattern: string): SearchStep[] {
   return steps;
 }
 
-// ─── Rabin-Karp ───────────────────────────────────────────────────────────────
 
-// Modular exponentiation dùng BigInt để tránh overflow với mod lớn (1e9+9)
 function modPow(base: number, exp: number, mod: number): bigint {
   let result = 1n;
   let b = BigInt(base);
@@ -225,8 +214,6 @@ function modPow(base: number, exp: number, mod: number): bigint {
   return result;
 }
 
-// Modular inverse dùng Fermat's little theorem: a^(mod-2) mod mod
-// Chỉ đúng khi mod là số nguyên tố (1e9+9 là số nguyên tố)
 function modInverse(a: number, mod: number): bigint {
   return modPow(a, mod - 2, mod);
 }
@@ -241,33 +228,27 @@ export function rabinKarp(
   const m = pattern.length, n = text.length;
   const matches: number[] = [];
 
-  // Dùng BigInt để tránh overflow trong tất cả phép tính hash
   const B = BigInt(base);
   const M = BigInt(Math.round(mod)); // 1e9+9 = 1000000009
   const invB = modInverse(base, Math.round(mod)); // nghịch đảo của base mod M
 
-  // Tính hash của pattern: H = c[0]*B^0 + c[1]*B^1 + ... + c[m-1]*B^(m-1)
   let patHash = 0n, pow = 1n;
   for (let i = 0; i < m; i++) {
     patHash = (patHash + BigInt(pattern.charCodeAt(i)) * pow) % M;
     if (i < m - 1) pow = pow * B % M;
   }
-  // pow hiện tại = B^(m-1), dùng để thêm ký tự mới vào bậc cao nhất
   steps.push({ type: 'pattern_hash', pattern, hash: Number(patHash), base });
 
-  // Tính hash cửa sổ đầu tiên [0..m-1]
   let winHash = 0n, p = 1n;
   for (let i = 0; i < m && i < n; i++) {
     winHash = (winHash + BigInt(text.charCodeAt(i)) * p) % M;
     if (i < m - 1) p = p * B % M;
   }
-  // p = B^(m-1) = pow (dùng chung)
 
   for (let i = 0; i <= n - m; i++) {
     steps.push({ type: 'window', pos: i, hash: Number(winHash), match: winHash === patHash });
 
     if (winHash === patHash) {
-      // Xác minh bằng so sánh ký tự (tránh hash collision)
       let ok = true;
       for (let k = 0; k < m; k++) {
         const charMatch = text[i + k] === pattern[k];
@@ -279,11 +260,8 @@ export function rabinKarp(
     }
 
     if (i < n - m) {
-      // FIX: rolling hash thật sự – O(1) mỗi bước, không recompute O(m)
-      // Bước 1: bỏ ký tự text[i] (bậc 0) → trừ đi rồi chia base (dịch toàn bộ xuống 1 bậc)
       winHash = (winHash - BigInt(text.charCodeAt(i)) % M + M) % M;
       winHash = winHash * invB % M;
-      // Bước 2: thêm ký tự text[i+m] vào bậc cao nhất (bậc m-1)
       winHash = (winHash + BigInt(text.charCodeAt(i + m)) * pow) % M;
 
       steps.push({ type: 'roll', removed: text[i], added: text[i + m], newHash: Number(winHash) });
@@ -294,7 +272,6 @@ export function rabinKarp(
   return steps;
 }
 
-// ─── 3-Way Radix Quicksort (Bentley-Sedgewick) ───────────────────────────────
 export function radixQuick3Way(arr: string[]): Quick3Step[] {
   const steps: Quick3Step[] = [];
   const a = [...arr];
@@ -371,7 +348,6 @@ export function radixQuick3Way(arr: string[]): Quick3Step[] {
   return steps;
 }
 
-// ─── Suffix Array ─────────────────────────────────────────────────────────────
 export function buildSuffixArray(text: string): SuffixStep[] {
   const steps: SuffixStep[] = [];
   const n = text.length;
@@ -383,7 +359,6 @@ export function buildSuffixArray(text: string): SuffixStep[] {
     desc: `Tạo ${n} hậu tố từ "${text}"`
   });
 
-  // Show all suffixes
   suffixes.forEach((s, i) => {
     steps.push({
       type: 'suffix',
@@ -394,7 +369,6 @@ export function buildSuffixArray(text: string): SuffixStep[] {
     });
   });
 
-  // Sort with steps
   suffixes.sort((a, b) => {
     steps.push({
       type: 'compare',
@@ -415,7 +389,6 @@ export function buildSuffixArray(text: string): SuffixStep[] {
     desc: `Suffix Array: [${sa.join(', ')}]`
   });
 
-  // Build LCP array
   const lcpArr = Array(n).fill(0);
   for (let i = 1; i < n; i++) {
     let l = 0;

@@ -1,4 +1,3 @@
-// ─── Two Sum ─────────────────────────────────────────────────────────────────
 export function twoSumBruteForce(arr, target) {
   const steps = [];
   steps.push({ type: 'init', array: [...arr], target, desc: `Tìm 2 số có tổng = ${target} (Brute Force O(n²))` });

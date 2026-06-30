@@ -1,11 +1,23 @@
+import {
+  DataSample,
+  DecisionTreeNode,
+  LeafNode,
+  InternalNode,
+  DecisionStep,
+  DatasetOptions,
+  PredictFunction
+} from './config';
 
-export function generateDataset(size = 14) {
+export * from './config';
+
+
+export function generateDataset(size: number = 14): DataSample[] {
   const ages = ['<=30', '31-40', '>40'];
   const incomes = ['high', 'medium', 'low'];
   const students = ['yes', 'no'];
   const creditRatings = ['fair', 'excellent'];
   
-  const data = [];
+  const data: DataSample[] = [];
   for (let i = 0; i < size; i++) {
     data.push({
       id: i + 1,
@@ -19,8 +31,9 @@ export function generateDataset(size = 14) {
   return data;
 }
 
-function calculateEntropy(data, targetAttr = 'buy_computer') {
-  const counts = {};
+
+function calculateEntropy(data: DataSample[], targetAttr: string = 'buy_computer'): number {
+  const counts: Record<string, number> = {};
   data.forEach(row => {
     const val = row[targetAttr];
     counts[val] = (counts[val] || 0) + 1;
@@ -35,10 +48,10 @@ function calculateEntropy(data, targetAttr = 'buy_computer') {
   return entropy;
 }
 
-function calculateGain(data, attr, targetAttr = 'buy_computer') {
+function calculateGain(data: DataSample[], attr: string, targetAttr: string = 'buy_computer'): number {
   const totalEntropy = calculateEntropy(data, targetAttr);
   
-  const attrValues = {};
+  const attrValues: Record<string, DataSample[]> = {};
   data.forEach(row => {
     const val = row[attr];
     if (!attrValues[val]) attrValues[val] = [];
@@ -55,10 +68,14 @@ function calculateGain(data, attr, targetAttr = 'buy_computer') {
   return totalEntropy - weightedEntropy;
 }
 
-function findBestFeature(data, features, targetAttr = 'buy_computer') {
-  let bestFeature = null;
+function findBestFeature(
+  data: DataSample[],
+  features: string[],
+  targetAttr: string = 'buy_computer'
+): { bestFeature: string | null; bestGain: number; gains: Record<string, number> } {
+  let bestFeature: string | null = null;
   let bestGain = -Infinity;
-  const gains = {};
+  const gains: Record<string, number> = {};
   
   for (const feature of features) {
     const gain = calculateGain(data, feature, targetAttr);
@@ -72,7 +89,13 @@ function findBestFeature(data, features, targetAttr = 'buy_computer') {
   return { bestFeature, bestGain, gains };
 }
 
-export function buildDecisionTree(data, features, targetAttr = 'buy_computer', steps = [], depth = 0) {
+export function buildDecisionTree(
+  data: DataSample[],
+  features: string[],
+  targetAttr: string = 'buy_computer',
+  steps: DecisionStep[] = [],
+  depth: number = 0
+): DecisionTreeNode {
   const targetValues = data.map(row => row[targetAttr]);
   const uniqueTargets = [...new Set(targetValues)];
   
@@ -96,9 +119,9 @@ export function buildDecisionTree(data, features, targetAttr = 'buy_computer', s
   }
   
   if (features.length === 0) {
-    const mostCommon = targetValues.sort((a,b) => 
+    const mostCommon = targetValues.sort((a, b) => 
       targetValues.filter(v => v === a).length - targetValues.filter(v => v === b).length
-    ).pop();
+    ).pop() || 'no';
     steps.push({
       type: 'leaf',
       depth,
@@ -121,14 +144,26 @@ export function buildDecisionTree(data, features, targetAttr = 'buy_computer', s
   steps.push({
     type: 'calculate_gain',
     depth,
-    bestFeature,
+    bestFeature: bestFeature || undefined,
     bestGain,
     gains,
     desc: `Feature tốt nhất: "${bestFeature}" (Gain=${bestGain.toFixed(3)})`
   });
   
+  if (!bestFeature) {
+    const mostCommon = targetValues.sort((a, b) => 
+      targetValues.filter(v => v === a).length - targetValues.filter(v => v === b).length
+    ).pop() || 'no';
+    steps.push({
+      type: 'leaf',
+      depth,
+      value: mostCommon,
+      desc: `Không tìm được feature, tạo lá: ${mostCommon}`
+    });
+    return { type: 'leaf', value: mostCommon, depth };
+  }
+  
   const remainingFeatures = features.filter(f => f !== bestFeature);
-  const branches = {};
   const uniqueValues = [...new Set(data.map(row => row[bestFeature]))];
   
   steps.push({
@@ -139,7 +174,7 @@ export function buildDecisionTree(data, features, targetAttr = 'buy_computer', s
     desc: `Split theo "${bestFeature}" thành ${uniqueValues.length} nhánh`
   });
   
-  const tree = {
+  const tree: InternalNode = {
     type: 'node',
     feature: bestFeature,
     branches: {},
@@ -170,8 +205,12 @@ export function buildDecisionTree(data, features, targetAttr = 'buy_computer', s
   return tree;
 }
 
-export function decisionTreeID3(dataset, targetAttr = 'buy_computer') {
-  const steps = [];
+
+export function decisionTreeID3(
+  dataset: DataSample[],
+  targetAttr: string = 'buy_computer'
+): DecisionStep[] {
+  const steps: DecisionStep[] = [];
   const features = ['age', 'income', 'student', 'credit_rating'];
   
   steps.push({
@@ -183,7 +222,7 @@ export function decisionTreeID3(dataset, targetAttr = 'buy_computer') {
     desc: `Khởi tạo với ${dataset.length} mẫu, ${features.length} features`
   });
   
-  const targetCounts = {};
+  const targetCounts: Record<string, number> = {};
   dataset.forEach(row => {
     const val = row[targetAttr];
     targetCounts[val] = (targetCounts[val] || 0) + 1;
@@ -191,7 +230,7 @@ export function decisionTreeID3(dataset, targetAttr = 'buy_computer') {
   steps.push({
     type: 'target_distribution',
     targetCounts,
-    desc: `Phân phối đích: ${Object.entries(targetCounts).map(([k,v]) => `${k}: ${v}`).join(', ')}`
+    desc: `Phân phối đích: ${Object.entries(targetCounts).map(([k, v]) => `${k}: ${v}`).join(', ')}`
   });
   
   const tree = buildDecisionTree(dataset, features, targetAttr, steps);
@@ -205,14 +244,28 @@ export function decisionTreeID3(dataset, targetAttr = 'buy_computer') {
   return steps;
 }
 
-export function predict(tree, sample) {
-  if (tree.type === 'leaf') return tree.value;
-  
-  const value = sample[tree.feature];
-  if (tree.branches[value]) {
-    return predict(tree.branches[value], sample);
+
+export function predict(tree: DecisionTreeNode, sample: DataSample): string {
+  if (tree.type === 'leaf') {
+    return tree.value || 'unknown';
   }
   
-  const firstKey = Object.keys(tree.branches)[0];
-  return predict(tree.branches[firstKey], sample);
+  const internalTree = tree as InternalNode;
+  const value = sample[internalTree.feature || ''];
+  
+  if (value !== undefined && internalTree.branches && internalTree.branches[value]) {
+    return predict(internalTree.branches[value], sample);
+  }
+  
+  if (internalTree.branches) {
+    const firstKey = Object.keys(internalTree.branches)[0];
+    if (firstKey) {
+      return predict(internalTree.branches[firstKey], sample);
+    }
+  }
+  
+  return 'unknown';
 }
+
+
+export { calculateEntropy, calculateGain, findBestFeature };

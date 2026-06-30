@@ -1,7 +1,5 @@
-// index.ts
 import { Position, Step, MazeAlgorithm } from './config';
 
-// ─── Helper functions ────────────────────────────────────────────────────
 function getNeighbors(r: number, c: number, maze: number[][], rows: number, cols: number): Position[] {
   const dirs: [number, number][] = [[-1,0],[1,0],[0,-1],[0,1]];
   const result: Position[] = [];
@@ -33,7 +31,6 @@ function reconstructPath(cameFrom: { [key: string]: string }, start: Position, g
   return path;
 }
 
-// ─── BFS ────────────────────────────────────────────────────────────────────
 export function mazeBFS(maze: number[][], rows: number, cols: number, start: Position, goal: Position): Step[] {
   const steps: Step[] = [];
   const visited = new Set<string>();
@@ -91,7 +88,6 @@ export function mazeBFS(maze: number[][], rows: number, cols: number, start: Pos
   return steps;
 }
 
-// ─── DFS ────────────────────────────────────────────────────────────────────
 export function mazeDFS(maze: number[][], rows: number, cols: number, start: Position, goal: Position): Step[] {
   const steps: Step[] = [];
   const visited = new Set<string>();
@@ -150,19 +146,16 @@ export function mazeDFS(maze: number[][], rows: number, cols: number, start: Pos
   return steps;
 }
 
-// ─── Dijkstra ────────────────────────────────────────────────────────────────
 export function mazeDijkstra(maze: number[][], rows: number, cols: number, start: Position, goal: Position): Step[] {
   const steps: Step[] = [];
   const dist: { [key: string]: number } = {};
   const cameFrom: { [key: string]: string } = {};
   const visited = new Set<string>();
 
-  // Trọng số: ô trắng = 1, ô "khó" (giá trị 2) = 3, còn lại = 1
   function edgeWeight(r: number, c: number): number {
     return maze[r][c] === 2 ? 3 : 1;
   }
 
-  // Khởi tạo dist
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       dist[key(r,c)] = Infinity;
@@ -171,7 +164,6 @@ export function mazeDijkstra(maze: number[][], rows: number, cols: number, start
   const startKey = key(start.r, start.c);
   dist[startKey] = 0;
 
-  // Priority queue dạng mảng [cost, node]
   let pq: [number, Position][] = [[0, start]];
 
   steps.push({
@@ -245,7 +237,6 @@ export function mazeDijkstra(maze: number[][], rows: number, cols: number, start
   return steps;
 }
 
-// ─── A* ──────────────────────────────────────────────────────────────────────
 export function mazeAStar(maze: number[][], rows: number, cols: number, start: Position, goal: Position, heuristicType: string = 'manhattan'): Step[] {
   const steps: Step[] = [];
 
@@ -286,7 +277,6 @@ export function mazeAStar(maze: number[][], rows: number, cols: number, start: P
   });
 
   while (openSet.size > 0) {
-    // Tìm node fScore nhỏ nhất trong openSet
     let current: string | null = null;
     let minF = Infinity;
     for (const k of openSet) {
@@ -365,14 +355,10 @@ export function mazeAStar(maze: number[][], rows: number, cols: number, start: P
   return steps;
 }
 
-// ─── Maze Generator (Recursive Backtracker) ──────────────────────────────────
-// Trả về 2D array: 0 = đường đi, 1 = tường
 export function generateMaze(rows: number, cols: number): number[][] {
-  // rows và cols phải lẻ để maze đẹp
   const R = rows % 2 === 0 ? rows + 1 : rows;
   const C = cols % 2 === 0 ? cols + 1 : cols;
 
-  // Khởi tạo toàn tường
   const maze: number[][] = Array.from({ length: R }, () => Array(C).fill(1));
 
   const visited = new Set<string>();
@@ -386,7 +372,6 @@ dirs.sort(() => Math.random() - 0.5);
     for (const [dr, dc] of dirs) {
       const nr = r + dr, nc = c + dc;
       if (nr > 0 && nr < R - 1 && nc > 0 && nc < C - 1 && !visited.has(key(nr, nc))) {
-        // Phá tường giữa
         maze[r + dr/2][c + dc/2] = 0;
         carve(nr, nc);
       }
@@ -395,14 +380,12 @@ dirs.sort(() => Math.random() - 0.5);
 
   carve(1, 1);
 
-  // Đảm bảo start và goal có đường đi
   maze[1][1] = 0;
   maze[R-2][C-2] = 0;
 
   return maze;
 }
 
-// ─── Beam Search ────────────────────────────────────────────────────────────────
 export function mazeBeamSearch(maze: number[][], rows: number, cols: number, start: Position, goal: Position, beamWidth: number = 3, heuristicType: string = 'manhattan'): Step[] {
   const steps: Step[] = [];
 
@@ -413,7 +396,6 @@ export function mazeBeamSearch(maze: number[][], rows: number, cols: number, sta
     return dr + dc; // manhattan
   }
 
-  // Khởi tạo beam với đường đi ban đầu
   let beam: { path: Position[], cost: number, f: number }[] = [{ 
     path: [{ r: start.r, c: start.c }], 
     cost: 0, 
@@ -439,7 +421,6 @@ export function mazeBeamSearch(maze: number[][], rows: number, cols: number, sta
     const newBeam: { path: Position[], cost: number, f: number }[] = [];
     const currentFrontier = new Set<string>();
 
-    // Duyệt từng đường đi trong beam
     for (const { path, cost } of beam) {
       const current = path[path.length - 1];
       const currentKey = key(current.r, current.c);
@@ -453,7 +434,6 @@ export function mazeBeamSearch(maze: number[][], rows: number, cols: number, sta
         frontier: new Set(beam.flatMap(b => b.path.map(p => key(p.r, p.c))))
       });
 
-      // Đã đến goal
       if (current.r === goal.r && current.c === goal.c) {
         steps.push({
           type: 'goal_found',
@@ -475,12 +455,10 @@ export function mazeBeamSearch(maze: number[][], rows: number, cols: number, sta
 
       visited.add(currentKey);
 
-      // Mở rộng các neighbor
       const neighbors = getNeighbors(current.r, current.c, maze, rows, cols);
       for (const nb of neighbors) {
         const nbKey = key(nb.r, nb.c);
         
-        // Tránh lặp lại node trong path (đơn giản hóa)
         if (path.some(p => p.r === nb.r && p.c === nb.c)) continue;
 
         const newPath = [...path, nb];
@@ -510,12 +488,10 @@ export function mazeBeamSearch(maze: number[][], rows: number, cols: number, sta
       }
     }
 
-    // Sắp xếp và chỉ giữ lại beamWidth đường đi tốt nhất
     beam = newBeam
       .sort((a, b) => a.f - b.f)
       .slice(0, beamWidth);
 
-    // Nếu beam rỗng, không tìm thấy đường
     if (beam.length === 0) {
       steps.push({
         type: 'no_path',
@@ -545,7 +521,6 @@ export function mazeBeamSearch(maze: number[][], rows: number, cols: number, sta
     iteration++;
   }
 
-  // Không tìm thấy đường đi
   steps.push({
     type: 'no_path',
     visited: new Set(visited),
@@ -564,7 +539,6 @@ export function mazeBeamSearch(maze: number[][], rows: number, cols: number, sta
   return steps;
 }
 
-// ─── Tabu Search ────────────────────────────────────────────────────────────────
 export function mazeTabuSearch(maze: number[][], rows: number, cols: number, start: Position, goal: Position, maxIterations: number = 100, tabuSize: number = 10, heuristicType: string = 'manhattan'): Step[] {
   const steps: Step[] = [];
 
@@ -575,7 +549,6 @@ export function mazeTabuSearch(maze: number[][], rows: number, cols: number, sta
     return dr + dc;
   }
 
-  // Hàm tạo đường đi ngẫu nhiên từ start đến goal
   function generateRandomPath(): Position[] {
     const path: Position[] = [{ r: start.r, c: start.c }];
     let current = { r: start.r, c: start.c };
@@ -587,7 +560,6 @@ export function mazeTabuSearch(maze: number[][], rows: number, cols: number, sta
       
       if (unvisited.length === 0) break;
       
-      // Chọn ngẫu nhiên một neighbor
       const next = unvisited[Math.floor(Math.random() * unvisited.length)];
       path.push(next);
       visitedSet.add(key(next.r, next.c));
@@ -597,21 +569,17 @@ export function mazeTabuSearch(maze: number[][], rows: number, cols: number, sta
     return path;
   }
 
-  // Hàm tính chi phí đường đi
   function calculateCost(path: Position[]): number {
     return path.length - 1; // Mỗi bước cost = 1
   }
 
-  // Hàm tạo các giải pháp lân cận (swap 2 vị trí)
   function getNeighborSolutions(path: Position[]): Position[][] {
     const neighbors: Position[][] = [];
-    // Chỉ swap các vị trí không phải start và goal
     for (let i = 1; i < path.length - 2; i++) {
       for (let j = i + 1; j < path.length - 1; j++) {
         const newPath = [...path];
         [newPath[i], newPath[j]] = [newPath[j], newPath[i]];
         
-        // Kiểm tra tính hợp lệ (các ô liền kề nhau có đường đi)
         let valid = true;
         for (let k = 0; k < newPath.length - 1; k++) {
           const from = newPath[k];
@@ -631,7 +599,6 @@ export function mazeTabuSearch(maze: number[][], rows: number, cols: number, sta
     return neighbors;
   }
 
-  // Khởi tạo
   let currentPath = generateRandomPath();
   let currentCost = calculateCost(currentPath);
   let bestPath = [...currentPath];
@@ -659,12 +626,10 @@ export function mazeTabuSearch(maze: number[][], rows: number, cols: number, sta
   let iteration = 0;
 
   while (iteration < maxIterations && currentPath.length > 0) {
-    // Tạo danh sách các giải pháp lân cận
     const neighbors = getNeighborSolutions(currentPath);
     
     if (neighbors.length === 0) break;
 
-    // Lọc các giải pháp không trong tabu
     const candidateNeighbors = neighbors.filter(
       p => !tabuList.includes(p.map(n => key(n.r, n.c)).join('|'))
     );
@@ -673,7 +638,6 @@ export function mazeTabuSearch(maze: number[][], rows: number, cols: number, sta
     let bestNeighborCost = Infinity;
 
     if (candidateNeighbors.length === 0) {
-      // Aspiration criteria: chọn giải pháp tốt nhất dù trong tabu
       for (const n of neighbors) {
         const cost = calculateCost(n);
         if (cost < bestNeighborCost) {
@@ -682,7 +646,6 @@ export function mazeTabuSearch(maze: number[][], rows: number, cols: number, sta
         }
       }
     } else {
-      // Chọn giải pháp lân cận tốt nhất
       for (const n of candidateNeighbors) {
         const cost = calculateCost(n);
         if (cost < bestNeighborCost) {
@@ -694,20 +657,16 @@ export function mazeTabuSearch(maze: number[][], rows: number, cols: number, sta
 
     if (!bestNeighbor) break;
 
-    // Cập nhật giải pháp hiện tại
     currentPath = bestNeighbor;
     currentCost = bestNeighborCost;
 
-    // Cập nhật tabu list
     tabuList.push(currentPath.map(p => key(p.r, p.c)).join('|'));
     if (tabuList.length > tabuSize) {
       tabuList.shift();
     }
 
-    // Cập nhật visited
     currentPath.forEach(p => visitedSet.add(key(p.r, p.c)));
 
-    // Cập nhật giải pháp tốt nhất
     if (currentCost < bestCost) {
       bestPath = [...currentPath];
       bestCost = currentCost;
@@ -727,7 +686,6 @@ export function mazeTabuSearch(maze: number[][], rows: number, cols: number, sta
       path: currentPath.map(p => key(p.r, p.c))
     });
 
-    // Kiểm tra đã đến goal
     const last = currentPath[currentPath.length - 1];
     if (last.r === goal.r && last.c === goal.c) {
       steps.push({
@@ -753,7 +711,6 @@ export function mazeTabuSearch(maze: number[][], rows: number, cols: number, sta
     iteration++;
   }
 
-  // Kết thúc
   steps.push({
     type: 'done',
     path: bestPath.map(p => key(p.r, p.c)),

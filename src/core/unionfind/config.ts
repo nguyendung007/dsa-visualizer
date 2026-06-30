@@ -1,4 +1,3 @@
-// config.ts
 export interface UF {
   id: number[];
   parent: number[];

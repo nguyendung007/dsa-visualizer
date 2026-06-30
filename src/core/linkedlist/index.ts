@@ -1,4 +1,3 @@
-// index.ts
 import {
   LLNode,
   LLBuildResult,
@@ -14,7 +13,6 @@ import {
   LLReverseParams
 } from './config';
 
-// ─── Linked List Core ─────────────────────────────────────────────────────────
 
 export function llBuild(arr: any[], type: LinkedListType = 'singly'): LLBuildResult {
   if (!arr.length) return { head: null, nodes: [] };
@@ -102,7 +100,6 @@ export function llDelete(nodes: LLNode[], val: any, type: LinkedListType, pos: n
   let cur = pos !== null ? pos : 0;
   let prev: number | null = null;
 
-  // Nếu xóa tại vị trí cụ thể
   if (pos !== null) {
     if (pos < 0 || pos >= a.length) {
       steps.push({ ...snapshot(a, type), op: 'error', desc: `✗ Vị trí ${pos} ngoài phạm vi` });
@@ -111,12 +108,10 @@ export function llDelete(nodes: LLNode[], val: any, type: LinkedListType, pos: n
     steps.push({ ...snapshot(a, type), op: 'init', desc: `Xóa node tại vị trí [${pos}]` });
     steps.push({ ...snapshot(a, type), op: 'found', highlight: cur, desc: `✓ Tìm thấy node [${pos}]=${a[pos].val}` });
 
-    // Tìm prev node
     if (pos > 0) {
       prev = pos - 1;
     }
   } else {
-    // Xóa theo giá trị
     steps.push({ ...snapshot(a, type), op: 'search', desc: `Tìm node có val=${val}` });
     while (cur !== null) {
       steps.push({ ...snapshot(a, type), op: 'check', highlight: cur, desc: `Kiểm tra node[${cur}]=${a[cur].val}` });
@@ -125,7 +120,6 @@ export function llDelete(nodes: LLNode[], val: any, type: LinkedListType, pos: n
         break;
       }
       const nextCur = a[cur].next;
-      // Circular: dừng khi đã đi vòng về head (tránh lặp vô tận)
       if (type === 'circular' && nextCur === 0 && cur !== 0) break;
       prev = cur;
       cur = nextCur!;
@@ -139,19 +133,15 @@ export function llDelete(nodes: LLNode[], val: any, type: LinkedListType, pos: n
   const nextId = a[cur].next;
 
   if (prev !== null) {
-    // Có node trước: nối prev → next bình thường
     a[prev] = { ...a[prev], next: nextId };
     if (type === 'doubly' && nextId !== null) a[nextId] = { ...a[nextId], prev: prev };
   } else if (type === 'circular' && a.length > 1) {
-    // FIX: xóa head của circular list → tail phải trỏ sang head mới (nextId)
     const tailIdx = a.findIndex(n => n.next === cur);
     if (tailIdx !== -1) {
       a[tailIdx] = { ...a[tailIdx], next: nextId };
     }
   }
-  // Nếu prev === null và không phải circular (hoặc chỉ còn 1 node) → xóa head, không cần làm gì thêm
 
-  // Re-index: xóa node tại index cur, cập nhật lại id/next/prev
   const finalNodes = a.filter((_, i) => i !== cur).map((n, i) => ({
     ...n,
     id: i,
@@ -203,7 +193,6 @@ export function llReverse(nodes: LLNode[], type: LinkedListType): LLInsertResult
     while (cur !== null) {
       arr.push(cur);
       
-      // Tạo biến node hiện tại và ép kiểu để TypeScript biết chắc chắn nó tồn tại
       const idx = cur as number;
       const currentNode = a[idx];
       
@@ -217,12 +206,10 @@ export function llReverse(nodes: LLNode[], type: LinkedListType): LLInsertResult
         desc: `Node ${currentNode.val}: next=${next} → prev=${prev}` 
       });
       
-      // Cập nhật mối nối con trỏ
       currentNode.next = prev;
       prev = cur;
       cur = next;
       
-      // Lấy giá trị của node prev một cách an toàn cho desc
       const prevNodeVal = prev !== null && a[prev as number] ? a[prev as number]!.val : 'null';
       
       steps.push({ 
@@ -233,10 +220,8 @@ export function llReverse(nodes: LLNode[], type: LinkedListType): LLInsertResult
       });
     }
     
-    // Tạo bản sao mảng để reverse an toàn
     const reversed = [...arr].reverse();
     const finalNodes: LLNode[] = reversed.map((oldIdx, newIdx) => {
-      // Đảm bảo node gốc không bị undefined dưới con mắt của TypeScript
       const originalNode = a[oldIdx] || { val: null };
       
       return {

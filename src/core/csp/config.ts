@@ -1,10 +1,4 @@
-// config.ts
-// ============================================================
-// CSP Core — Configurations and Problem Definitions
-// ============================================================
 
-// ─── MAP COLORING ────────────────────────────────────────────
-// Graph Australia mặc định
 export const MAP_COLORING_PROBLEM = {
   variables: ['WA', 'NT', 'SA', 'Q', 'NSW', 'V', 'T'],
   domains: {
@@ -27,7 +21,6 @@ export const MAP_COLORING_PROBLEM = {
   },
 };
 
-// Tọa độ SVG cho từng vùng (dùng khi render)
 export const MAP_NODE_POSITIONS: Record<string, { x: number; y: number }> = {
   WA:  { x: 100, y: 200 },
   NT:  { x: 240, y: 130 },
@@ -38,7 +31,6 @@ export const MAP_NODE_POSITIONS: Record<string, { x: number; y: number }> = {
   T:   { x: 390, y: 390 },
 };
 
-// ─── SUDOKU ──────────────────────────────────────────────────
 export const SUDOKU_EASY: number[][] = [
   [5, 3, 0, 0, 7, 0, 0, 0, 0],
   [6, 0, 0, 1, 9, 5, 0, 0, 0],
@@ -51,9 +43,6 @@ export const SUDOKU_EASY: number[][] = [
   [0, 0, 0, 0, 8, 0, 0, 7, 9],
 ];
 
-// ─── SCHEDULING ──────────────────────────────────────────────
-// Lập lịch thi: 6 môn học, 3 phòng, 4 slot thời gian
-// Ràng buộc: môn cùng sinh viên không được cùng slot
 export const SCHEDULING_PROBLEM = {
   courses: ['Toán', 'Lý', 'Hóa', 'Văn', 'Anh', 'GDTC'],
   rooms:   ['P101', 'P102', 'P103'],
